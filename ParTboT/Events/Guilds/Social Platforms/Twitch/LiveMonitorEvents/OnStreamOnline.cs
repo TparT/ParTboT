@@ -13,17 +13,17 @@ using TwitchLib.Api.Services.Events.LiveStreamMonitor;
 
 namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
 {
-    public class OnStreamOnlineEvent
+    public class OnStreamOnline
     {
         private ServicesContainer _services { get; set; }
 
-        public OnStreamOnlineEvent(ServicesContainer services)
+        public OnStreamOnline(ServicesContainer services)
         {
             _services = services;
         }
 
         //#region EVENT: On streamer goes LIVE
-        
+
         //public MongoCRUD db = Program.db;
 
         public async void Monitor_OnStreamOnline(object sender, OnStreamOnlineArgs e)

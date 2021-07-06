@@ -135,4 +135,5 @@
       <HintPath>..\ParTboT.DbModels\bin\Debug\net5.0\ParTboT.DbModels.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties bin_4debug_4netcoreapp3_11_4config_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 </Project>

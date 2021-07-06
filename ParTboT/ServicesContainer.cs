@@ -8,16 +8,13 @@ using Newtonsoft.Json;
 using ParTboT.Services;
 using Serilog;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Tweetinvi;
 using TwitchLib.Api;
-using TwitchLib.Api.Core.Enums;
-using TwitchLib.Api.Core.Interfaces;
+using TwitchLib.Api.Core;
 using TwitchLib.Api.Services;
 using YarinGeorge.Utilities.Databases.MongoDB;
 
@@ -34,7 +31,6 @@ namespace ParTboT
         public MemoryCache Cache { get; private set; }
 
 
-        public DiscordClient DiscordClient { get; private set; }
         public TwitterClient TwitterClient { get; private set; }
         public HttpClient HttpClient { get; private set; }
 
@@ -67,13 +63,13 @@ namespace ParTboT
         }
 
 
-        public async Task<ServicesContainer> InitializeServicesAsync(DiscordClient client, bool TwitchMonitor = true, bool TwitterMonitor = true, bool Reminders = true)
+        public async Task<ServicesContainer> InitializeServicesAsync(bool TwitchMonitor = true, bool TwitterMonitor = true, bool Reminders = true)
         {
             Logger = Log.Logger;
 
             #region Databases and data storage
 
-            LiteDB = new(@$"C:\Users\yarin\Documents\Visual studio projects\Discord\C# Discord bots\GogyBot_Alpha\GogyBot Alpha\GogyBot Alpha\bin\Debug\net5.0\ParTboT.db");
+            LiteDB = new(@$"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net5.0\ParTboT.db");
 
             MongoDB = new MongoCRUD(
                 new MongoCRUDConnectionOptions()
@@ -88,7 +84,7 @@ namespace ParTboT
 
             #region APIs
 
-            TwitchAPI = new TwitchAPI(settings: new TwitchAPISettings
+            TwitchAPI = new TwitchAPI(settings: new ApiSettings
             {
                 ClientId = Config.TwitchAPI_ClientID,
                 AccessToken = Config.TwitchAPI_AccessToken,
@@ -102,7 +98,6 @@ namespace ParTboT
             #region Services
 
             // =============== Clients ================ \\
-            DiscordClient = client;
             TwitterClient = new TwitterClient
                 (
                     Config.TwitterAPI_ApiKey,
@@ -176,7 +171,6 @@ namespace ParTboT
             GC.SuppressFinalize(MongoDB);
             GC.SuppressFinalize(Cache);
 
-            GC.SuppressFinalize(DiscordClient);
             GC.SuppressFinalize(TwitterClient);
             GC.SuppressFinalize(HttpClient);
 
@@ -199,18 +193,6 @@ namespace ParTboT
             #endregion Surpress Garbage Collector
 
             return this;
-        }
-
-        private class TwitchAPISettings : IApiSettings
-        {
-            public string AccessToken { get; set; }
-            public string Secret { get; set; }
-            public string ClientId { get; set; }
-            public bool SkipDynamicScopeValidation { get; set; }
-            public bool SkipAutoServerTokenGeneration { get; set; }
-            public List<AuthScopes> Scopes { get; set; }
-
-            public event PropertyChangedEventHandler PropertyChanged;
         }
     }
 }

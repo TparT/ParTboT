@@ -16,7 +16,7 @@
 //using System.Threading.Tasks;
 //using System.Timers;
 
-//namespace GogyBot_Alpha.Events.Bot
+//namespace ParTboT.Events.Bot
 //{
 //    public class UserRecognitionData
 //    {

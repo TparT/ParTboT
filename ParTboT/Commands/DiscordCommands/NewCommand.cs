@@ -39,7 +39,6 @@ namespace ParTboT.Commands
         public static SpeechSynthesizer Speaker = new SpeechSynthesizer();
 
         public ClientReceivedVoice VoiceRecievedEvent { get; set; } = new ClientReceivedVoice();
-        public SpeechRec VoiceEvent { get; set; } = new SpeechRec();
 
 
         [Command("captcha")]
@@ -266,7 +265,7 @@ namespace ParTboT.Commands
                 ////foreach (var BYTE in kvp.Value.OutputAudioData.ToArray())
                 ////{
                 ////    Console.WriteLine(BYTE.ToString());
-                ////} 
+                ////}
                 #endregion
 
                 if (VoiceRecievedEvent.Voices.TryGetValue(User.Id, out var TheUsersThings))
@@ -320,7 +319,7 @@ namespace ParTboT.Commands
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
             await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().WithContent(Contents).HasTTS(true)).ConfigureAwait(false);
-            
+
         }
 
         [Command("streamers")]

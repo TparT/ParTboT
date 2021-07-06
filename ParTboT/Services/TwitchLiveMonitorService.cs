@@ -37,7 +37,7 @@ namespace ParTboT.Services
                 err.OutputBigExceptionError();
             }
 
-            OnStreamOnlineEvent onStreamOnline = new OnStreamOnlineEvent(_services);
+            OnStreamOnline onStreamOnline = new OnStreamOnline(_services);
             OnStreamOffline onStreamOffline = new OnStreamOffline(_services);
             OnMonitorServiceStarted onServiceStarted = new OnMonitorServiceStarted(_services);
             OnMonitorUpdate onMonitorUpdate = new OnMonitorUpdate(_services);

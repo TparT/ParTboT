@@ -21,7 +21,7 @@ namespace ParTboT.Events.Bot
             var DeletedGuild = await ParTboT.Bot.Services.MongoDB.DeleteOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", e.Guild.Id);
             Console.WriteLine(DeletedGuild.Name + " Was deleted from the database");
 
-            //var client = GogyBot_Alpha.Bot.Client;
+            //var client = ParTboT.Bot.Client;
 
             //var BotName = client.CurrentUser.Username;
             //var NumberOfGuilds = client.Guilds.Count;

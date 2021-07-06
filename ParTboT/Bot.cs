@@ -579,19 +579,10 @@ namespace ParTboT
 
             BotsChannel = await Client.GetChannelAsync(784445037244186734).ConfigureAwait(false);
 
-            MongoCRUD.LiteDBConnectionString LiteDbConnection = new MongoCRUD.LiteDBConnectionString
-            {
-                ConnectionType = MongoCRUD.ConnectionType.Shared,
-                Filename =
-                    @"C:\Users\yarin\Documents\Visual studio projects\Discord\C# Discord bots\GogyBot_Alpha\GogyBot Alpha\GogyBot Alpha\MongoDBModules\LocalDB\LocalSyncMongoDB.db",
-            };
-
-            //Bot.Services.MongoDB = new LiteDatabase(LiteDbConnection.ConnectionStringBuilder());
-
 
             Task.Run(async () => StatsTrack());
 
-            await Services.InitializeServicesAsync(Client, false, true, true);
+            await Services.InitializeServicesAsync(false, true, true);
 
             //Task.Run(async () =>
             //{

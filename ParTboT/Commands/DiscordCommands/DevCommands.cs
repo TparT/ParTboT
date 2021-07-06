@@ -44,7 +44,7 @@ namespace ParTboT.Commands
         //            "music",
         //            "Music management - Manage the music playing on a voice channel or even search for song lyrics.",
         //            new List<DiscordApplicationCommandOption>()
-        //            { 
+        //            {
         //                new DiscordApplicationCommandOption
         //                (
         //                    "ArtistName",
@@ -100,7 +100,7 @@ namespace ParTboT.Commands
 
             await ctx.RespondAsync($"{sb}").ConfigureAwait(false);
 
-            
+
         }
 
         [Command("slashstart")]
@@ -326,17 +326,12 @@ namespace ParTboT.Commands
         [Description("Changes the bot's profile pic to the one that was uploaded along with the command execution text.")]
         public async Task Pfp(CommandContext ctx, [RemainingText] string discordAttachmentLink)
         {
-            string UploadedFileExtension = Path.GetExtension(discordAttachmentLink);
-            string FileSavePath = $"C:\\Users\\yarin\\Documents\\Visual studio projects\\Discord\\C# Discord bots\\GogyBot_Alpha\\GogyBot Alpha\\GogyBot Alpha\\TempFiles\\ProfilePictures\\Uploaded\\BotNewProfileImage\\";
-
-            string name = "GogyBot";
             await ctx.Channel.SendMessageAsync("oke").ConfigureAwait(false);
+            Stream ImageStream = (await WebRequest.Create(discordAttachmentLink).GetResponseAsync().ConfigureAwait(false)).GetResponseStream();
+            await ctx.Client.UpdateCurrentUserAsync(ctx.Client.CurrentUser.Username, ImageStream).ConfigureAwait(false);
 
-            WebClient wc = new WebClient();
-            using MemoryStream stream = new MemoryStream
-            (wc.DownloadData(discordAttachmentLink));
-            //await ctx.RespondWithFileAsync("FileFromStream"+UploadedFileExtension, stream).ConfigureAwait(false);
-            await ctx.Client.UpdateCurrentUserAsync(name, stream).ConfigureAwait(false);
+            ImageStream.SetLength(0);
+            await ImageStream.DisposeAsync();
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -360,7 +355,8 @@ namespace ParTboT.Commands
         {
             switch (true)
             {
-                case bool b when TypeOfActivity.Equals("playing", StringComparison.InvariantCultureIgnoreCase):
+                case bool when TypeOfActivity.Equals("playing", StringComparison.InvariantCultureIgnoreCase):
+
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.Playing);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);
@@ -368,7 +364,8 @@ namespace ParTboT.Commands
                     }
                     break;
 
-                case bool b when TypeOfActivity.Equals("watching", StringComparison.InvariantCultureIgnoreCase):
+                case bool when TypeOfActivity.Equals("watching", StringComparison.InvariantCultureIgnoreCase):
+
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.Watching);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);
@@ -376,7 +373,7 @@ namespace ParTboT.Commands
                     }
                     break;
 
-                case bool b when TypeOfActivity.Equals("listeningto", StringComparison.InvariantCultureIgnoreCase):
+                case bool when TypeOfActivity.Equals("listeningto", StringComparison.InvariantCultureIgnoreCase):
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.ListeningTo);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);
@@ -384,7 +381,7 @@ namespace ParTboT.Commands
                     }
                     break;
 
-                case bool b when TypeOfActivity.Equals("streaming", StringComparison.InvariantCultureIgnoreCase):
+                case bool when TypeOfActivity.Equals("streaming", StringComparison.InvariantCultureIgnoreCase):
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.Streaming);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);
@@ -392,7 +389,7 @@ namespace ParTboT.Commands
                     }
                     break;
 
-                case bool b when TypeOfActivity.Equals("competing", StringComparison.InvariantCultureIgnoreCase):
+                case bool when TypeOfActivity.Equals("competing", StringComparison.InvariantCultureIgnoreCase):
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.Competing);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);

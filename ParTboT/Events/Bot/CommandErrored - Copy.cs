@@ -32,7 +32,7 @@ namespace ParTboT.Events.Bot
             // let's check if the error is a result of lack
             // of required permissions
 
-            // yes, the user lacks required permissions, 
+            // yes, the user lacks required permissions,
             // let them know
 
             var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
@@ -70,9 +70,9 @@ namespace ParTboT.Events.Bot
                     if (e.Command?.Name == "ajuda")
                     {
                         //await ctx.Channel.SendMessageAsync($":no_entry_sign: | {ctx.User.Mention} The command {e.Context.RawArgumentString} Does.*");
-                        string Customsentence = e.Context.RawArgumentString; // sees speed instead of spelled (see notes on norvig.com)
-                        string Customsentence_correction = "";
-                        foreach (string item in Customsentence.Split(' '))
+
+                        string Customsentence_correction = string.Empty;
+                        foreach (string item in e.Context.RawArguments)
                         {
                             //Customsentence_correction += spelling.Correct(item) + " ";
                         }

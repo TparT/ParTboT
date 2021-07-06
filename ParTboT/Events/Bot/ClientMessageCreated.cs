@@ -8,13 +8,13 @@
 //using System.Linq;
 //using System.Threading.Tasks;
 
-//namespace GogyBot_Alpha.Events.Bot
+//namespace ParTboT.Events.Bot
 //{
 //    public class ClientMessageCreated
 //    {
 //        public async static Task MessageCreated(DiscordClient client, MessageCreateEventArgs e)
 //        {
-//            if (e.Channel.IsPrivate && GogyBot_Alpha.Bot.Services.UserVerifications.PendingCaptchaMembersCache.TryGetValue($"{e.}", out string Code))
+//            if (e.Channel.IsPrivate && ParTboT.Bot.Services.UserVerifications.PendingCaptchaMembersCache.TryGetValue($"{e.}", out string Code))
 //            {
 //                if (m.Message.Content == CaptchaCode)
 //                {
