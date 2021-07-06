@@ -46,12 +46,12 @@ namespace ParTboT.Commands
                     x.Nickname = new_nickname;
                     if (new_nickname != null)
                     {
-                        await ctx.Channel.SendMessageAsync($"{CheckMark}  The nickname of `{member.Username}` (\"{member.Mention}\") was succesfully changed to -> `{new_nickname}` !").ConfigureAwait(false);
+                        await ctx.RespondAsync($"{CheckMark}  The nickname of `{member.Username}` (\"{member.Mention}\") was succesfully changed to -> `{new_nickname}` !").ConfigureAwait(false);
                         x.AuditLogReason = $"Changed by {ctx.User.Username} ({ctx.User.Id}).";
                     }
                     else if (new_nickname == null)
                     {
-                        await ctx.Channel.SendMessageAsync($"{CheckMark}  The nickname of `{member.Username}` (\"{member.Mention}\")  was succesfully reset from `\"{member.DisplayName}\"` !").ConfigureAwait(false);
+                        await ctx.RespondAsync($"{CheckMark}  The nickname of `{member.Username}` (\"{member.Mention}\")  was succesfully reset from `\"{member.DisplayName}\"` !").ConfigureAwait(false);
                         x.AuditLogReason = $"Reset by {ctx.User.Username} ({ctx.User.Id}).";
                     }
                 }).ConfigureAwait(false);
@@ -61,7 +61,7 @@ namespace ParTboT.Commands
 
             catch (Exception)
             {
-                await ctx.Channel.SendMessageAsync($"{Xmark}  You lack permissions necessary to run this command!").ConfigureAwait(false);
+                await ctx.RespondAsync($"{Xmark}  You lack permissions necessary to run this command!").ConfigureAwait(false);
             }
         }
 
@@ -92,7 +92,7 @@ namespace ParTboT.Commands
                 Color = DiscordColor.Orange
             }.Build();
 
-            await ctx.Channel.SendMessageAsync(embed: MemberActivityEmbed).ConfigureAwait(false);
+            await ctx.RespondAsync(embed: MemberActivityEmbed).ConfigureAwait(false);
         }
 
 
@@ -129,7 +129,7 @@ namespace ParTboT.Commands
                     ).ConfigureAwait(false);
             }
 
-            //await ctx.Channel.SendMessageAsync("").ConfigureAwait(false);
+            //await ctx.RespondAsync("").ConfigureAwait(false);
         }
 
 
@@ -141,7 +141,7 @@ namespace ParTboT.Commands
 
             var GuildEmotes = await ctx.Guild.GetEmojisAsync().ConfigureAwait(false);
             var DeletionTask = Task.Run(() => GuildEmotes.ToList().ForEach(async x => await ctx.Guild.DeleteEmojiAsync(x, "testing").ConfigureAwait(false)));
-            await Task.WhenAll(DeletionTask).ContinueWith(async x => await ctx.Channel.SendMessageAsync("Deleted!").ConfigureAwait(false));
+            await Task.WhenAll(DeletionTask).ContinueWith(async x => await ctx.RespondAsync("Deleted!").ConfigureAwait(false));
 
         }
 
@@ -202,7 +202,7 @@ namespace ParTboT.Commands
 
 
                 await Bot.Services.MongoDB.UpsertAsync<GuildBackup>("Guilds", ctx.Guild.Id, GB).ConfigureAwait(false);
-                //await ctx.Channel.SendMessageAsync(":+1:").ConfigureAwait(false);
+                //await ctx.RespondAsync(":+1:").ConfigureAwait(false);
 
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -217,7 +217,7 @@ namespace ParTboT.Commands
 
                         var message = new DiscordMessageBuilder()
                             .WithFile($"Backup-for-{ctx.Guild.Name} [{DateTimeOffset.Now.ToUnixTimeMilliseconds()}].bson", ms);
-                        await ctx.Channel.SendMessageAsync(message).ConfigureAwait(false);
+                        await ctx.RespondAsync(message).ConfigureAwait(false);
 
                         // If you need to start back at the beginning, be sure to Seek again.
                     }
@@ -226,7 +226,7 @@ namespace ParTboT.Commands
                         await sw.DisposeAsync();
                     }
                 }
-                //await ctx.Channel.SendMessageAsync($"").ConfigureAwait(false);
+                //await ctx.RespondAsync($"").ConfigureAwait(false);
             }
             catch (Exception UE)
             {
@@ -236,7 +236,7 @@ namespace ParTboT.Commands
                 embed.Description = $"{ctx.Client.CurrentUser.Username} and you both must have the 'Manage Server' permission in order to run this command!";
 
                 await ctx.LogBotError(UE);
-                await ctx.Channel.SendMessageAsync(embed).ConfigureAwait(false);
+                await ctx.RespondAsync(embed).ConfigureAwait(false);
             }
 
 
@@ -251,7 +251,7 @@ namespace ParTboT.Commands
             List<ulong> ExcludedChannels = new List<ulong>() { 792649902211072002 };
 
             await ctx.Guild.LockDownGuildAsync(ctx.Client, ExcludedChannels).ConfigureAwait(false);
-            //await ctx.Channel.SendMessageAsync(AdminRoles).ConfigureAwait(false);
+            //await ctx.RespondAsync(AdminRoles).ConfigureAwait(false);
         }
 
         [Command("unlock")]
@@ -264,7 +264,7 @@ namespace ParTboT.Commands
             List<ulong> ExcludedChannels = new List<ulong>() { 794141358116831242, 745008583636287549 };
 
             await ctx.Guild.UNLockGuildAsync(ctx.Client, ExcludedChannels).ConfigureAwait(false);
-            //await ctx.Channel.SendMessageAsync(AdminRoles).ConfigureAwait(false);
+            //await ctx.RespondAsync(AdminRoles).ConfigureAwait(false);
         }
 
         [Command("roles")]
@@ -281,7 +281,7 @@ namespace ParTboT.Commands
                 {
                     newResponse += "\n- " + r.Name;
                 }
-                await ctx.Channel.SendMessageAsync(newResponse).ConfigureAwait(false);
+                await ctx.RespondAsync(newResponse).ConfigureAwait(false);
             }
             else
             {
@@ -292,7 +292,7 @@ namespace ParTboT.Commands
                 {
                     newResponse += "\n- " + r.Name;
                 }
-                await ctx.Channel.SendMessageAsync(newResponse).ConfigureAwait(false);
+                await ctx.RespondAsync(newResponse).ConfigureAwait(false);
             }
         }
 
@@ -379,7 +379,7 @@ namespace ParTboT.Commands
 
                 string DiscordID = ctx.Member.Id.ToString();
 
-                await ctx.Channel.SendMessageAsync(embed: new DiscordEmbedBuilder
+                await ctx.RespondAsync(embed: new DiscordEmbedBuilder
                 {
                     Title = $"{LookinEmoji} Here is what is know about **{MemberNickName}:**",
                     Description =
@@ -453,7 +453,7 @@ namespace ParTboT.Commands
                 string DiscordID = member.Id.ToString();
 
 
-                await ctx.Channel.SendMessageAsync(embed: new DiscordEmbedBuilder
+                await ctx.RespondAsync(embed: new DiscordEmbedBuilder
                 {
                     Title = $"{LookinEmoji} Here is what is know about **{MemberNickName}:**",
 
@@ -484,7 +484,7 @@ namespace ParTboT.Commands
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
             var color = ColorDefiner.GetColor(url);
-            await ctx.Channel.SendMessageAsync($"{color}").ConfigureAwait(false);
+            await ctx.RespondAsync($"{color}").ConfigureAwait(false);
         }
 
         [Command("avgcolor")]
@@ -496,7 +496,7 @@ namespace ParTboT.Commands
 
 
             var color = await AverageImageColor.GetAverageColorByImageUrlCodeAsync(url, OutputType.Hex);
-            await ctx.Channel.SendMessageAsync($"{color}").ConfigureAwait(false);
+            await ctx.RespondAsync($"{color}").ConfigureAwait(false);
         }
     }
 }

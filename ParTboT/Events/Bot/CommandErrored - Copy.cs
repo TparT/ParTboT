@@ -51,16 +51,16 @@ namespace ParTboT.Events.Bot
                         switch (tempo)
                         {
                             case TimeSpan n when (n.Days >= 1):
-                                await ctx.Channel.SendMessageAsync($"Please wait {tempo.Days} days and {tempo.Hours} houres before using this command again! {ctx.Member.Mention}.");
+                                await ctx.RespondAsync($"Please wait {tempo.Days} days and {tempo.Hours} houres before using this command again! {ctx.Member.Mention}.");
                                 break;
                             case TimeSpan n when (n.Hours >= 1):
-                                await ctx.Channel.SendMessageAsync($"Please wait {tempo.Hours} houres and {tempo.Minutes} minutes before using this command again! {ctx.Member.Mention}.");
+                                await ctx.RespondAsync($"Please wait {tempo.Hours} houres and {tempo.Minutes} minutes before using this command again! {ctx.Member.Mention}.");
                                 break;
                             case TimeSpan n when (n.Minutes >= 1):
-                                await ctx.Channel.SendMessageAsync($"Please wait {tempo.Minutes} minutes and {tempo.Seconds} seconds before using this command again! {ctx.Member.Mention}.");
+                                await ctx.RespondAsync($"Please wait {tempo.Minutes} minutes and {tempo.Seconds} seconds before using this command again! {ctx.Member.Mention}.");
                                 break;
                             default:
-                                await ctx.Channel.SendMessageAsync($"{ctx.Member.Mention}, Please wait {tempo.Seconds} before using this command again!");
+                                await ctx.RespondAsync($"{ctx.Member.Mention}, Please wait {tempo.Seconds} before using this command again!");
                                 break;
                         };
                     }
@@ -69,7 +69,7 @@ namespace ParTboT.Events.Bot
                 case CommandNotFoundException Commandnotfoundexception:
                     if (e.Command?.Name == "ajuda")
                     {
-                        //await ctx.Channel.SendMessageAsync($":no_entry_sign: | {ctx.User.Mention} The command {e.Context.RawArgumentString} Does.*");
+                        //await ctx.RespondAsync($":no_entry_sign: | {ctx.User.Mention} The command {e.Context.RawArgumentString} Does.*");
 
                         string Customsentence_correction = string.Empty;
                         foreach (string item in e.Context.RawArguments)
@@ -82,7 +82,7 @@ namespace ParTboT.Events.Bot
 
                     break;
                 case NotFoundException Notfoundexception:
-                    await ctx.Channel.SendMessageAsync($"{ctx.User.Mention}, The specified member was not found.");
+                    await ctx.RespondAsync($"{ctx.User.Mention}, The specified member was not found.");
                     break;
                 case UnauthorizedException Unauthorizedexception:
                     e.Context.Client.Logger.LogDebug(new EventId(601, "insufficient permissions"), $"[{e.Context.User.Username}({e.Context.User.Id})] tried to use '{e.Command?.QualifiedName ?? "<unknown command>"}' but there was an error: {e.Exception}\ninner exception:{e.Exception?.InnerException}.", DateTime.Now);
@@ -128,7 +128,7 @@ namespace ParTboT.Events.Bot
                         embed.WithDescription(String.ToString());
                         await channel.SendMessageAsync(embed: embed.Build());
                     }
-                    await ctx.Channel.SendMessageAsync("An error has occured! The issue was reported to my developer's server.");
+                    await ctx.RespondAsync("An error has occured! The issue was reported to my developer's server.");
                     break;
             }
         }

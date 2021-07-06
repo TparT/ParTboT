@@ -32,7 +32,7 @@ namespace ParTboT.Commands
 
             for (int i = 0; i < Times; i++)
             {
-                await ctx.Channel.SendMessageAsync($"{Contents} - {i}").ConfigureAwait(false);
+                await ctx.RespondAsync($"{Contents} - {i}").ConfigureAwait(false);
                 await Task.Delay(100);
             }
         }
@@ -44,7 +44,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            var Hello = await ctx.Channel.SendMessageAsync($"Heyo there {ctx.Member.Mention}! \n\nhow you doing?").ConfigureAwait(false);
+            var Hello = await ctx.RespondAsync($"Heyo there {ctx.Member.Mention}! \n\nhow you doing?").ConfigureAwait(false);
 
             var Good = DiscordEmoji.FromName(ctx.Client, ":grin:");
             var Bad = DiscordEmoji.FromName(ctx.Client, ":frowning2:");
@@ -63,11 +63,11 @@ namespace ParTboT.Commands
 
             if (ReactionResult.Result.Emoji == Good)
             {
-                await ctx.Channel.SendMessageAsync($"\t\n{Good}  Good to hear!").ConfigureAwait(false);
+                await ctx.RespondAsync($"\t\n{Good}  Good to hear!").ConfigureAwait(false);
             }
             else
             {
-                await ctx.Channel.SendMessageAsync($"᲼᲼᲼᲼᲼᲼\n{Bad}  Sorry to hear!").ConfigureAwait(false);
+                await ctx.RespondAsync($"᲼᲼᲼᲼᲼᲼\n{Bad}  Sorry to hear!").ConfigureAwait(false);
             }
         }
 
@@ -80,7 +80,7 @@ namespace ParTboT.Commands
 
             var emoji = DiscordEmoji.FromName(ctx.Client, ":wave:");
 
-            await ctx.Channel.SendMessageAsync($"{emoji} Hello, {member.Mention}!").ConfigureAwait(false);
+            await ctx.RespondAsync($"{emoji} Hello, {member.Mention}!").ConfigureAwait(false);
         }
 
         private Dictionary<string, string> RenderAllFonts(string Text, int CharsLimit = 0)
@@ -154,7 +154,7 @@ namespace ParTboT.Commands
             //    timeoutoverride: TimeSpan.FromMinutes(5));
 
             //var AsciiMessage =
-            //await ctx.Channel.SendMessageAsync($"```\n{FiggleFonts.Standard.Render(contents)}\n```").ConfigureAwait(false);
+            //await ctx.RespondAsync($"```\n{FiggleFonts.Standard.Render(contents)}\n```").ConfigureAwait(false);
 
             //Type type = typeof(FiggleFonts);
 
@@ -185,7 +185,7 @@ namespace ParTboT.Commands
             {
                 await ctx.TriggerTypingAsync();
 
-                await ctx.Channel.SendMessageAsync($"\t\n{Good}  Good to hear!").ConfigureAwait(false);
+                await ctx.RespondAsync($"\t\n{Good}  Good to hear!").ConfigureAwait(false);
             }*/
         }
 
@@ -216,7 +216,7 @@ namespace ParTboT.Commands
 
                     var message = new DiscordMessageBuilder()
                         .WithFile($"{StreamerName}'s twitch chat | [Total users: {Count}] [{DateTimeOffset.Now.ToUnixTimeMilliseconds()}].txt", ms);
-                    await ctx.Channel.SendMessageAsync(message);
+                    await ctx.RespondAsync(message);
 
                     // If you need to start back at the beginning, be sure to Seek again.
                 }
@@ -227,7 +227,7 @@ namespace ParTboT.Commands
             }
 
 
-            //await ctx.Channel.SendMessageAsync("").ConfigureAwait(false);
+            //await ctx.RespondAsync("").ConfigureAwait(false);
         }
 
         [Command("makememe")]
@@ -247,7 +247,7 @@ namespace ParTboT.Commands
             var template = await service.GetRandomMemeTemplateAsync();
             var meme = await service.CreateMemeAsync(template.Id, "some text here", "and some here...");
 
-            await ctx.Channel.SendMessageAsync($"{meme.ImageUrl}").ConfigureAwait(false);
+            await ctx.RespondAsync($"{meme.ImageUrl}").ConfigureAwait(false);
         }
 
         [Command("break")]
@@ -262,6 +262,6 @@ namespace ParTboT.Commands
             )
         ]
         public async Task Break(CommandContext ctx) =>
-            await ctx.Channel.SendMessageAsync($"Enjoy: https://cdn.discordapp.com/attachments/788136918545727560/795690605442760704/video0_25.mp4").ConfigureAwait(false);
+            await ctx.RespondAsync($"Enjoy: https://cdn.discordapp.com/attachments/788136918545727560/795690605442760704/video0_25.mp4").ConfigureAwait(false);
     }
 }

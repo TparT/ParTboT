@@ -45,7 +45,7 @@ namespace ParTboT.Commands
             Message.WithFile("BarcodeFileFromStream.png", ms);
 
 
-            await ctx.Channel.SendMessageAsync(Message).ConfigureAwait(false);
+            await ctx.RespondAsync(Message).ConfigureAwait(false);
 
             //System.IO.MemoryStream.Reset
 
@@ -64,7 +64,7 @@ namespace ParTboT.Commands
         [Description("Says the name of the bot's developer")]
         public async Task SubC(CommandContext ctx)
         {
-            await ctx.Channel.SendMessageAsync("Im a sub sub command").ConfigureAwait(false);
+            await ctx.RespondAsync("Im a sub sub command").ConfigureAwait(false);
         }
     }
 }

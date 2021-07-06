@@ -36,7 +36,7 @@ namespace ParTboT.Commands
 
             if (CarCompany == null || Carmodel == null || CarReleaseYear == null)
             {
-                await ctx.Channel.SendMessageAsync("HAHAHA! You MUST give all of the parameters!").ConfigureAwait(false);
+                await ctx.RespondAsync("HAHAHA! You MUST give all of the parameters!").ConfigureAwait(false);
             }
             else
             {
@@ -56,7 +56,7 @@ namespace ParTboT.Commands
                     }
                     );
 
-                await ctx.Channel.SendMessageAsync($"{ctx.Member.Mention} {emoji} Hello there! Check your MongoDB to see the new changes!");
+                await ctx.RespondAsync($"{ctx.Member.Mention} {emoji} Hello there! Check your MongoDB to see the new changes!");
             }
         }
 
@@ -87,7 +87,7 @@ namespace ParTboT.Commands
                     CustomMessage = AdditionalMessage
                 });
 
-            await ctx.Channel.SendMessageAsync($"{ctx.Member.Mention} {emoji} Hello there! Check your MongoDB to see the new changes!");
+            await ctx.RespondAsync($"{ctx.Member.Mention} {emoji} Hello there! Check your MongoDB to see the new changes!");
         }
 
         [Command("get")]
@@ -107,7 +107,7 @@ namespace ParTboT.Commands
             }
 
             string results = builder.ToString();
-            await ctx.Channel.SendMessageAsync($"Results:\n{results}").ConfigureAwait(false);
+            await ctx.RespondAsync($"Results:\n{results}").ConfigureAwait(false);
         }
 
         public class StreamersModule

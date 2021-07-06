@@ -117,7 +117,7 @@ namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
                 {
                     if (Number == 0)
                     {
-                        //await ctx.Channel.SendMessageAsync($"There are no live streams").ConfigureAwait(false);
+                        //await ctx.RespondAsync($"There are no live streams").ConfigureAwait(false);
                     }
                 }
             }

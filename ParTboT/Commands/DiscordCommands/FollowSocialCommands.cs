@@ -62,7 +62,7 @@ namespace ParTboT.Commands
                 DiscordEmoji No = DiscordEmoji.FromName(ctx.Client, ":heavy_multiplication_x:");
 
                 DiscordMessage ConfirmingMessage =
-                    await ctx.Channel.SendMessageAsync
+                    await ctx.RespondAsync
                     (
                         new DiscordMessageBuilder()
                         .WithEmbed(Embed)
@@ -295,7 +295,7 @@ namespace ParTboT.Commands
 
         //        else TwitchChannelToFollow = TwitchChannelToUnfollow;
 
-        //        //await ctx.Channel.SendMessageAsync($"Result of cutted string is: {TwitchChannelToFollow} From: {TwitchChannelToFollow}");
+        //        //await ctx.RespondAsync($"Result of cutted string is: {TwitchChannelToFollow} From: {TwitchChannelToFollow}");
 
         //        var Search = await API.Users.GetUserByNameAsync(TwitchChannelToFollow).ConfigureAwait(false);
         //        var TotalMatchesCount = Search.Total;
@@ -311,7 +311,7 @@ namespace ParTboT.Commands
 
         //        await db.DeleteOneRecByFieldAndValueAsync<SENDTOModule>(SENDTOTABLE, "_id", $"{ctx.Channel.Id}|{TwitchChannelID}").ConfigureAwait(false);
 
-        //        await ctx.Channel.SendMessageAsync($"Removed {TwitchChannelName} from the streamers ").ConfigureAwait(false);
+        //        await ctx.RespondAsync($"Removed {TwitchChannelName} from the streamers ").ConfigureAwait(false);
 
         //        TwitchChannelID = "";
         //        TwitchChannelName = "";

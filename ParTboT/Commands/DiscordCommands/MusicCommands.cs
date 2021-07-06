@@ -61,7 +61,7 @@ namespace ParTboT.Commands
 
             Console.WriteLine($"{sb.ToString()}");
 
-            await ctx.Channel.SendMessageAsync($"```{sb.ToString()}```").ConfigureAwait(false);
+            await ctx.RespondAsync($"```{sb.ToString()}```").ConfigureAwait(false);
         }
 
         [Command("lyrics")]
@@ -139,11 +139,11 @@ namespace ParTboT.Commands
 
                 //        }
                 //    }
-                //    await ctx.Channel.SendMessageAsync(/*$"HeaderImageThumbnailUrl: {hit.HeaderImageThumbnailUrl}\nHeaderImageUrl: {hit.HeaderImageUrl}\nSongArtImageThumbnailUrl: {hit.SongArtImageThumbnailUrl}\nSongArtImageUrl: {hit.SongArtImageUrl}", */embed: embed).ConfigureAwait(false);
+                //    await ctx.RespondAsync(/*$"HeaderImageThumbnailUrl: {hit.HeaderImageThumbnailUrl}\nHeaderImageUrl: {hit.HeaderImageUrl}\nSongArtImageThumbnailUrl: {hit.SongArtImageThumbnailUrl}\nSongArtImageUrl: {hit.SongArtImageUrl}", */embed: embed).ConfigureAwait(false);
                 //}
                 //else
                 //{
-                //    await ctx.Channel.SendMessageAsync(
+                //    await ctx.RespondAsync(
                 //    $"Woa! That seems like a very long song...\n" +
                 //    $"Unfotunatly, Discord prevents us (bots) from having more than 25 fields in embeds.\n" +
                 //    $"But don't let that destroy your mood!" +
@@ -152,7 +152,7 @@ namespace ParTboT.Commands
             }
             else
             {
-                await ctx.Channel.SendMessageAsync($"Song was not supplied! See `{ctx.Prefix}help {ctx.Command.Name}` for more help with this command.").ConfigureAwait(false);
+                await ctx.RespondAsync($"Song was not supplied! See `{ctx.Prefix}help {ctx.Command.Name}` for more help with this command.").ConfigureAwait(false);
             }
 
         }

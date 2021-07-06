@@ -21,7 +21,7 @@ namespace ParTboT.Commands
                 Customsentence_correction += "" + spelling.Correct(item);
             }
 
-            await ctx.Channel.SendMessageAsync(($"Did you mean: `{ Customsentence_correction }` ?").ToString()).ConfigureAwait(false);
+            await ctx.RespondAsync(($"Did you mean: `{ Customsentence_correction }` ?").ToString()).ConfigureAwait(false);
         }
 
 

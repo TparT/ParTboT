@@ -36,7 +36,7 @@ namespace ParTboT.Commands
             //         .Where(x => x.Id == BotUser.Id).First()
             //         .User;
 
-            await ctx.Channel.SendMessageAsync(embed: new DiscordEmbedBuilder
+            await ctx.RespondAsync(embed: new DiscordEmbedBuilder
             {
                 Title = $"Here is my invite link",
 
@@ -94,7 +94,7 @@ namespace ParTboT.Commands
                 Console.WriteLine($"{count}) Type: {integration.Account.Name} | Added on {integration.CreationTimestamp}");
             }
 
-            //await ctx.Channel.SendMessageAsync($"").ConfigureAwait(false);
+            //await ctx.RespondAsync($"").ConfigureAwait(false);
         }
 
         [Command("commands")]
@@ -116,7 +116,7 @@ namespace ParTboT.Commands
             }
 
             Console.WriteLine(sb.ToString());
-            await ctx.Channel.SendMessageAsync($"```{sb}```").ConfigureAwait(false);
+            await ctx.RespondAsync($"```{sb}```").ConfigureAwait(false);
         }
 
         [Command("test")]
@@ -124,7 +124,7 @@ namespace ParTboT.Commands
         public async Task Test(CommandContext ctx)
         {
             string MemberName = (ctx.Member.Mention).ToString();
-            await ctx.Channel.SendMessageAsync($"YEAH YEAH  {MemberName}  IM ALIVE!!! DAMN JUST LEAVE ME ALONE! ")
+            await ctx.RespondAsync($"YEAH YEAH  {MemberName}  IM ALIVE!!! DAMN JUST LEAVE ME ALONE! ")
                 .ConfigureAwait(false);
         }
 
@@ -133,7 +133,7 @@ namespace ParTboT.Commands
         [Description("Returns Pong with the bot connection latency (aka response time")]
         public async Task Ping(CommandContext ctx)
         {
-            await ctx.Channel.SendMessageAsync($"🏓  Pong! **{ctx.Client.Ping} ms**").ConfigureAwait(false);
+            await ctx.RespondAsync($"🏓  Pong! **{ctx.Client.Ping} ms**").ConfigureAwait(false);
         }
 
         [Command("time")]
@@ -141,7 +141,7 @@ namespace ParTboT.Commands
         public async Task Time(CommandContext ctx)
         {
             string BotTime = DateTime.Now.ToString("HH:mm:ss");
-            await ctx.Channel.SendMessageAsync("The time in the country where i am hosted is: " + BotTime + " .")
+            await ctx.RespondAsync("The time in the country where i am hosted is: " + BotTime + " .")
                 .ConfigureAwait(false);
         }
 
@@ -150,7 +150,7 @@ namespace ParTboT.Commands
         public async Task Date(CommandContext ctx)
         {
             string BotDate = DateTime.Today.ToString("dd-MM-yyyy");
-            await ctx.Channel.SendMessageAsync("The date in the country where i am hosted is: " + BotDate + " .")
+            await ctx.RespondAsync("The date in the country where i am hosted is: " + BotDate + " .")
                 .ConfigureAwait(false);
         }
     }

@@ -41,7 +41,7 @@ namespace ParTboT.Commands
             string DEC = BinaryConverter.BinToDec.Convert(Binary);
             string HEX = BinaryConverter.BinToHex.Convert(Binary);
 
-            await ctx.Channel.SendMessageAsync
+            await ctx.RespondAsync
                 (
                     $"**Octal base (8):** {OCT}\n" +
                     $"**Decimal base (10):** {DEC}\n" +
@@ -80,7 +80,7 @@ namespace ParTboT.Commands
             string DEC = BinaryConverter.OctToDec.Convert(Octal);
             string HEX = BinaryConverter.OctToHex.Convert(Octal);
 
-            await ctx.Channel.SendMessageAsync
+            await ctx.RespondAsync
                 (
                     $"**Binary base (2):** {BIN}\n" +
                     $"**Decimal base (10):** {DEC}\n" +
@@ -119,7 +119,7 @@ namespace ParTboT.Commands
             string OCT = BinaryConverter.DecToOct.Convert(Decimal);
             string HEX = BinaryConverter.DecToHex.Convert(Decimal);
 
-            await ctx.Channel.SendMessageAsync
+            await ctx.RespondAsync
                 (
                     $"**Binary base (2):** {BIN}\n" +
                     $"**Octal base (8):** {OCT}\n" +
@@ -158,7 +158,7 @@ namespace ParTboT.Commands
             string OCT = BinaryConverter.HexToOct.Convert(Hexadecimal);
             string DEC = BinaryConverter.HexToDec.Convert(Hexadecimal);
 
-            await ctx.Channel.SendMessageAsync
+            await ctx.RespondAsync
                 (
                     $"**Binary base (2):** {BIN}\n" +
                     $"**Octal base (8):** {OCT}\n" +
@@ -201,12 +201,12 @@ namespace ParTboT.Commands
                 var resultcode = CurrencyValue[Code];
                 var Currency = resultcode["val"];
 
-                await ctx.Channel.SendMessageAsync($"{Currency * HowMuch}").ConfigureAwait(false);
+                await ctx.RespondAsync($"{Currency * HowMuch}").ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 string result = e.Message;
-                await ctx.Channel.SendMessageAsync($"```{result}```").ConfigureAwait(false);
+                await ctx.RespondAsync($"```{result}```").ConfigureAwait(false);
             }
         }
 
@@ -217,7 +217,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            await ctx.Channel.SendMessageAsync($"").ConfigureAwait(false);
+            await ctx.RespondAsync($"").ConfigureAwait(false);
         }
 
         [Command("time")]
@@ -227,7 +227,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            await ctx.Channel.SendMessageAsync($"").ConfigureAwait(false);
+            await ctx.RespondAsync($"").ConfigureAwait(false);
         }
 
         [Command("weight")]
@@ -237,7 +237,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            await ctx.Channel.SendMessageAsync($"").ConfigureAwait(false);
+            await ctx.RespondAsync($"").ConfigureAwait(false);
         }
 
         [Command("custom")]
@@ -247,7 +247,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            await ctx.Channel.SendMessageAsync($"").ConfigureAwait(false);
+            await ctx.RespondAsync($"").ConfigureAwait(false);
         }
     }
 }

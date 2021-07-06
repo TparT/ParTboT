@@ -26,7 +26,7 @@ namespace ParTboT.Commands
 
             /*TranslationClient translationClient = TranslationClient.Create();
             var detection = translationClient.DetectLanguage(text: SearchWords);
-            await ctx.Channel.SendMessageAsync(
+            await ctx.RespondAsync(
                 $"{detection.Language}\tConfidence: {detection.Confidence}").ConfigureAwait(false);*/
 
 
@@ -38,7 +38,7 @@ namespace ParTboT.Commands
 
             //string LanguageCode = mostCertainLanguage.Item1.Iso639_2T;
 
-            await ctx.Channel.SendMessageAsync($"The language of the text is '{LanguageCode}' (ISO639_2T code)").ConfigureAwait(false);
+            await ctx.RespondAsync($"The language of the text is '{LanguageCode}' (ISO639_2T code)").ConfigureAwait(false);
 
             using var client = new HttpClient();
 
@@ -68,18 +68,18 @@ namespace ParTboT.Commands
 
                 await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, wiki_pages, timeoutoverride: TimeSpan.FromMinutes(5));
 
-                //await ctx.Channel.SendMessageAsync.SendPaginatedMessageAsync($"\nHere is some information about {search}:\n\n```{result}``").ConfigureAwait(false);
+                //await ctx.RespondAsync.SendPaginatedMessageAsync($"\nHere is some information about {search}:\n\n```{result}``").ConfigureAwait(false);
                 //Console.ReadKey();
             }
             finally
             {
-                //await ctx.Channel.SendMessageAsync($"BIG OOF: Couldn't find any information about **`{SearchWords}`**. Maybe it was a mispell, so you are welcomed to try again as you wish.").ConfigureAwait(false);
+                //await ctx.RespondAsync($"BIG OOF: Couldn't find any information about **`{SearchWords}`**. Maybe it was a mispell, so you are welcomed to try again as you wish.").ConfigureAwait(false);
             }
 
             //}
             /*catch (Exception e)
             {
-                await ctx.Channel.SendMessageAsync($"BIG OOF: Couldn't find any information about **`{SearchWords}`**. Maybe it was a mispell, so you are welcomed to try again as you wish.\n\nMore Info {e.Message}").ConfigureAwait(false);
+                await ctx.RespondAsync($"BIG OOF: Couldn't find any information about **`{SearchWords}`**. Maybe it was a mispell, so you are welcomed to try again as you wish.\n\nMore Info {e.Message}").ConfigureAwait(false);
             }*/
         }
 
@@ -91,7 +91,7 @@ namespace ParTboT.Commands
 
             /*TranslationClient translationClient = TranslationClient.Create();
             var detection = translationClient.DetectLanguage(text: SearchWords);
-            await ctx.Channel.SendMessageAsync(
+            await ctx.RespondAsync(
                 $"{detection.Language}\tConfidence: {detection.Confidence}").ConfigureAwait(false);*/
             #region Images
             try
@@ -128,11 +128,11 @@ namespace ParTboT.Commands
 
                 await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, wiki_pages, timeoutoverride: TimeSpan.FromMinutes(5));
 
-                //await ctx.Channel.SendMessageAsync($"**__Results:__**\n{str}").ConfigureAwait(false);
+                //await ctx.RespondAsync($"**__Results:__**\n{str}").ConfigureAwait(false);
             }
             catch (Exception e)
             {
-                await ctx.Channel.SendMessageAsync($"BIG OOF: Couldn't find any information about **`{SearchWords}`**. Maybe it was a mispell, so you are welcomed to try again as you wish.\n\nMore Info: {e.Message}").ConfigureAwait(false);
+                await ctx.RespondAsync($"BIG OOF: Couldn't find any information about **`{SearchWords}`**. Maybe it was a mispell, so you are welcomed to try again as you wish.\n\nMore Info: {e.Message}").ConfigureAwait(false);
             }
             #endregion
         }

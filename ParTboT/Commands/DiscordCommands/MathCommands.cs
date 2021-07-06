@@ -14,7 +14,7 @@ namespace ParTboT.Commands
         public async Task Math(CommandContext ctx, [RemainingText] [Description("The expression")] string expression)
         {
             Expression mp = new Expression(expression);
-            await ctx.Channel.SendMessageAsync($"{mp.getExpressionString()} = {mp.calculate()}").ConfigureAwait(false);
+            await ctx.RespondAsync($"{mp.getExpressionString()} = {mp.calculate()}").ConfigureAwait(false);
         }
 
 
@@ -24,7 +24,7 @@ namespace ParTboT.Commands
             [Description("First number")] int NumberOne,
             [Description("Second number")] int NumberTwo)
         {
-            await ctx.Channel.SendMessageAsync((NumberOne + NumberTwo).ToString()).ConfigureAwait(false);
+            await ctx.RespondAsync((NumberOne + NumberTwo).ToString()).ConfigureAwait(false);
         }
 
         [Command("avg")]
@@ -35,7 +35,7 @@ namespace ParTboT.Commands
             [Description("Third number")] double NumberThree)
 
         {
-            await ctx.Channel.SendMessageAsync(((NumberOne + NumberTwo + NumberThree) / 3).ToString()).ConfigureAwait(false);
+            await ctx.RespondAsync(((NumberOne + NumberTwo + NumberThree) / 3).ToString()).ConfigureAwait(false);
         }
     }
 }

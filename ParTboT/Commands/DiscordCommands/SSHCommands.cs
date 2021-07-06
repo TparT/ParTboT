@@ -72,7 +72,7 @@ namespace ParTboT.Commands
 
                     
                     CommandOutput.Execute();
-                    await ctx.Channel.SendMessageAsync(
+                    await ctx.RespondAsync(
                         $"```" +
                         $"\n" +
                         $"Command> {CommandOutput.CommandText}" +

@@ -13,7 +13,7 @@ namespace ParTboT.Commands
             [Description("gfgf")] double NumberOne)
         {
             string MemberName = (ctx.Member.Mention).ToString();
-            await ctx.Channel.SendMessageAsync("Hello there " + MemberName + "!").ConfigureAwait(false);
+            await ctx.RespondAsync("Hello there " + MemberName + "!").ConfigureAwait(false);
         }
     }
 }

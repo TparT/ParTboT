@@ -537,7 +537,7 @@ namespace ParTboT.Commands.SlashCommands
                                             }
                                             catch (Exception EXP)
                                             {
-                                                await ctx.Channel.SendMessageAsync($"FFFFFF" +
+                                                await ctx.Channel.SendMessageAsync($"FFFFFF\n" +
                                                                      $"```" +
                                                                      $"\n" +
                                                                      $"\n" +

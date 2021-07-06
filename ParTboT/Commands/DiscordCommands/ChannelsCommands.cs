@@ -20,7 +20,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            await ctx.Channel.SendMessageAsync("").ConfigureAwait(false);
+            await ctx.RespondAsync("").ConfigureAwait(false);
         }
     }
 }

@@ -55,7 +55,7 @@ namespace ParTboT.Commands
 
                         Output.WriteLine(result);
 
-                        await ctx.Channel.SendMessageAsync
+                        await ctx.RespondAsync
                         ($"```\n" +
                         $"{result}" +
                         $"\n```")
@@ -70,7 +70,7 @@ namespace ParTboT.Commands
 
 
 
-                /*await ctx.Channel.SendMessageAsync
+                /*await ctx.RespondAsync
                     (
 
                         $"**__Results:__**" +
@@ -84,7 +84,7 @@ namespace ParTboT.Commands
             {
                 //Output = LocalEncoding.GetString(errors.ToArray());
 
-                await ctx.Channel.SendMessageAsync
+                await ctx.RespondAsync
                     (
                         
                         $"**__ERRORS:__**" +

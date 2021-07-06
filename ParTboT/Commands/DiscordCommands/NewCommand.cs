@@ -63,7 +63,7 @@ namespace ParTboT.Commands
         {
             await ctx.Member.SetDeafAsync(true);
 
-            await ctx.Channel.SendMessageAsync($"{ctx.Member.DisplayName} is now on deafen").ConfigureAwait(false);
+            await ctx.RespondAsync($"{ctx.Member.DisplayName} is now on deafen").ConfigureAwait(false);
         }
 
         [Command("guild")]
@@ -76,7 +76,7 @@ namespace ParTboT.Commands
                 Channels = (await ctx.Guild.GetChannelsAsync())
             };
             await Bot.Services.MongoDB.InsertOneRecordAsync("test", DBG).ConfigureAwait(false);
-            await ctx.Channel.SendMessageAsync(":+1:").ConfigureAwait(false);
+            await ctx.RespondAsync(":+1:").ConfigureAwait(false);
         }
 
 
@@ -89,7 +89,7 @@ namespace ParTboT.Commands
             var Emote = (await ctx.Guild.GetEmojisAsync().ConfigureAwait(false))[0];
 
 
-            await ctx.Channel.SendMessageAsync
+            await ctx.RespondAsync
                 (
 
                     $"name: {Emote.Name}\n" +
@@ -116,7 +116,7 @@ namespace ParTboT.Commands
             var Emotes = await ctx.Channel.GetMessageAsync(OG_Message.Id).ConfigureAwait(false);
             //var MessageToCollectFrom = await Emotes.CollectReactionsAsync(TimeSpan.Zero).ConfigureAwait(false);
 
-            //await ctx.Channel.SendMessageAsync($"The message was sent by: {MessageToCollectFrom.Author.Username}\nContents: {MessageToCollectFrom.Content}").ConfigureAwait(false);
+            //await ctx.RespondAsync($"The message was sent by: {MessageToCollectFrom.Author.Username}\nContents: {MessageToCollectFrom.Content}").ConfigureAwait(false);
 
             var ResponseEmbed = new DiscordEmbedBuilder
             {
@@ -132,7 +132,7 @@ namespace ParTboT.Commands
 
             var embed = ResponseEmbed.Build();
 
-            await ctx.Channel.SendMessageAsync(embed).ConfigureAwait(false);
+            await ctx.RespondAsync(embed).ConfigureAwait(false);
 
         }
 
@@ -146,7 +146,7 @@ namespace ParTboT.Commands
 
         //    Bots.ForEach(x => Console.WriteLine(x.Name));
 
-        //    await ctx.Channel.SendMessageAsync(":+1:").ConfigureAwait(false);
+        //    await ctx.RespondAsync(":+1:").ConfigureAwait(false);
         //}
 
         [Command("join")]
@@ -168,7 +168,7 @@ namespace ParTboT.Commands
             vnc.VoiceReceived += VoiceRecievedEvent.VoiceReceiveHandler;
             VoiceRecievedEvent.Voices = new ConcurrentDictionary<ulong, UserRecognitionData>();
 
-            await ctx.Channel.SendMessageAsync("👌").ConfigureAwait(false);
+            await ctx.RespondAsync("👌").ConfigureAwait(false);
         }
 
         [Command("play")]
@@ -232,7 +232,7 @@ namespace ParTboT.Commands
             //await eeee.CopyToAsync(e);
             //await e.WriteAsync(Data, 0, Data.Length);
 
-            await ctx.Channel.SendMessageAsync("Done").ConfigureAwait(false);
+            await ctx.RespondAsync("Done").ConfigureAwait(false);
         }
 
         [Command("leave")]
@@ -293,7 +293,7 @@ namespace ParTboT.Commands
             //await vnc.TargetChannel.ModifyAsync(x => x.Name = OldName);
             vnc.Disconnect();
 
-            await ctx.Channel.SendMessageAsync("👌").ConfigureAwait(false);
+            await ctx.RespondAsync("👌").ConfigureAwait(false);
         }
 
 
@@ -306,8 +306,8 @@ namespace ParTboT.Commands
             bool isUri = Uri.IsWellFormedUriString(Arg1, UriKind.RelativeOrAbsolute);
 
             if (isUri == true)
-                await ctx.Channel.SendMessageAsync($"The given URL ( {Arg1} ) **IS INDEED** a URL link").ConfigureAwait(false);
-            else await ctx.Channel.SendMessageAsync($"The given URL ( {Arg1} ) **IS NOT** a URL link").ConfigureAwait(false);
+                await ctx.RespondAsync($"The given URL ( {Arg1} ) **IS INDEED** a URL link").ConfigureAwait(false);
+            else await ctx.RespondAsync($"The given URL ( {Arg1} ) **IS NOT** a URL link").ConfigureAwait(false);
         }
 
 
@@ -318,7 +318,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            await ctx.Channel.SendMessageAsync(new DiscordMessageBuilder().WithContent(Contents).HasTTS(true)).ConfigureAwait(false);
+            await ctx.RespondAsync(new DiscordMessageBuilder().WithContent(Contents).HasTTS(true)).ConfigureAwait(false);
 
         }
 
@@ -336,7 +336,7 @@ namespace ParTboT.Commands
                 {
                     if (member.Presence.Activity.ActivityType == ActivityType.Streaming)
                     {
-                        await ctx.Channel.SendMessageAsync($"{member.DisplayName} - {member.Presence.Activity.StreamUrl}")
+                        await ctx.RespondAsync($"{member.DisplayName} - {member.Presence.Activity.StreamUrl}")
                             .ConfigureAwait(false);
                         Number++;
 
@@ -362,14 +362,14 @@ namespace ParTboT.Commands
             {
                 if (Number == 0)
                 {
-                    await ctx.Channel.SendMessageAsync($"There are no live streams in the current server").ConfigureAwait(false);
+                    await ctx.RespondAsync($"There are no live streams in the current server").ConfigureAwait(false);
                 }
             }
 
-            //await ctx.Channel.SendMessageAsync($"{str}").ConfigureAwait(false);
+            //await ctx.RespondAsync($"{str}").ConfigureAwait(false);
             //catch { }//(Exception e)
             //{
-            //    await ctx.Channel.SendMessageAsync($"No members are streaming right now [{e.Message} : {e.InnerException}]").ConfigureAwait(false);
+            //    await ctx.RespondAsync($"No members are streaming right now [{e.Message} : {e.InnerException}]").ConfigureAwait(false);
             //}
 
             //var url = member.Presence.Activity.StreamUrl;
@@ -379,7 +379,7 @@ namespace ParTboT.Commands
         public async Task py(CommandContext ctx)
         {
             string messagecontents = "The testbot built using discord.py (Python) should now be running.";
-            await ctx.Channel.SendMessageAsync($"{messagecontents}").ConfigureAwait(false);
+            await ctx.RespondAsync($"{messagecontents}").ConfigureAwait(false);
 
             string simple_FilePath = @"C:\Users\yarin\Documents\Visual studio projects\Visual Studio Code\IronPython\TEST\1\simple.py";
             string RunPy = "python ";

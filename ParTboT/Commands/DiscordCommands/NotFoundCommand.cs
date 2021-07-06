@@ -9,7 +9,7 @@ namespace ParTboT.Commands
         private async Task OnCommandError(CommandContext ctx, CommandsNextExtension sender, CommandErrorEventArgs e)
         {
             string messagecontents = "An error has occured!";
-            await ctx.Channel.SendMessageAsync($"{messagecontents}").ConfigureAwait(false);
+            await ctx.RespondAsync($"{messagecontents}").ConfigureAwait(false);
         }
     }
 }

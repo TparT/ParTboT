@@ -54,7 +54,7 @@ namespace ParTboT.Commands
 
         //            }));
 
-        //    await ctx.Channel.SendMessageAsync($"Uploaded with code {UploadedCommand.Id}").ConfigureAwait(false);
+        //    await ctx.RespondAsync($"Uploaded with code {UploadedCommand.Id}").ConfigureAwait(false);
         //}
 
 
@@ -76,7 +76,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            await ctx.Channel.SendMessageAsync(DiscordEmoji.FromUnicode(ctx.Client, Unicode)).ConfigureAwait(false);
+            await ctx.RespondAsync(DiscordEmoji.FromUnicode(ctx.Client, Unicode)).ConfigureAwait(false);
         }
 
 
@@ -119,7 +119,7 @@ namespace ParTboT.Commands
 
             Process.Start(processStartInfo);
 
-            await ctx.Channel.SendMessageAsync(":+1:").ConfigureAwait(false);
+            await ctx.RespondAsync(":+1:").ConfigureAwait(false);
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,7 +165,7 @@ namespace ParTboT.Commands
 
                     if (CommandResult.Length < 2000)
                     {
-                        await ctx.Channel.SendMessageAsync
+                        await ctx.RespondAsync
                             ($"```\n" +
                             $"{CommandResult}" +
                             $"\n```")
@@ -180,7 +180,7 @@ namespace ParTboT.Commands
                         await writer.FlushAsync().ConfigureAwait(false);
                         ms.Seek(0, SeekOrigin.Begin);
                         messageBuilder.WithFile("CommandResult.txt", ms);
-                        await ctx.Channel.SendMessageAsync(messageBuilder).ConfigureAwait(false);
+                        await ctx.RespondAsync(messageBuilder).ConfigureAwait(false);
                         await writer.DisposeAsync();
                     }
 
@@ -192,7 +192,7 @@ namespace ParTboT.Commands
 
             else
             {
-                await ctx.Channel.SendMessageAsync
+                await ctx.RespondAsync
                     (
                     "```css\n" +
                     "[ You do not have the permission to do that! ]" +
@@ -208,7 +208,7 @@ namespace ParTboT.Commands
         [RequireRoles(RoleCheckMode.Any, "WakeOnLan")]
         public async Task WolList(CommandContext ctx)
         {
-            await ctx.Channel.SendMessageAsync(
+            await ctx.RespondAsync(
 
                 $"__**Devices:**__\n>>> " +
 
@@ -239,7 +239,7 @@ namespace ParTboT.Commands
                 Color = DiscordColor.Green
             }.Build();
 
-            var RemoteCtrlOptions = await ctx.Channel.SendMessageAsync(embed: RemoteCtrlEmbed).ConfigureAwait(false);
+            var RemoteCtrlOptions = await ctx.RespondAsync(embed: RemoteCtrlEmbed).ConfigureAwait(false);
 
             var TurnOn = DiscordEmoji.FromName(ctx.Client, ":PowerOn:");
             var TurnOff = DiscordEmoji.FromName(ctx.Client, ":PowerOff:");
@@ -293,12 +293,12 @@ namespace ParTboT.Commands
             }
             else
             {
-                await ctx.Channel.SendMessageAsync($":x:  Operation failed!").ConfigureAwait(false);
+                await ctx.RespondAsync($":x:  Operation failed!").ConfigureAwait(false);
             }
 
         Success:
 
-            await ctx.Channel.SendMessageAsync($":white_check_mark:   {MemberName}  The actions were done successfully!").ConfigureAwait(false);
+            await ctx.RespondAsync($":white_check_mark:   {MemberName}  The actions were done successfully!").ConfigureAwait(false);
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -309,7 +309,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            await ctx.Channel.SendMessageAsync($"Saved {Contents}")
+            await ctx.RespondAsync($"Saved {Contents}")
                 .ContinueWith
                 (async x =>
                 {
@@ -326,7 +326,7 @@ namespace ParTboT.Commands
         [Description("Changes the bot's profile pic to the one that was uploaded along with the command execution text.")]
         public async Task Pfp(CommandContext ctx, [RemainingText] string discordAttachmentLink)
         {
-            await ctx.Channel.SendMessageAsync("oke").ConfigureAwait(false);
+            await ctx.RespondAsync("oke").ConfigureAwait(false);
             Stream ImageStream = (await WebRequest.Create(discordAttachmentLink).GetResponseAsync().ConfigureAwait(false)).GetResponseStream();
             await ctx.Client.UpdateCurrentUserAsync(ctx.Client.CurrentUser.Username, ImageStream).ConfigureAwait(false);
 
@@ -360,7 +360,7 @@ namespace ParTboT.Commands
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.Playing);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);
-                        await ctx.Channel.SendMessageAsync($"{ctx.Client.CurrentUser.Username}'s Activity was changed to: Playing **{TheStatus}**").ConfigureAwait(false);
+                        await ctx.RespondAsync($"{ctx.Client.CurrentUser.Username}'s Activity was changed to: Playing **{TheStatus}**").ConfigureAwait(false);
                     }
                     break;
 
@@ -369,7 +369,7 @@ namespace ParTboT.Commands
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.Watching);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);
-                        await ctx.Channel.SendMessageAsync($"{ctx.Client.CurrentUser.Username}'s Activity was changed to: Watching **{TheStatus}**").ConfigureAwait(false);
+                        await ctx.RespondAsync($"{ctx.Client.CurrentUser.Username}'s Activity was changed to: Watching **{TheStatus}**").ConfigureAwait(false);
                     }
                     break;
 
@@ -377,7 +377,7 @@ namespace ParTboT.Commands
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.ListeningTo);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);
-                        await ctx.Channel.SendMessageAsync($"{ctx.Client.CurrentUser.Username}'s Activity was changed to: Listening to **{TheStatus}**").ConfigureAwait(false);
+                        await ctx.RespondAsync($"{ctx.Client.CurrentUser.Username}'s Activity was changed to: Listening to **{TheStatus}**").ConfigureAwait(false);
                     }
                     break;
 
@@ -385,7 +385,7 @@ namespace ParTboT.Commands
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.Streaming);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);
-                        await ctx.Channel.SendMessageAsync($"{ctx.Client.CurrentUser.Username}'s Activity was changed to: Streaming **{TheStatus}**").ConfigureAwait(false);
+                        await ctx.RespondAsync($"{ctx.Client.CurrentUser.Username}'s Activity was changed to: Streaming **{TheStatus}**").ConfigureAwait(false);
                     }
                     break;
 
@@ -393,7 +393,7 @@ namespace ParTboT.Commands
                     {
                         DiscordActivity NewActivityStatus = new DiscordActivity(TheStatus, ActivityType.Competing);
                         await ctx.Client.UpdateStatusAsync(NewActivityStatus).ConfigureAwait(false);
-                        await ctx.Channel.SendMessageAsync(
+                        await ctx.RespondAsync(
                                 $"{ctx.Client.CurrentUser.Username}'s Activity was changed to: Competing in **{TheStatus}**")
                             .ConfigureAwait(false);
                     }
@@ -401,7 +401,7 @@ namespace ParTboT.Commands
 
                 default:
                     {
-                        await ctx.Channel.SendMessageAsync($"Could not find the activity specified: `{TypeOfActivity}`. Please do `?help {ctx.Command.QualifiedName}` to see the list of available status activity types").ConfigureAwait(false);
+                        await ctx.RespondAsync($"Could not find the activity specified: `{TypeOfActivity}`. Please do `?help {ctx.Command.QualifiedName}` to see the list of available status activity types").ConfigureAwait(false);
                     }
                     break;
             }
@@ -428,7 +428,7 @@ namespace ParTboT.Commands
         public async Task Uptime(CommandContext ctx)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
-            await ctx.Channel.SendMessageAsync($"{ctx.Client.CurrentUser.Username} has been alive since {Bot.UpTime:F}").ConfigureAwait(false);
+            await ctx.RespondAsync($"{ctx.Client.CurrentUser.Username} has been alive since {Bot.UpTime:F}").ConfigureAwait(false);
         }
 
 

@@ -42,7 +42,7 @@ namespace ParTboT.Commands
             var Message = new DiscordMessageBuilder();
             Message.WithFile("BarcodeFileFromStream.png", ms);
 
-            await ctx.Channel.SendMessageAsync(Message).ConfigureAwait(false);
+            await ctx.RespondAsync(Message).ConfigureAwait(false);
 
             byte[] buffer = ms.GetBuffer();
             Array.Clear(buffer, 0, buffer.Length);

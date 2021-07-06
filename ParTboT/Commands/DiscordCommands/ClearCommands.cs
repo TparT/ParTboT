@@ -40,19 +40,19 @@ namespace ParTboT.Commands
                     }
                     await ctx.Channel.DeleteMessagesAsync(MessageList, "jjjj").ConfigureAwait(false);
 
-                    Respond = await ctx.Channel.SendMessageAsync($"Successfully cleared {MessagesDeleted} Messages!").ConfigureAwait(false);
+                    Respond = await ctx.RespondAsync($"Successfully cleared {MessagesDeleted} Messages!").ConfigureAwait(false);
                 }
                 catch (BadRequestException BRE)
                 {
 
                     //Console.Clear();
                     //Console.WriteLine(BRE.JsonMessage);
-                    Respond = await ctx.Channel.SendMessageAsync($"Failed to clear messages: {BRE.Message} - {BRE.InnerException}").ConfigureAwait(false);
+                    Respond = await ctx.RespondAsync($"Failed to clear messages: {BRE.Message} - {BRE.InnerException}").ConfigureAwait(false);
                 }
             }
             else
             {
-                Respond = await ctx.Channel.SendMessageAsync($"Failed to clear messages: No messages that are less than 14 days old could be found.").ConfigureAwait(false);
+                Respond = await ctx.RespondAsync($"Failed to clear messages: No messages that are less than 14 days old could be found.").ConfigureAwait(false);
             }
 
 
@@ -77,11 +77,11 @@ namespace ParTboT.Commands
                 {
                     await ctx.Channel.DeleteMessagesAsync(MessageList).ConfigureAwait(false);
 
-                    Respond = await ctx.Channel.SendMessageAsync($"Successfully cleared {MessageList.Count - 1} Messages!").ConfigureAwait(false);
+                    Respond = await ctx.RespondAsync($"Successfully cleared {MessageList.Count - 1} Messages!").ConfigureAwait(false);
                 }
                 catch (Exception BRE)
                 {
-                    Respond = await ctx.Channel.SendMessageAsync($"Failed to clear messages: {BRE.Message} - {BRE.InnerException}").ConfigureAwait(false);
+                    Respond = await ctx.RespondAsync($"Failed to clear messages: {BRE.Message} - {BRE.InnerException}").ConfigureAwait(false);
                 }
 
                 await Task.Delay(2500);
@@ -117,11 +117,11 @@ namespace ParTboT.Commands
             {
                 await ctx.Channel.DeleteMessagesAsync(MessagesList.ToList()).ConfigureAwait(false);
 
-                Respond = await ctx.Channel.SendMessageAsync($"Successfully cleared {MessagesList.Count - 1} Messages!").ConfigureAwait(false);
+                Respond = await ctx.RespondAsync($"Successfully cleared {MessagesList.Count - 1} Messages!").ConfigureAwait(false);
             }
             catch (Exception BRE)
             {
-                Respond = await ctx.Channel.SendMessageAsync($"Failed to clear messages: {BRE.Message} - {BRE.InnerException}").ConfigureAwait(false);
+                Respond = await ctx.RespondAsync($"Failed to clear messages: {BRE.Message} - {BRE.InnerException}").ConfigureAwait(false);
             }
 
             await Task.Delay(2500);
@@ -142,11 +142,11 @@ namespace ParTboT.Commands
             {
                 await ctx.Channel.DeleteMessagesAsync(MessageList).ConfigureAwait(false);
 
-                Respond = await ctx.Channel.SendMessageAsync($"Successfully cleared {MessageList.Count - 1} Messages!").ConfigureAwait(false);
+                Respond = await ctx.RespondAsync($"Successfully cleared {MessageList.Count - 1} Messages!").ConfigureAwait(false);
             }
             catch (Exception BRE)
             {
-                Respond = await ctx.Channel.SendMessageAsync($"Failed to clear messages: {BRE.Message} - {BRE.InnerException}").ConfigureAwait(false);
+                Respond = await ctx.RespondAsync($"Failed to clear messages: {BRE.Message} - {BRE.InnerException}").ConfigureAwait(false);
             }
 
             await Task.Delay(2500);

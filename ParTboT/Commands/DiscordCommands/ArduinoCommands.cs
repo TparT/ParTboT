@@ -29,7 +29,7 @@ namespace ParTboT.Commands
             SetupPort();
             PortWrite("1");
 
-            await ctx.Channel.SendMessageAsync("The LED is now ON! :blue_circle:").ConfigureAwait(false);
+            await ctx.RespondAsync("The LED is now ON! :blue_circle:").ConfigureAwait(false);
         }
 
         [Command("off")]
@@ -39,7 +39,7 @@ namespace ParTboT.Commands
             SetupPort();
             PortWrite("0");
 
-            await ctx.Channel.SendMessageAsync("The LED is now OFF! :white_circle:").ConfigureAwait(false);
+            await ctx.RespondAsync("The LED is now OFF! :white_circle:").ConfigureAwait(false);
         }
 
         private void PortWrite(string message) =>
