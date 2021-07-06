@@ -1,0 +1,13 @@
+﻿# Default ignored files
+/shelf/
+/workspace.xml
+# Rider ignored files
+/contentModel.xml
+/projectSettingsUpdater.xml
+/.idea.GogyBot Alpha.iml
+/modules.xml
+# Datasource local storage ignored files
+/../../../../../../../../../../../../../:\Users\yarin\Documents\Visual studio projects\Discord\C# Discord bots\GogyBot_Alpha\GogyBot Alpha\GogyBot Alpha\.idea\.idea.GogyBot Alpha.dir\.idea/dataSources/
+/dataSources.local.xml
+# Editor-based HTTP Client requests
+/httpRequests/

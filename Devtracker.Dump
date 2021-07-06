@@ -1,0 +1,13 @@
+
+
+25/04/2021 17:17:14 :
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at DevTracker.DevTrackerToolWinControl.GetWpfTextView(IVsTextView textView) in C:\Users\KurtG\Documents\Visual Studio 2017\Projects\DevTracker\DevTracker\DevTrackerToolWinHelper.cs:line 118
+   at DevTracker.DevTrackerToolWinControl.GetWpfTextView(String documentName) in C:\Users\KurtG\Documents\Visual Studio 2017\Projects\DevTracker\DevTracker\DevTrackerToolWinHelper.cs:line 106
+   at DevTracker.DevTrackerToolWinControl.SwitchActiveItem(Document document) in C:\Users\KurtG\Documents\Visual Studio 2017\Projects\DevTracker\DevTracker\DevTrackerToolWinControl.xaml.cs:line 388
+
+25/04/2021 17:17:14 :
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at DevTracker.DevTrackerToolWinControl.GetWpfTextView(IVsTextView textView) in C:\Users\KurtG\Documents\Visual Studio 2017\Projects\DevTracker\DevTracker\DevTrackerToolWinHelper.cs:line 118
+   at DevTracker.DevTrackerToolWinControl.GetWpfTextView(String documentName) in C:\Users\KurtG\Documents\Visual Studio 2017\Projects\DevTracker\DevTracker\DevTrackerToolWinHelper.cs:line 106
+   at DevTracker.DevTrackerToolWinControl.SwitchActiveItem(Document document) in C:\Users\KurtG\Documents\Visual Studio 2017\Projects\DevTracker\DevTracker\DevTrackerToolWinControl.xaml.cs:line 388
