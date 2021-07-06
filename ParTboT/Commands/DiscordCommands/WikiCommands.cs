@@ -1,5 +1,7 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using HtmlAgilityPack;
@@ -11,6 +13,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using YarinGeorge.Utilities.Extra;
 
 namespace ParTboT.Commands
 {
@@ -32,17 +35,17 @@ namespace ParTboT.Commands
 
             //try
             //{
-            var factory = new RankedLanguageIdentifierFactory();
-            var identifier = factory.Load(@"C:\Users\yarin\Documents\Visual studio projects\Discord\C# Discord bots\GogyBot_Alpha\GogyBot Alpha\GogyBot Alpha\Wiki.profiles\Wiki280.profile.xml");
-            var languages = identifier.Identify(SearchWords);
+            //var factory = new RankedLanguageIdentifierFactory();
+            //var identifier = factory.Load(@"C:\Users\yarin\Documents\Visual studio projects\Discord\C# Discord bots\GogyBot_Alpha\GogyBot Alpha\GogyBot Alpha\Wiki.profiles\Wiki280.profile.xml");
+            //var languages = identifier.Identify(SearchWords);
 
             //string LanguageCode = mostCertainLanguage.Item1.Iso639_2T;
 
             await ctx.RespondAsync($"The language of the text is '{LanguageCode}' (ISO639_2T code)").ConfigureAwait(false);
 
-            using var client = new HttpClient();
+            //using var client = new HttpClient();
 
-            var PageSourceCode = await client.GetStringAsync($"http://{LanguageCode}.wikipedia.org/w/api.php?format=xml&action=query&prop=extracts&titles={SearchWords}&redirects=true");
+            var PageSourceCode = await Bot.Services.HttpClient.GetStringAsync($"http://{LanguageCode}.wikipedia.org/w/api.php?format=xml&action=query&prop=extracts&titles={SearchWords}&redirects=true");
             var Search = SearchWords.Replace(" ", "_");
             var PageWikiUrl = $"https://{LanguageCode}.wikipedia.org/wiki/{Search}";
 
@@ -55,18 +58,25 @@ namespace ParTboT.Commands
             {
                 string ss = fnode.InnerText;
                 Regex regex = new Regex("\\<[^\\>]*\\>");
-                string.Format($"Before{ss}");
+                //string.Format($"Before{ss}");
                 ss = regex.Replace(ss, string.Empty);
 
-                string pages = string.Format(ss);
+                //string pages = string.Format(ss);
 
-                string result = $"**__From:__** **__{PageWikiUrl}__**\n\n {pages}";
+                //string result = ;
 
                 var interactivity = ctx.Client.GetInteractivity();
 
-                var wiki_pages = interactivity.GeneratePagesInEmbed(result);
+                //var wiki_pages = interactivity.GeneratePagesInEmbed($"**__From:__** **__{PageWikiUrl}__**\n\n{ss}");
+                List<Page> pages = new List<Page>();
+                foreach (var page in ss.SplitToParagraphs(4000, true))
+                {
+                    pages.Add(new Page(null, new DiscordEmbedBuilder().WithTitle($"Showing results for: \"{SearchWords}\"").WithUrl(PageWikiUrl).WithDescription(page)));
+                    //Console.WriteLine(page);
+                    //Console.WriteLine(new string('-', 100));
+                }
 
-                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, wiki_pages, timeoutoverride: TimeSpan.FromMinutes(5));
+                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, timeoutoverride: TimeSpan.FromMinutes(5));
 
                 //await ctx.RespondAsync.SendPaginatedMessageAsync($"\nHere is some information about {search}:\n\n```{result}``").ConfigureAwait(false);
                 //Console.ReadKey();

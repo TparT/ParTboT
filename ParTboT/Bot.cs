@@ -556,9 +556,6 @@ namespace ParTboT
 
             UpTime = DateTime.Now;
 
-            // I hope to get applyed to help even more people and make everyone happy.
-            // I would really like to help you guys out!Have a good day!
-
             #region Slash commands
             var slash = Client.UseSlashCommands(new SlashCommandsConfiguration() { Services = services });
             slash.SlashCommandErrored += Slash_SlashCommandErrored;
@@ -582,7 +579,7 @@ namespace ParTboT
 
             Task.Run(async () => StatsTrack());
 
-            await Services.InitializeServicesAsync(false, true, true);
+            await Services.InitializeServicesAsync(true, true, true);
 
             //Task.Run(async () =>
             //{

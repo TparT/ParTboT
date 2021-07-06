@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -29,6 +31,64 @@ namespace YarinGeorge.Utilities.Extra
             timer.Stop();
             timer.Start();
         }
+
+        public static List<string> SplitToParagraphs(this string orgString, int chunkSize, bool wholeWords = true)
+        {
+            if (wholeWords)
+            {
+                List<string> result = new List<string>();
+                StringBuilder sb = new StringBuilder();
+
+                if (orgString.Length > chunkSize)
+                {
+                    string[] newSplit = orgString.Split(' ');
+                    foreach (string str in newSplit)
+                    {
+                        if (sb.Length != 0)
+                            sb.Append(" ");
+
+                        if (sb.Length + str.Length > chunkSize)
+                        {
+                            result.Add(sb.ToString());
+                            sb.Clear();
+                        }
+
+                        sb.Append(str);
+                    }
+
+                    result.Add(sb.ToString());
+                }
+                else
+                    result.Add(orgString);
+
+                return result;
+            }
+            else
+                return new List<string>(Regex.Split(orgString, @"(?<=\G.{" + chunkSize + "})", RegexOptions.Singleline));
+        }
+
+        public static List<string> SplitToParagraphs(this string text, int MaxCharsInParagraph)
+        {
+            string[] Words = text.Split(' ');
+            List<string> Paragraphs = new List<string>();
+            string Paragraph = string.Empty;
+
+            for (int i = 0; i < Words.Length; i++)
+            {
+                if (Paragraph.Length <= MaxCharsInParagraph)
+                {
+                    Paragraph += $"{Words[i]} ";
+                }
+                else
+                {
+                    Paragraphs.Add(Paragraph);
+                    Paragraph = string.Empty;
+                }
+            }
+
+            return Paragraphs;
+        }
+
 
         /// <summary>
         /// Determines whether the beginning and the end of this string instance both match the specified <see cref="string"/>.

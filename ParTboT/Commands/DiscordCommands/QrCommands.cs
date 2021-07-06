@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using ZXing;
 using ZXing.QrCode;
+using System.Net;
 
 namespace ParTboT.Commands
 {
@@ -15,38 +16,16 @@ namespace ParTboT.Commands
     public class QrCommands : BaseCommandModule
     {
         [Command("make")]
-        [Aliases("new", "create", "generate", "encode")]
+        [Aliases("n", "new", "create", "generate", "encode")]
         [Description("Generates a QR code from link or just text.")]
-        public async Task Qr(CommandContext ctx, [RemainingText, Description("The contents of the QR code")] string contents)
+        public async Task QrMake(CommandContext ctx, [RemainingText, Description("The contents of the QR code")] string contents)
         {
-            await ctx.TriggerTypingAsync();
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            // instantiate a writer object
-            var barcodeWriter = new BarcodeWriter
-            {
-                // QR code format/type
-                Format = BarcodeFormat.QR_CODE,
-                // QR code image output size
-                Options = new QrCodeEncodingOptions
-                {
-                    Width = 400,
-                    Height = 400
-                }
-            };
-
-            var ms = new MemoryStream();
-            barcodeWriter.Write(contents).Save(ms, ImageFormat.Png);
-
-            // If you're going to read from the stream, you may need to reset the position to the start
+            MemoryStream ms = Bot.Services.BarcodeService.GenerateBarcodeImage(contents);
             ms.Position = 0;
-            var Message = new DiscordMessageBuilder();
-            Message.WithFile("BarcodeFileFromStream.png", ms);
+            await ctx.RespondAsync(new DiscordMessageBuilder().WithFile("Barcode.png", ms)).ConfigureAwait(false);
 
-            await ctx.RespondAsync(Message).ConfigureAwait(false);
-
-            byte[] buffer = ms.GetBuffer();
-            Array.Clear(buffer, 0, buffer.Length);
-            ms.Position = 0;
             ms.SetLength(0);
             ms.Dispose();
             ms.Close();
@@ -87,6 +66,17 @@ namespace ParTboT.Commands
                 file.Delete();
             }*/
             #endregion
+        }
+
+        [Command("read")]
+        [Aliases("r")]
+        [Description("Reads a QR code from link or attachment.")]
+        public async Task QrRead(CommandContext ctx, string Link = null)
+        {
+            string BarcodeText = Bot.Services.BarcodeService.ReadBarcode
+                ((await WebRequest.Create(Link ?? ctx.Message.Attachments[0].Url).GetResponseAsync().ConfigureAwait(false)).GetResponseStream());
+
+            await ctx.RespondAsync(BarcodeText).ConfigureAwait(false);
         }
     }
 }

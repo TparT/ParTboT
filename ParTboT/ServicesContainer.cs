@@ -16,6 +16,7 @@ using Tweetinvi;
 using TwitchLib.Api;
 using TwitchLib.Api.Core;
 using TwitchLib.Api.Services;
+using YarinGeorge.LibTools;
 using YarinGeorge.Utilities.Databases.MongoDB;
 
 namespace ParTboT
@@ -36,6 +37,7 @@ namespace ParTboT
 
         public SpellingCorrectingService SpellingCorrecting { get; private set; }
         public CodeTextGenerator RandomTextGenerator { get; private set; }
+        public BarcodeService BarcodeService { get; private set; }
         public UserVerifications UserVerifications { get; private set; }
 
 
@@ -116,6 +118,7 @@ namespace ParTboT
             // ========== Bot Util Services =========== \\
             SpellingCorrecting = new SpellingCorrectingService();
             RandomTextGenerator = new CodeTextGenerator();
+            BarcodeService = new();
             UserVerifications = new UserVerifications().InitImageCAPTCHAGeneratorService();
 
             // ========== Social media notifs ========= \\
@@ -176,6 +179,7 @@ namespace ParTboT
 
             GC.SuppressFinalize(SpellingCorrecting);
             GC.SuppressFinalize(RandomTextGenerator);
+            GC.SuppressFinalize(BarcodeService);
             GC.SuppressFinalize(UserVerifications);
 
             GC.SuppressFinalize(TwitchAPI);
