@@ -112,8 +112,9 @@ namespace ParTboT.Commands
         {
             try
             {
+                await ctx.TriggerTypingAsync().ConfigureAwait(false);
                 DiscordEmbedBuilder eb = new();
-                Dictionary<string, string> Renders = RenderAllFonts(contents, 2048);
+                Dictionary<string, string> Renders = RenderAllFonts(contents, 4096);
                 int page = 1;
 
                 PagedMessage Pages = new();

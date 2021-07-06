@@ -84,16 +84,12 @@ namespace ParTboT.Events.Bot
             {
                 //await e.Context.RespondAsync($"```css\n[ {e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? $"{e.Context.Message.Content} (unknown command)"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"} {DateTime.Now} ]\n```").ConfigureAwait(false);
 
-                SpellingCorrectingService spelling = _services.SpellingCorrecting;
+                //SpellingCorrectingService spelling = ;
 
                 // A CUSTOM sentence
-                //string CustomSentence_Correction = string.Empty;
-                //foreach (string Word in e.Context.RawArguments/*Message.Content.Split(' ')*/)
-                //{
-                //    CustomSentence_Correction += spelling.Correct(Word) + " ";
-                //}
-
-                string CustomSentence_Correction = string.Join(" ", e.Context.RawArguments);
+                string CustomSentence_Correction = string.Empty;
+                foreach (string Word in e.Context.Message.Content.Split(' '))
+                    CustomSentence_Correction += _services.SpellingCorrecting.Correct(Word) + " ";
 
                 await e.Context.RespondAsync(($"Command {CNFE.CommandName} not found, did you mean: `{ CustomSentence_Correction }` ?").ToString()).ConfigureAwait(false);
             }

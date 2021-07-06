@@ -13,7 +13,7 @@ namespace ParTboT.Services
 
         public UserVerifications InitImageCAPTCHAGeneratorService()
         {
-            DirectoryFontRandomerFactory fontRandomerFactory = new DirectoryFontRandomerFactory() { FontDir = new DirectoryInfo($@"C:\Users\yarin\Documents\Visual studio projects\Discord\C# Discord bots\GogyBot_Alpha\GogyBot Alpha\GogyBot Alpha\Assets\Fonts") };
+            DirectoryFontRandomerFactory fontRandomerFactory = new DirectoryFontRandomerFactory() { FontDir = new DirectoryInfo($@"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\Assets\Fonts") };
             IFontRandomer fontRandomer = fontRandomerFactory.CreateFontRandomer();
 
             ColorRandomer colorRandomer = new ColorRandomer();

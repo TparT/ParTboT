@@ -17,8 +17,14 @@ namespace ParTboT.Events.Bot
     {
 
         private static readonly EventId BotEventId;
+        private ServicesContainer _services { get; set; }
 
-        public static async Task Command_Errored(CommandsNextExtension cnt, CommandErrorEventArgs e)
+        public CommandErrored_copy(ServicesContainer services)
+        {
+
+        }
+
+        public async Task Command_Errored(CommandsNextExtension cnt, CommandErrorEventArgs e)
         {
             CommandContext ctx = e.Context;
 
@@ -71,13 +77,11 @@ namespace ParTboT.Events.Bot
                     {
                         //await ctx.RespondAsync($":no_entry_sign: | {ctx.User.Mention} The command {e.Context.RawArgumentString} Does.*");
 
-                        string Customsentence_correction = string.Empty;
-                        foreach (string item in e.Context.RawArguments)
-                        {
-                            //Customsentence_correction += spelling.Correct(item) + " ";
-                        }
+                        string CustomSentence_Correction = string.Empty;
+                        foreach (string Word in e.Context.Message.Content.Split(' '))
+                            CustomSentence_Correction += _services.SpellingCorrecting.Correct(Word) + " ";
 
-                        await e.Context.RespondAsync(($"{ctx.User.Mention} The command {e.Context.RawArgumentString} was not found, did you mean: `{ Customsentence_correction }` ?").ToString()).ConfigureAwait(false);
+                        await e.Context.RespondAsync(($"{ctx.User.Mention} The command {e.Context.RawArgumentString} was not found, did you mean: `{ CustomSentence_Correction }` ?").ToString()).ConfigureAwait(false);
                     }
 
                     break;
