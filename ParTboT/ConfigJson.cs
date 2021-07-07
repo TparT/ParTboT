@@ -51,5 +51,8 @@ namespace ParTboT
 
         [JsonProperty("TwitterAPIUser_AccessTokenSecret")]
         public string TwitterAPIUser_AccessTokenSecret { get; private set; }
+
+        [JsonProperty("TrackerGG")]
+        public string TrackerGG { get; private set; }
     }
 }

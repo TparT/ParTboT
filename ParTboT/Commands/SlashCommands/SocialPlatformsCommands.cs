@@ -26,7 +26,7 @@ namespace ParTboT.Commands.SlashCommands
         [SlashCommandGroup("socials", "Plug socials or even follow them to get notified when people do stuff")]
         public class SocialCommands : SlashCommandModule
         {
-
+            #region Plug Command
             [SlashCommand("plug", "Plug your socials with cool redirecting buttons!")]
             public async Task PlugCommand
                 (
@@ -95,7 +95,9 @@ namespace ParTboT.Commands.SlashCommands
                             .AddComponents(PlugButtonComponents)
                     ).ConfigureAwait(false);
             }
+            #endregion Plug Command
 
+            #region Follow Command
             [SlashCommand("follow", "Get notified when your favorite people have done something you should know about!")]
             public async Task FollowCommand
                 (
@@ -604,6 +606,7 @@ namespace ParTboT.Commands.SlashCommands
                         .WithContent(ctx.Interaction.User.Mention)
                         .AddEmbed(FinalEmbed));
             }
+            #endregion Follow Command
         }
     }
 }

@@ -5,10 +5,8 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using HtmlAgilityPack;
-using NTextCat;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -70,11 +68,7 @@ namespace ParTboT.Commands
                 //var wiki_pages = interactivity.GeneratePagesInEmbed($"**__From:__** **__{PageWikiUrl}__**\n\n{ss}");
                 List<Page> pages = new List<Page>();
                 foreach (var page in ss.SplitToParagraphs(4000, true))
-                {
                     pages.Add(new Page(null, new DiscordEmbedBuilder().WithTitle($"Showing results for: \"{SearchWords}\"").WithUrl(PageWikiUrl).WithDescription(page)));
-                    //Console.WriteLine(page);
-                    //Console.WriteLine(new string('-', 100));
-                }
 
                 await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, timeoutoverride: TimeSpan.FromMinutes(5));
 

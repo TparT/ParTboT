@@ -199,6 +199,7 @@ namespace ParTboT
             Commands.RegisterCommands<SSHCommands>();
             //Commands.RegisterCommands<ArduinoCommands>();
             Commands.RegisterCommands<DevCommands>();
+            Commands.RegisterCommands<EvalCommand>();
             Commands.RegisterCommands<InviteCommands>();
             Commands.RegisterCommands<FollowSocialCommands>();
             //Commands.RegisterCommands<UNFollowSocialCommands>();

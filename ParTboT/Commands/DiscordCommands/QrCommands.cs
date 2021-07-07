@@ -1,14 +1,10 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using System;
-using System.Drawing.Imaging;
+using DSharpPlus.Entities;
 using System.IO;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using DSharpPlus.Entities;
-using ZXing;
-using ZXing.QrCode;
-using System.Net;
 
 namespace ParTboT.Commands
 {

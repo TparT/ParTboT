@@ -1,5 +1,4 @@
 ﻿using CaptchaN;
-using DSharpPlus;
 using Genius;
 using LiteDB;
 using Microsoft.Extensions.Caching.Memory;
@@ -17,7 +16,11 @@ using TwitchLib.Api;
 using TwitchLib.Api.Core;
 using TwitchLib.Api.Services;
 using YarinGeorge.LibTools;
+using YarinGeorge.ApiClients.TrackerGG;
 using YarinGeorge.Utilities.Databases.MongoDB;
+//using SteamKit.CSGO;
+//using SteamKit2;
+//using CsgoClient = SteamKit.CSGO.CsgoClient;
 
 namespace ParTboT
 {
@@ -31,8 +34,8 @@ namespace ParTboT
         public MongoCRUD MongoDB { get; private set; }
         public MemoryCache Cache { get; private set; }
 
-
         public TwitterClient TwitterClient { get; private set; }
+        public TrackerggClient TrackggClient { get; private set; }
         public HttpClient HttpClient { get; private set; }
 
         public SpellingCorrectingService SpellingCorrecting { get; private set; }
@@ -113,6 +116,7 @@ namespace ParTboT
 
             TwitterClient.Events.OnTwitterException += (s, e) => { Console.WriteLine(e.TwitterDescription); };
 
+            TrackggClient = new(Config.TrackerGG);
             HttpClient = new();
 
             // ========== Bot Util Services =========== \\
