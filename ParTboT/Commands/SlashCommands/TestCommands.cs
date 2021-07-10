@@ -1,15 +1,14 @@
 ﻿using DSharpPlus;
-using DSharpPlus.EventArgs;
 using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
+using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using YarinGeorge.Utilities.DsharpPlusUtils;
-using System;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
 namespace ParTboT.Commands.SlashCommands
 {

@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using YarinGeorge.ApiClients.CurrencyConverter.Enums;
 
 #pragma warning disable CS3016 // Arrays as attribute arguments is not CLS-compliant
 namespace ParTboT.Commands
@@ -14,7 +15,7 @@ namespace ParTboT.Commands
     public class ConvertCommands : BaseCommandModule
     {
         #region Convert binary
-        [Command("binary")]        
+        [Command("binary")]
         [Aliases("bin")]
         [
             Description
@@ -48,7 +49,7 @@ namespace ParTboT.Commands
                     $"**Hexadecimal base (16):** {HEX}"
 
                 ).ConfigureAwait(false);
-            
+
         }
         #endregion
 
@@ -178,35 +179,15 @@ namespace ParTboT.Commands
 
             try
             {
-                double HowMuch;
+                double result =
+                    await Bot.Services.CurrencyConverterAPI.ConvertAsync
+                    (Amount, (CurrencyType)Enum.Parse(typeof(CurrencyType), From.ToUpper()), (CurrencyType)Enum.Parse(typeof(CurrencyType), To.ToUpper()));
 
-                if (Amount.ToString() == null)
-                {
-                    HowMuch = 1;
-                }
-                else
-                {
-                    HowMuch = Amount;
-                }
-
-                string Code = $"{From.ToUpper()}_{To.ToUpper()}";
-
-                string URL = $"https://free.currconv.com/api/v7/convert?apiKey=645ef0b3826a46c91bbc&q={Code}&compact=y";
-
-                WebClient client = new WebClient();
-                string CurrencyPageStr = client.DownloadString(URL);
-
-                dynamic CurrencyValue = JsonConvert.DeserializeObject<dynamic>(CurrencyPageStr);
-
-                var resultcode = CurrencyValue[Code];
-                var Currency = resultcode["val"];
-
-                await ctx.RespondAsync($"{Currency * HowMuch}").ConfigureAwait(false);
+                await ctx.RespondAsync($"{result}").ConfigureAwait(false);
             }
             catch (Exception e)
             {
-                string result = e.Message;
-                await ctx.RespondAsync($"```{result}```").ConfigureAwait(false);
+                await ctx.RespondAsync($"```{e.Message}```").ConfigureAwait(false);
             }
         }
 

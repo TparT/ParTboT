@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using YarinGeorge.ApiClients.TrackerGG;
 using YarinGeorge.ApiClients.TrackerGG.StatsModels;
 using YarinGeorge.Games.TicTacToe;
-using YarinGeorge.Utilities.DsharpPlusUtils;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
 namespace ParTboT.Commands.SlashCommands
 {

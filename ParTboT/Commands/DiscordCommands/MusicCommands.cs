@@ -1,26 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Enums;
-using DSharpPlus.Interactivity.Extensions;
-using Genius;
-using Genius.Models;
-using HtmlAgilityPack;
-using IronPython.Runtime.Operations;
-using YarinGeorge.Utilities.Converters;
-using YarinGeorge.Utilities.ApiExtentions.GeniusApiExtention;
-using ImageColorDefine;
+using System;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using YarinGeorge.Utilities.Extensions.GeniusAPI;
 
 namespace ParTboT.Commands
 {

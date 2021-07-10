@@ -1,26 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
-using Hangfire;
-using Ical.Net.CalendarComponents;
-using Ical.Net.DataTypes;
-using Ical.Net;
+﻿using DSharpPlus.SlashCommands;
 using Quartz;
-using Quartz.Impl;
-using Ical.Net.Serialization;
-using System.IO;
-using System.Text;
-using LiteDB;
-using ParTboT.DbModels.ParTboTModels;
-using YarinGeorge.Utilities.DsharpPlusUtils;
-using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.Interactivity;
+using System.Threading.Tasks;
 
 namespace ParTboT.Commands.SlashCommands
 {

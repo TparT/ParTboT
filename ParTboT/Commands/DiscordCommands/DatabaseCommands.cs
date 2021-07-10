@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using YarinGeorge.Databases.MongoDB;
 
 namespace ParTboT.Commands
 {
@@ -42,10 +43,9 @@ namespace ParTboT.Commands
             {
                 var emoji = DiscordEmoji.FromName(ctx.Client, ":white_check_mark:");
 
-                MongoCRUD db = new MongoCRUD("CarDealership");
-                db.InsertRecord
+                await Bot.Services.MongoDB.InsertOneRecordAsync
                     ("CarsBot", new CarModel
-                    { 
+                    {
                         GuildName = guildname,
                         GuildID = guildid,
                         ChannelName = channelname,
@@ -77,15 +77,14 @@ namespace ParTboT.Commands
 
             var emoji = DiscordEmoji.FromName(ctx.Client, ":white_check_mark:");
 
-            MongoCRUD db = new MongoCRUD("Streamers");
-            db.InsertRecord
-                ("TwitchStreamers", new StreamersModule
-                { 
-                    TwitchChannelName = TwitchChannelName,
-                    ChannelID = discordChannel.Id,
-                    AutoAlerts = AutoAlerts,
-                    CustomMessage = AdditionalMessage
-                });
+            await Bot.Services.MongoDB.InsertOneRecordAsync
+                            ("TwitchStreamers", new StreamersModule
+                            {
+                                TwitchChannelName = TwitchChannelName,
+                                ChannelID = discordChannel.Id,
+                                AutoAlerts = AutoAlerts,
+                                CustomMessage = AdditionalMessage
+                            });
 
             await ctx.RespondAsync($"{ctx.Member.Mention} {emoji} Hello there! Check your MongoDB to see the new changes!");
         }
@@ -95,9 +94,7 @@ namespace ParTboT.Commands
         public async Task GetRecs(CommandContext ctx, string Database, string table)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
-
-            MongoCRUD db = new MongoCRUD(Database);
-            var recs = db.LoadRecords<StreamersModule>(table);
+            var recs = await Bot.Services.MongoDB.LoadAllRecordsAsync<StreamersModule>(table);
 
             StringBuilder builder = new StringBuilder();
 
@@ -133,41 +130,41 @@ namespace ParTboT.Commands
             public string CarYearReleased { get; set; }
         }
 
-        public class MongoCRUD
-        {
-            private IMongoDatabase db;
+        //public class MongoCRUD
+        //{
+        //    private IMongoDatabase db;
 
-            public MongoCRUD(string database)
-            {
-                var client = new MongoClient();
-                db = client.GetDatabase(database);
-            }
+        //    public MongoCRUD(string database)
+        //    {
+        //        var client = new MongoClient();
+        //        db = client.GetDatabase(database);
+        //    }
 
-            public void InsertRecord<T>(string table, T record)
-            {
-                var collection = db.GetCollection<T>(table);
-                collection.InsertOne(record);
-            }
+        //    public void InsertRecord<T>(string table, T record)
+        //    {
+        //        var collection = db.GetCollection<T>(table);
+        //        collection.InsertOne(record);
+        //    }
 
-            public List<T> LoadRecords<T>(string table)
-            {
-                var collection = db.GetCollection<T>(table);
+        //    public List<T> LoadRecords<T>(string table)
+        //    {
+        //        var collection = db.GetCollection<T>(table);
 
-                return collection.Find(new BsonDocument()).ToList();
-            }
+        //        return collection.Find(new BsonDocument()).ToList();
+        //    }
 
-            public List<T> LoadRecordByNameAsync<T>(string table, string Field, string StreamerName)
-            {
-                TaskCompletionSource<object> res = new TaskCompletionSource<object>();
+        //    public List<T> LoadRecordByNameAsync<T>(string table, string Field, string StreamerName)
+        //    {
+        //        TaskCompletionSource<object> res = new TaskCompletionSource<object>();
 
-                var collection = db.GetCollection<T>(table);
+        //        var collection = db.GetCollection<T>(table);
 
-                var filter = new BsonDocument(Field, StreamerName);
+        //        var filter = new BsonDocument(Field, StreamerName);
 
-                var results = collection.Find(filter).ToList();
+        //        var results = collection.Find(filter).ToList();
 
-                return results;
-            }
-        }
+        //        return results;
+        //    }
+        //}
     }
 }

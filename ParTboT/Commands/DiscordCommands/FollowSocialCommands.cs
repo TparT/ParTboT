@@ -1,21 +1,20 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using EasyConsole;
-using ParTboT.DbModels;
-using MongoDB.Driver;
-using ParTboT.DbModels.SocialPlatforms;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using YarinGeorge.Utilities.Databases.MongoDB;
-using TwitchLib.Api.V5.Models.Users;
-using DSharpPlus;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
-using System.Collections.Generic;
+using MongoDB.Driver;
+using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.DbModels.SocialPlatforms.Shared;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using TwitchLib.Api.V5.Models.Users;
+using YarinGeorge.Databases.MongoDB;
+using static ParTboT.Commands.DatabaseCommands;
 
 namespace ParTboT.Commands
 {

@@ -1,7 +1,7 @@
 ﻿using EasyConsole;
 using System;
 using TwitchLib.Api.Services.Events;
-using YarinGeorge.Utilities.Extra;
+using YarinGeorge.Utilities.Debugging;
 
 namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
 {

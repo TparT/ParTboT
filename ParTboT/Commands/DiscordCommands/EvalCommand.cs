@@ -63,6 +63,7 @@ namespace ParTboT.Commands
 
             try
             {
+                // TODO: make sure all imports are good again!
                 var globals = new TestVariables(ctx.Message, ctx.Client, ctx);
                 var sopts = ScriptOptions.Default;
                 sopts = sopts.WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text",
@@ -75,7 +76,7 @@ namespace ParTboT.Commands
 
                 asm = asm.Append(typeof(VoiceNextConnection).Assembly)
                          .Append(typeof(DateTimeZoneProviders).Assembly)
-                         .Append(typeof(YarinGeorge.Utilities.Extra.MethodExtensions).Assembly);
+                         .Append(typeof(YarinGeorge.Utilities.Extensions.ExtraExtensions).Assembly);
 
                 sopts = sopts.WithReferences(asm);
                 Script<object> script = CSharpScript.Create(cs, sopts, typeof(TestVariables));

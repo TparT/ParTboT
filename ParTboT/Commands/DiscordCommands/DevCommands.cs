@@ -1,26 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using EasyConsole;
 using ParTboT.Services;
-using Renci.SshNet;
-using YarinGeorge.Utilities.Databases.MongoDB;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+using static ParTboT.Commands.DatabaseCommands;
 
 namespace ParTboT.Commands
 {
@@ -86,19 +77,19 @@ namespace ParTboT.Commands
         [RequireOwner]
         public async Task New(CommandContext ctx)
         {
-            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+            //await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            var services = ctx.CommandsNext.Services;
-            var mongo = (MongoCRUD)services.GetService(typeof(MongoCRUD));
-            StringBuilder sb = new();
+            //var services = ctx.CommandsNext.Services;
+            //var mongo = (MongoCRUD)services.GetService(typeof(MongoCRUD));
+            //StringBuilder sb = new();
 
-            foreach (var db in (await mongo.MongoClient.ListDatabaseNamesAsync()).Current)
-            {
-                sb.AppendLine(db);
-            }
+            //foreach (var db in (await mongo.MongoClien.ListDatabaseNamesAsync()).Current)
+            //{
+            //    sb.AppendLine(db);
+            //}
 
 
-            await ctx.RespondAsync($"{sb}").ConfigureAwait(false);
+            //await ctx.RespondAsync($"{sb}").ConfigureAwait(false);
 
 
         }

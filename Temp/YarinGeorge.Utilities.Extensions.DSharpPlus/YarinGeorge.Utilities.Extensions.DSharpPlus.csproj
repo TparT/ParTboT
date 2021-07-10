@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00917" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00917" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00917" />
+    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ParTboT.DbModels">
+      <HintPath>..\..\DiscordBots\ParTboT\ParTboT.DbModels\bin\Debug\net5.0\ParTboT.DbModels.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

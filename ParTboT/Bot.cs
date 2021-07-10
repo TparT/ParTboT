@@ -1,5 +1,4 @@
-﻿using CaptchaGen;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -11,10 +10,8 @@ using DSharpPlus.VoiceNext;
 using EasyConsole;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NetMQ;
 using ParTboT.Commands;
 using ParTboT.Commands.SlashCommands;
-using ParTboT.DbModels.ParTboTModels;
 using ParTboT.Events.Bot;
 using ParTboT.Events.Guilds.GuildMembers;
 using ParTboT.Services;
@@ -29,10 +26,8 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using YarinGeorge.Utilities.Databases.MongoDB;
-using YarinGeorge.Utilities.DsharpPlusUtils;
-using YarinGeorge.Utilities.Extra;
-
+using YarinGeorge.Utilities.Debugging;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
 namespace ParTboT
 {

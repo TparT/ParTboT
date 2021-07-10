@@ -5,12 +5,11 @@ using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.Exceptions;
 using Microsoft.Extensions.Logging;
-using ParTboT.Services;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using YarinGeorge.Utilities.DsharpPlusUtils;
-using YarinGeorge.Utilities.Extra;
+using YarinGeorge.Utilities.Debugging;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
 namespace ParTboT.Events.Bot
 {
@@ -29,7 +28,7 @@ namespace ParTboT.Events.Bot
             // let's log the error details
             //e.Context.Client.Logger.LogError(BotEventId, $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? $"{e.Context.Message.Content} (unknown command)"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
             bool SendEmbed = false;
-            await DSharpPlusUtils.LogBotError(e);
+            DSharpPlusUtils.LogBotError(e);
 
             // yes, the user lacks required permissions,
             // let them know

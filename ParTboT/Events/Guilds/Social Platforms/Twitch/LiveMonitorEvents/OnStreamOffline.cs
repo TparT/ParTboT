@@ -1,10 +1,7 @@
-﻿using DSharpPlus;
-using EasyConsole;
+﻿using EasyConsole;
 using Figgle;
 using System;
-using System.Threading.Tasks;
 using TwitchLib.Api.Services.Events.LiveStreamMonitor;
-using YarinGeorge.Utilities.Databases.MongoDB;
 
 namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
 {

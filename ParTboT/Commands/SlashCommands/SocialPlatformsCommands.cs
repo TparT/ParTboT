@@ -10,14 +10,12 @@ using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using Serilog;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tweetinvi.Models;
-using TwitchLib.Api;
 using TwitchLib.Api.V5.Models.Users;
-using YarinGeorge.Utilities.DsharpPlusUtils;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
 namespace ParTboT.Commands.SlashCommands
 {

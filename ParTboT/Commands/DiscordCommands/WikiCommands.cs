@@ -11,7 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
-using YarinGeorge.Utilities.Extra;
+using YarinGeorge.Utilities.Extensions;
 
 namespace ParTboT.Commands
 {

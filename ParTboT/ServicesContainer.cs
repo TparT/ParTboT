@@ -15,12 +15,10 @@ using Tweetinvi;
 using TwitchLib.Api;
 using TwitchLib.Api.Core;
 using TwitchLib.Api.Services;
-using YarinGeorge.LibTools;
+using YarinGeorge.ApiClients.CurrencyConverter;
 using YarinGeorge.ApiClients.TrackerGG;
-using YarinGeorge.Utilities.Databases.MongoDB;
-//using SteamKit.CSGO;
-//using SteamKit2;
-//using CsgoClient = SteamKit.CSGO.CsgoClient;
+using YarinGeorge.Databases.MongoDB;
+using YarinGeorge.Utilities.ZXingUtils;
 
 namespace ParTboT
 {
@@ -43,9 +41,8 @@ namespace ParTboT
         public BarcodeService BarcodeService { get; private set; }
         public UserVerifications UserVerifications { get; private set; }
 
-
         public TwitchAPI TwitchAPI { get; private set; }
-        public CurrencyConverter.Converter CurrencyConverterAPI { get; private set; }
+        public CurrencyConverterClient CurrencyConverterAPI { get; private set; }
         public GeniusClient GeniusAPI { get; private set; }
 
         public TwitterTweetsService TweetsService { get; private set; }

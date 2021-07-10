@@ -1,20 +1,11 @@
-﻿using DSharpPlus.Entities;
-using EasyConsole;
+﻿using EasyConsole;
+using Figgle;
+using ParTboT.DbModels.SocialPlatforms;
 using System;
-using ParTboT;
-using YarinGeorge.Utilities.Databases.MongoDB;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
-using Microsoft.Extensions.Logging;
 using TwitchLib.Api.Services.Events.LiveStreamMonitor;
-using ParTboT.DbModels;
-using Figgle;
-using TwitchLib.Api;
-using ParTboT.DbModels.SocialPlatforms;
 
 namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
 {

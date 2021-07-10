@@ -1,27 +1,22 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using ImageColorDefine;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Driver.Linq;
+using ParTboT.Converters;
+using ParTboT.DbModels.ParTboTModels;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
-using ImageColorDefine;
-using YarinGeorge.Utilities.Converters;
-using YarinGeorge.Utilities.Extra;
-using YarinGeorge.Utilities.DsharpPlusUtils;
 using System.Text;
-using MongoDB.Bson;
-using MongoDB.Driver.Linq;
-using Newtonsoft.Json;
-using ParTboT.DbModels.DSharpPlus;
-using DSharpPlus;
-using MongoDB.Driver;
-using ByteSizeLib;
-using ParTboT.DbModels.ParTboTModels;
+using System.Threading.Tasks;
+using YarinGeorge.Utilities;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
 namespace ParTboT.Commands
 {
@@ -235,7 +230,7 @@ namespace ParTboT.Commands
                 embed.Color = DiscordColor.Red;
                 embed.Description = $"{ctx.Client.CurrentUser.Username} and you both must have the 'Manage Server' permission in order to run this command!";
 
-                await ctx.LogBotError(UE);
+                ctx.LogBotError(UE);
                 await ctx.RespondAsync(embed).ConfigureAwait(false);
             }
 
@@ -495,7 +490,7 @@ namespace ParTboT.Commands
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
 
-            var color = await AverageImageColor.GetAverageColorByImageUrlCodeAsync(url, OutputType.Hex);
+            var color = await ColorMath.GetAverageColorHexByImageUrlAsync(url);
             await ctx.RespondAsync($"{color}").ConfigureAwait(false);
         }
     }

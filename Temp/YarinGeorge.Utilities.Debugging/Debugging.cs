@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 using Figgle;
 using EasyConsole;
-using System.Threading.Tasks;
 
-namespace YarinGeorge.Utilities.Extra
+namespace YarinGeorge.Utilities.Debugging
 {
-    public static class DebuggingUtils
+    public static class Debugging
     {
         public static async Task StatsTrack()
         {
             DateTime startTime = DateTime.Now;
             var AppName = Process.GetCurrentProcess().ProcessName;
-            Again:
+        Again:
             var delta = DateTime.Now - startTime;
 
             var Months = $"{delta.Days / 30:0#}";
@@ -29,7 +29,7 @@ namespace YarinGeorge.Utilities.Extra
             await Task.Delay(1000);
             goto Again;
         }
-        
+
         public static void OutputBigExceptionError(this Exception exception)
         {
             StringBuilder ExceptionErrorMessage = new StringBuilder();
@@ -42,17 +42,30 @@ namespace YarinGeorge.Utilities.Extra
 
             Output.WriteLine(ConsoleColor.Red, $"{ExceptionErrorMessage}");
         }
-        
-        //public static void WriteColorLine(this Output console, )
-        
-        public static void OutputBigError(string Contents = "")
+
+        public static async Task<(string CPU, string RAM)> CurrentAppPerfomanceStats()
         {
-            Output.WriteLine(ConsoleColor.Red, $"{FiggleFonts.Standard.Render($"[   ERROR   ]")}\n{Contents}");
+            var process = Process.GetCurrentProcess();
+
+            var startTime = DateTime.UtcNow;
+            var startCpuUsage = process.TotalProcessorTime;
+            await Task.Delay(500);
+
+            var endTime = DateTime.UtcNow;
+            var endCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
+            var cpuUsedMs = (endCpuUsage - startCpuUsage).TotalMilliseconds;
+            var totalMsPassed = (endTime - startTime).TotalMilliseconds;
+            var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
+            var CpuUsage = (cpuUsageTotal * 100).ToString();
+
+
+            return (CPU: CpuUsage, RAM: "0");
         }
 
+        public static void OutputBigError(string Contents = "") =>
+            Output.WriteLine(ConsoleColor.Red, $"{FiggleFonts.Standard.Render($"[   ERROR   ]")}\n{Contents}");
+
         public static void WriteFiggleColor(this string String, FiggleFont Font, ConsoleColor ConsoleColor)
-        {
-            Output.WriteLine(ConsoleColor, Font.Render(String));
-        }
+            => Output.WriteLine(ConsoleColor, Font.Render(String));
     }
 }

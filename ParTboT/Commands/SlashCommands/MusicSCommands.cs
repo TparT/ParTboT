@@ -9,8 +9,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using YarinGeorge.Utilities.ApiExtentions.GeniusApiExtention;
-using YarinGeorge.Utilities.Converters;
+using YarinGeorge.Utilities;
+using YarinGeorge.Utilities.Extensions.GeniusAPI;
 
 namespace ParTboT.Commands.SlashCommands
 {
@@ -49,10 +49,10 @@ namespace ParTboT.Commands.SlashCommands
 
                     if (Parts.Count() < 25)
                     {
-                        Color ArtistIconEC = await AverageImageColor.GetAverageColorByImageUrlAsync(hit.SongArtImageUrl).ConfigureAwait(false);
+                        Color ArtistIconEC = await ColorMath.GetAverageColorByImageUrlAsync(hit.SongArtImageUrl).ConfigureAwait(false);
                         DiscordEmbedBuilder embed = new()
                         {
-                            Author = new DiscordEmbedBuilder.EmbedAuthor 
+                            Author = new DiscordEmbedBuilder.EmbedAuthor
                             { Name = $"Lyrics for: {hit.FullTitle}", IconUrl = hit.PrimaryArtist.ImageUrl, Url = hit.Url },
 
                             Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
@@ -60,7 +60,7 @@ namespace ParTboT.Commands.SlashCommands
 
                             Color = new DiscordColor(ArtistIconEC.R, ArtistIconEC.G, ArtistIconEC.B),
 
-                            Footer = new DiscordEmbedBuilder.EmbedFooter 
+                            Footer = new DiscordEmbedBuilder.EmbedFooter
                             { Text = $"Source from: {hit.Url}", IconUrl = "https://images.genius.com/ba9fba1d0cdbb5e3f8218cbf779c1a49.300x300x1.jpg" }
                         };
 

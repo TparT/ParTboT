@@ -3,12 +3,12 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using ParTboT.Converters;
 using ParTboT.DbModels.ParTboTModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using YarinGeorge.Utilities.DsharpPlusUtils;
 
 namespace ParTboT.Commands.SlashCommands
 {
@@ -23,7 +23,7 @@ namespace ParTboT.Commands.SlashCommands
                 [SlashCommand("Invite", "Creates an invite barcode for this server.")]
                 public async Task InviteQR(InteractionContext ctx)
                 {
-                    
+
                 }
 
                 [SlashCommand("Custom", "Creates a QR barcode with the given text.")]

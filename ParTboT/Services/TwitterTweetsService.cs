@@ -1,21 +1,17 @@
 ﻿//using Microsoft.Extensions.Logging;
 using EasyConsole;
+using NetMQ;
 using ParTboT.DbModels.SocialPlatforms;
-using YarinGeorge.Utilities.Extra;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Tweetinvi;
 using Tweetinvi.Events;
 using Tweetinvi.Models;
 //using Tweetinvi.Streaming;
 //using Tweetinvi.Streaming.V2;
-using Tweetinvi.Parameters;
 using Tweetinvi.Streaming;
-using NetMQ;
 
 namespace ParTboT.Services
 {
