@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities;
+using YarinGeorge.Utilities.Extensions;
 using YarinGeorge.Utilities.Extensions.GeniusAPI;
 
 namespace ParTboT.Commands.SlashCommands
@@ -27,7 +28,7 @@ namespace ParTboT.Commands.SlashCommands
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
 
-                if ((  ctx.User.Presence.Activities is not null
+                if ((ctx.User.Presence.Activities is not null
                     && ctx.User.Presence.Activities.Select(x => x.ActivityType).Contains(ActivityType.ListeningTo))
                     || !string.IsNullOrWhiteSpace(SongName))
                 {
@@ -45,57 +46,10 @@ namespace ParTboT.Commands.SlashCommands
                     Song hit = Search.Response.Hits[0].Result;
 
                     List<string> Lyrics = await hit.GenerateLyricsParagraphs(Bot.Services.HttpClient).ConfigureAwait(false);
-                    IEnumerable<string> Parts = Lyrics.Cast<string>();
+                    List<string> Parts = Lyrics.Cast<string>().Where(x => x.Length > 1).ToList();
 
-                    if (Parts.Count() < 25)
-                    {
-                        Color ArtistIconEC = await ColorMath.GetAverageColorByImageUrlAsync(hit.SongArtImageUrl).ConfigureAwait(false);
-                        DiscordEmbedBuilder embed = new()
-                        {
-                            Author = new DiscordEmbedBuilder.EmbedAuthor
-                            { Name = $"Lyrics for: {hit.FullTitle}", IconUrl = hit.PrimaryArtist.ImageUrl, Url = hit.Url },
-
-                            Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
-                            { Url = hit.SongArtImageUrl },
-
-                            Color = new DiscordColor(ArtistIconEC.R, ArtistIconEC.G, ArtistIconEC.B),
-
-                            Footer = new DiscordEmbedBuilder.EmbedFooter
-                            { Text = $"Source from: {hit.Url}", IconUrl = "https://images.genius.com/ba9fba1d0cdbb5e3f8218cbf779c1a49.300x300x1.jpg" }
-                        };
-
-                        foreach (string Part in Parts)
-                        {
-                            string FirstLine = Part.splitlines()[1].ToString().TrimStart().TrimEnd();
-                            try
-                            {
-                                if (FirstLine.StartsWith("[") && FirstLine.EndsWith("]"))
-                                {
-                                    if (Part.Split(FirstLine)[1].Length > 1024)
-                                    {
-                                        embed.AddField(FirstLine, (Part.Split(FirstLine)[1]).Substring(0, 1024));
-                                        embed.AddField($"{FirstLine.Replace("]", "] - Second part")}", (Part.Split(FirstLine)[1])[1024..]);
-                                    }
-                                    else
-                                    {
-                                        embed.AddField(FirstLine, Part.Split(FirstLine)[1]);
-                                    }
-                                }
-                                else
-                                {
-                                    if (Part.Contains("[") && Part.Contains("]"))
-                                        embed.AddField($"\u200b", Part.Replace("[", "**[").Replace("]", "]**"));
-                                    else
-                                        embed.AddField($"\u200b", Part);
-                                }
-                            }
-                            catch (ArgumentException)
-                            {
-
-                            }
-                        }
-                        await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embed)).ConfigureAwait(false);
-                    }
+                    if (Parts.Count < 25)
+                        await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(await GenerateLyricsEmbed(hit, Parts))).ConfigureAwait(false);
                     else
                     {
                         await ctx.EditResponseAsync(new DiscordWebhookBuilder()
@@ -122,6 +76,62 @@ namespace ParTboT.Commands.SlashCommands
                 //var LyricsCommand = Bot.Commands.CreateFakeContext(ctx.User, ctx.Channel, $"?lyrics {SongName}", "?", Bot.Commands.FindCommand("lyrics", out _), SongName);
                 //await Bot.Commands.ExecuteCommandAsync(LyricsCommand);
                 #endregion From main bot command (Fake context)
+            }
+
+            private async Task<DiscordEmbedBuilder> GenerateLyricsEmbed(Song hit, List<string> Parts)
+            {
+                DiscordEmbedBuilder embed = null;
+
+                if (Parts.Count < 25)
+                {
+                    Color ArtistIconEC = await ColorMath.GetAverageColorByImageUrlAsync(hit.SongArtImageUrl).ConfigureAwait(false);
+                    embed = new()
+                    {
+                        Author = new DiscordEmbedBuilder.EmbedAuthor
+                        { Name = $"Lyrics for: {hit.FullTitle}", IconUrl = hit.PrimaryArtist.ImageUrl, Url = hit.Url },
+
+                        Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                        { Url = hit.SongArtImageUrl },
+
+                        Color = new DiscordColor(ArtistIconEC.R, ArtistIconEC.G, ArtistIconEC.B),
+
+                        Footer = new DiscordEmbedBuilder.EmbedFooter
+                        { Text = $"Source from: {hit.Url}", IconUrl = "https://images.genius.com/ba9fba1d0cdbb5e3f8218cbf779c1a49.300x300x1.jpg" }
+                    };
+
+                    foreach (string Part in Parts)
+                    {
+                        string FirstLine = Part.SplitLines()[0].TrimStart().TrimEnd();
+                        try
+                        {
+                            if (FirstLine.StartsWith("[") && FirstLine.EndsWith("]"))
+                            {
+                                if (Part.Split(FirstLine)[1].Length > 1024)
+                                {
+                                    embed.AddField(FirstLine, (Part.Split(FirstLine)[1]).Substring(0, 1024));
+                                    embed.AddField($"{FirstLine.Replace("]", "] - Second part")}", (Part.Split(FirstLine)[1])[1024..]);
+                                }
+                                else
+                                {
+                                    embed.AddField(FirstLine, Part.Split(FirstLine)[1]);
+                                }
+                            }
+                            else
+                            {
+                                if (Part.Contains("[") && Part.Contains("]"))
+                                    embed.AddField($"\u200b", Part.Replace("[", "**[").Replace("]", "]**"));
+                                else
+                                    embed.AddField($"\u200b", Part);
+                            }
+                        }
+                        catch (ArgumentException)
+                        {
+
+                        }
+                    }
+                }
+
+                return embed;
             }
         }
     }

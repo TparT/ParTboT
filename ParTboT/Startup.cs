@@ -1,56 +1,37 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using Microsoft.AspNetCore.Builder;
-//using Microsoft.AspNetCore.Hosting;
-//using Microsoft.AspNetCore.HttpOverrides;
-//using Microsoft.AspNetCore.HttpsPolicy;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.Extensions.Configuration;
-//using Microsoft.Extensions.DependencyInjection;
-//using Microsoft.Extensions.Hosting;
-//using Microsoft.Extensions.Logging;
-//using Microsoft.OpenApi.Models;
-//using YarinGeorge.Utilities.Databases.MongoDButilities;
+﻿using Hangfire;
+using Hangfire.Mongo;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
+using Owin;
+using System;
 
-//namespace GogyBot_Alpha
-//{
-//    public class Startup
-//    {
-//        public static MongoCRUD LDB { get; set; }
-//        public static MongoCRUD RemindersDB { get; set; }
+namespace ParTboT
+{
+    public class Startup
+    {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            Console.WriteLine("hello");
+        }
 
-//        // This method gets called by the runtime. Use this method to add services to the container.
-//        public void ConfigureServices(IServiceCollection services)
-//        {
-            
-//            //services.AddSingleton()
+        public void Configuration(IAppBuilder app)
+        {
+            app.Run(context =>
+            {
+                string t = DateTime.Now.Millisecond.ToString();
+                return context.Response.WriteAsync(t + " Test OWIN App");
+            });
+        }
 
-//            MongoCRUDConnectionOptions RemindersDBConOptions = new MongoCRUDConnectionOptions
-//            {
-//                Database = "Jobs",
-//                ConnectionString = "mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&ssl=false"
-//            };
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IRecurringJobManager recurringJobManager, MongoClient client)
+        {
+            Console.WriteLine("hello");
 
-//            MongoCRUDConnectionOptions StreamersDB = new MongoCRUDConnectionOptions
-//            {
-//                Database = "TestingStreamersAgain",
-//                ConnectionString = "mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&ssl=false"
-//            };
-
-//            LDB = new MongoCRUD(StreamersDB);
-//            RemindersDB = new MongoCRUD(RemindersDBConOptions);
-
-//            services.AddSingleton(bot);
-//            services.AddSingleton(LDB);
-//            services.AddSingleton(RemindersDB);
-//        }
-
-//        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-//        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-//        {
-
-//        }
-//    }
-//}
+            GlobalConfiguration.Configuration.UseMongoStorage(client, "Hangfire", new MongoStorageOptions() { CheckConnection = true }); ;
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
+        }
+    }
+}

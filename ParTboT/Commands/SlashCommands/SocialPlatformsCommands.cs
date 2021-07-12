@@ -325,8 +325,13 @@ namespace ParTboT.Commands.SlashCommands
                                         }
                                         else // Streamer doesn't exist in database, Adding them here now
                                         {
-
-
+                                            FinalEmbed
+                                                .WithTitle
+                                                    ($"{FirstMatch.Name}'s {Platform} was successfully added to {Channel_To_Receive_Alerts_On.Name}!" +
+                                                    $"by {ctx.Member.Nickname}")
+                                                .WithDescription
+                                                    ($"You are now following {User_Name_To_Follow} in the {Channel_To_Receive_Alerts_On.Name}!\n" +
+                                                    $"You will get notified as soon as they go live.");
                                         }
                                     }
                                     else if (ButtonSelected.Result.Id == "Cancel")// Abort mission blat!!!!!!!
@@ -345,7 +350,7 @@ namespace ParTboT.Commands.SlashCommands
 
                             case "Twitter":
                                 {
-                                    await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
+                                    //await ctx.TriggerThinkingAsync().ConfigureAwait(false);
 
                                     FinalEmbed.WithColor(new DiscordColor(0x1DA1F2)); // Twitter blue
 

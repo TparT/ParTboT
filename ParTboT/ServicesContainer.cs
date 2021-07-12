@@ -1,9 +1,15 @@
 ﻿using CaptchaN;
 using Genius;
+using Hangfire;
+using Hangfire.Mongo;
 using LiteDB;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Owin.Hosting;
+using MongoDB.Driver;
 using NetMQ;
 using Newtonsoft.Json;
+using Owin;
 using ParTboT.Services;
 using Serilog;
 using System;
@@ -62,6 +68,12 @@ namespace ParTboT
             Config = JsonConvert.DeserializeObject<ConfigJson>(json);
 
             return Config;
+        }
+
+
+        public class Startup
+        {
+
         }
 
 
@@ -133,6 +145,12 @@ namespace ParTboT
 
             #region Run Services
 
+            //using (WebApp.Start<Startup>("localhost:5000"))
+            //{
+            //    RecurringJob.AddOrUpdate(() => Console.WriteLine("Hangfire Works"), Cron.Minutely);
+            //    Console.WriteLine("Hangfire on");
+            //}
+
             NetMQPoller netMQPoller = new();
 
             if (TwitchMonitor)
@@ -143,6 +161,9 @@ namespace ParTboT
                 netMQPoller.Add(await RemindersService.StartRemindersServiceAsync(TimeSpan.FromMinutes(1)).ConfigureAwait(false));
 
             netMQPoller.Run();
+
+
+
 
             //using (var poller = new NetMQPoller { timer })
             //{
@@ -198,6 +219,15 @@ namespace ParTboT
             #endregion Surpress Garbage Collector
 
             return this;
+        }
+
+        public void Configuration(IAppBuilder app)
+        {
+            app.Run(context =>
+            {
+                string t = DateTime.Now.Millisecond.ToString();
+                return context.Response.WriteAsync(t + " Test OWIN App");
+            });
         }
     }
 }

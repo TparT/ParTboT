@@ -1,9 +1,11 @@
 ﻿using EasyConsole;
 using Figgle;
+using MongoDB.Driver;
 using ParTboT.DbModels.SocialPlatforms;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using TwitchLib.Api.Services.Events.LiveStreamMonitor;
 
@@ -33,19 +35,20 @@ namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
 
                 var API = ParTboT.Bot.Services.TwitchAPI.V5;
 
-                List<string> Channels = new List<string>();
+                //List<string> Channels = new List<string>();
 
-                var Streamers
-                    = _services.MongoDB.GetOnlySpecificFieldValuesAsync<TwitchStreamer>(_services.Config.LocalMongoDB_Streamers, "_id");
+                var Streamers =
+                    _services.MongoDB.GetCollectionAsync<TwitchStreamer>(_services.Config.LocalMongoDB_Streamers).GetAwaiter().GetResult()
+                    .AsQueryable().Select(f => f._id).Distinct();
 
-                foreach (var Streamer in Streamers.Result)
-                {
-                    Channels.Add(Streamer);
-                }
+                //foreach (var Streamer in Streamers)
+                //{
+                //    Channels.Add(Streamer);
+                //}
 
                 try
                 {
-                    ParTboT.Bot.Services.LiveMonitorService.SetChannelsById(Channels);
+                    ParTboT.Bot.Services.LiveMonitorService.SetChannelsById(Streamers.ToList());
                 }
                 catch (NullReferenceException NRE)
                 {

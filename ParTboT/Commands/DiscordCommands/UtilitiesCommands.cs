@@ -1,7 +1,10 @@
-﻿using DSharpPlus;
+﻿using ByteSizeLib;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using ImageColorDefine;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -16,7 +19,9 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities;
+using YarinGeorge.Utilities.Extensions;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
+using YarinGeorge.Utilities.Twitch.BttvFzz;
 
 namespace ParTboT.Commands
 {
@@ -469,6 +474,105 @@ namespace ParTboT.Commands
 
                 }.Build()).ConfigureAwait(false);
             }
+        }
+
+        [Command("bttv")]
+        //[Aliases("n")]
+        [Description("A new command")]
+        public async Task BTTV(CommandContext ctx, string ChannelID)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            BttvEmotesInfo BttvEmotes = await BttvFzzEmotes.GetBttvChannelEmotesList(ChannelID).ConfigureAwait(false);
+
+            var ChannelEmotes = BttvEmotes.ChannelEmotes.OrderBy(x => x.Code);
+            var SharedEmotes = BttvEmotes.SharedEmotes.OrderBy(x => x.Code);
+            Dictionary<string, string> AllEmotes = new();
+
+            //List<Page> pages = new();
+            //int page = 1;
+
+            foreach (var Emote in ChannelEmotes)
+            {
+                AllEmotes.Add(Emote.Code, $"https://cdn.betterttv.net/emote/{Emote.Id}/3x.{Emote.ImageType}");
+
+                //DiscordEmbedBuilder eb = new DiscordEmbedBuilder()
+                //    .WithTitle($"Showing {page}/{ChannelEmotes.Count() + SharedEmotes.Count()} BTTV emotes on {ChannelID}'s Twitch channel")
+                //    .WithThumbnail($"https://cdn.betterttv.net/emote/{Emote.Id}/3x.{Emote.ImageType}")
+                //    .AddField("Name", Emote.Code, true).AddField("Emote type", "Channel emote")
+                //    .WithFooter($"Page {page}/{ChannelEmotes.Count() + SharedEmotes.Count()}");
+
+                //pages.Add(new Page(null, eb));
+
+                //page++;
+            }
+
+            foreach (var Emote in SharedEmotes)
+            {
+                AllEmotes.Add(Emote.Code, $"https://cdn.betterttv.net/emote/{Emote.Id}/3x.{Emote.ImageType}");
+
+                //DiscordEmbedBuilder eb = new DiscordEmbedBuilder()
+                //    .WithTitle($"Showing {page}/{ChannelEmotes.Count() + SharedEmotes.Count()} BTTV emotes on {ChannelID}'s Twitch channel")
+                //    .WithThumbnail($"https://cdn.betterttv.net/emote/{Emote.Id}/3x.{Emote.ImageType}")
+                //    .AddField("Name", Emote.Code, true).AddField("Id", Emote.Id, true)
+                //    .AddField("Emote type", "Shared emote", true).AddField("Created by", Emote.User.Name, true)
+                //    .WithFooter($"Page {page}/{ChannelEmotes.Count() + SharedEmotes.Count()}");
+                //pages.Add(new Page(null, eb));
+
+                //page++;
+            }
+
+            WebClient wc = new();
+            foreach (var Emote in AllEmotes)
+            {
+                Console.WriteLine($"Uploading {Emote.Key}");
+                MemoryStream EmoteFileData = new(await wc.DownloadDataTaskAsync(Emote.Value).ConfigureAwait(false));
+                //System.ComponentModel.TypeDescriptor.
+                if (ByteSize.FromBytes(EmoteFileData.Length) > ByteSize.FromKiloBytes(256))
+                    continue;
+                else
+                    await ctx.Guild.CreateEmojiAsync(Emote.Key, EmoteFileData).ConfigureAwait(false);
+
+                await EmoteFileData.DisposeAsync();
+            }
+
+
+            //await ctx.Channel.SendPaginatedMessageAsync(ctx.User, pages, timeoutoverride: TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+
+        }
+
+        [Command("fzz")]
+        //[Aliases("n")]
+        [Description("A new command")]
+        public async Task FZZ(CommandContext ctx, string ChannelID)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            FzzEmotesInfo FzzEmotesInfo = await BttvFzzEmotes.GetFzzChannelEmotesList(ChannelID).ConfigureAwait(false);
+
+            var emotes =
+                from es in FzzEmotesInfo.Sets.Values
+                from ei in es.Emoticons
+                select ei;
+
+            var Emotes = emotes.OrderBy(x => x.Name);
+            List<Page> pages = new();
+            int page = 1;
+
+            foreach (var Emote in Emotes)
+            {
+                DiscordEmbedBuilder eb = new DiscordEmbedBuilder()
+                    .WithTitle($"Showing {page}/{Emotes.Count()} FZZ emotes on {FzzEmotesInfo.Room.DisplayName}'s Twitch channel")
+                    .WithThumbnail("https:" + Emote.Urls.Last().Value)
+                    .AddField("Name", Emote.Name, true).AddField("Created by", Emote.Owner.Name, true)
+                    .WithFooter($"Page {page}/{Emotes.Count()}");
+
+                pages.Add(new Page(null, eb));
+
+                page++;
+            }
+
+            await ctx.Channel.SendPaginatedMessageAsync(ctx.User, pages, timeoutoverride: TimeSpan.FromMinutes(5)).ConfigureAwait(false);
         }
 
         [Command("color")]

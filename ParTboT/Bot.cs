@@ -8,7 +8,9 @@ using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
 using DSharpPlus.VoiceNext;
 using EasyConsole;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ParTboT.Commands;
 using ParTboT.Commands.SlashCommands;
@@ -604,8 +606,17 @@ namespace ParTboT
             //    poller.Run();
             //}
 
+
+            //await CreateHostBuilder(Program.Args).Build().StartAsync();
             await Task.Delay(-1);
         }
+
+        //public static IHostBuilder CreateHostBuilder(string[] args) =>
+        //   Host.CreateDefaultBuilder(args)
+        //       .ConfigureWebHostDefaults(webBuilder =>
+        //       {
+        //           webBuilder.UseStartup<Startup>();
+        //       });
 
         private async Task Client_PresenceUpdated(DiscordClient sender, PresenceUpdateEventArgs e)
         {

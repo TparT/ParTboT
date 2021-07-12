@@ -1,4 +1,5 @@
 ﻿using DSharpPlus.CommandsNext.Exceptions;
+using Microsoft.Owin.Hosting;
 using System;
 using System.Threading.Tasks;
 
@@ -6,8 +7,10 @@ namespace ParTboT
 {
     public class Program
     {
+        public static string[] Args { get; set; }
         public static async Task Main(string[] args)
         {
+            Args = args;
             Console.ResetColor();
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.Black;

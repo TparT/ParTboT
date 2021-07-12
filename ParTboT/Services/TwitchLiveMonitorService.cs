@@ -1,7 +1,9 @@
-﻿using ParTboT.DbModels.SocialPlatforms;
+﻿using MongoDB.Driver;
+using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities.Debugging;
 
@@ -18,19 +20,20 @@ namespace ParTboT.Services
 
         public async Task ConfigLiveMonitorAsync()
         {
-            List<string> Channels = new List<string>();
+            //List<string> Channels = new List<string>();
 
             try
             {
-                var Streamers = await
-                    _services.MongoDB.GetOnlySpecificFieldValuesAsync<TwitchStreamer>(_services.Config.LocalMongoDB_Streamers, "_id");
+                var Streamers =
+                    _services.MongoDB.GetCollectionAsync<TwitchStreamer>(_services.Config.LocalMongoDB_Streamers).GetAwaiter().GetResult()
+                    .AsQueryable().Select(f => f._id).Distinct();
 
-                foreach (var Streamer in Streamers)
-                {
-                    Channels.Add(Streamer);
-                }
+                //foreach (var Streamer in Streamers)
+                //{
+                //    Channels.Add(Streamer);
+                //}
 
-                _services.LiveMonitorService.SetChannelsById(Streamers);
+                _services.LiveMonitorService.SetChannelsById(Streamers.ToList());
             }
             catch (Exception err)
             {

@@ -1,4 +1,5 @@
 ﻿//using Microsoft.Extensions.Logging;
+using DSharpPlus.Entities;
 using EasyConsole;
 using NetMQ;
 using ParTboT.DbModels.SocialPlatforms;
@@ -67,6 +68,14 @@ namespace ParTboT.Services
             if (!e.Tweet.Retweeted && TweetsStream.ContainsFollow(e.Tweet.CreatedBy.Id))
             {
                 Output.WriteLine(ConsoleColor.Cyan, $"\nNew tweet was posted by {e.Tweet.CreatedBy.ScreenName}!\n\nTweet text was:\n{e.Tweet.Text}");
+
+                await Bot.BotsChannel.SendMessageAsync
+                    (new DiscordEmbedBuilder()
+                        .WithTitle($"{e.Tweet.CreatedBy} just tweeted a new tweet!")
+                        .WithUrl(e.Tweet.Url)
+                        .WithDescription(e.Tweet.Text)
+                        .WithImageUrl(e.Tweet.Media[0].MediaURLHttps)
+                        .WithColor(new DiscordColor(0x1DA1F2)));
             }
             else
             {
@@ -135,7 +144,7 @@ namespace ParTboT.Services
 
         //    return timer;
 
-        //} 
+        //}
         #endregion old
     }
 }
