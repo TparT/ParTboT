@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ParTboT.Events.Bot
+namespace ParTboT.Events.BotEvents
 {
     public class CommandErrored_copy
     {

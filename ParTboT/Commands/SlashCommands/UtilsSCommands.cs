@@ -14,6 +14,8 @@ namespace ParTboT.Commands.SlashCommands
 {
     public class UtilsSCommands : SlashCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         [SlashCommandGroup("Utilities", "Useful everyday-use commands.")]
         public class Utils : SlashCommandModule
         {
@@ -35,7 +37,7 @@ namespace ParTboT.Commands.SlashCommands
             }
 
             [SlashCommandGroup("Reminders", "You know when you need to use one")]
-            public class Reminders : SlashCommandModule
+            public class Reminders : UtilsSCommands
             {
                 [SlashCommand("remind_me", "Sets a new reminder")]
                 public async Task Remind(InteractionContext ctx, [Option("minutes", "In how many minutes to remind")] long Minutes, [Option("description", "The description of the reminder.")] string Description, [Option("remind_in_dms", "Wether to remind you here with a @mention or in DMs.")] bool RemindInDMs = true)
@@ -58,7 +60,7 @@ namespace ParTboT.Commands.SlashCommands
                         ChannelToSendTo = ChannelToSendTo
                     };
 
-                    await Bot.Services.MongoDB.InsertOneRecordAsync<Reminder>("Reminders", reminder).ConfigureAwait(false);
+                    await Services.MongoDB.InsertOneRecordAsync<Reminder>("Reminders", reminder).ConfigureAwait(false);
 
                     await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($":+1:")).ConfigureAwait(false);
 
@@ -69,7 +71,7 @@ namespace ParTboT.Commands.SlashCommands
                 {
                     await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
 
-                    List<Reminder> reminders = await Bot.Services.MongoDB.LoadAllRecordsAsync<Reminder>("Reminders").ConfigureAwait(false);
+                    List<Reminder> reminders = await Services.MongoDB.LoadAllRecordsAsync<Reminder>("Reminders").ConfigureAwait(false);
 
                     var rs = reminders.Where(x => x.MemberToRemindTo.Id == ctx.Member.Id).ToArray();
 

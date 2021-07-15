@@ -21,7 +21,7 @@ namespace ParTboT.Commands
     [Group("follow")]
     public class FollowSocialCommands : BaseCommandModule
     {
-        public MongoCRUD db = Bot.Services.MongoDB;
+        public ServicesContainer Services { private get; set; }
 
         [Command("twitch")]
         [Description("Adds a new streamer to the list of streamers to get notified when they go live")]
@@ -42,7 +42,7 @@ namespace ParTboT.Commands
                 if (TwitchChannelToFollow.ToLower().StartsWith(TwitchChannelBaseLink))
                     TwitchChannelToFollow = TwitchChannelToFollow.Split(TwitchChannelBaseLink)[1];
 
-                TwitchLib.Api.V5.V5 API = Bot.Services.TwitchAPI.V5;
+                TwitchLib.Api.V5.V5 API = Services.TwitchAPI.V5;
 
                 if (TwitchChannelToFollow.ToLower().StartsWith(TwitchChannelBaseLink))
                     TwitchChannelToFollow = TwitchChannelToFollow.Split(TwitchChannelBaseLink).Last();
@@ -94,8 +94,8 @@ namespace ParTboT.Commands
 
                 if (ButtonSelected.Result.Id == "Confirm")
                 {
-                    IMongoCollection<TwitchStreamer> col = await Bot.Services.MongoDB.GetCollectionAsync<TwitchStreamer>("Streamers");
-                    (bool Exists, TwitchStreamer FoundRecord) StreamerRecord = await Bot.Services.MongoDB.DoesExistAsync<TwitchStreamer>(col, "_id", FirstMatch.Id);
+                    IMongoCollection<TwitchStreamer> col = await Services.MongoDB.GetCollectionAsync<TwitchStreamer>("Streamers");
+                    (bool Exists, TwitchStreamer FoundRecord) StreamerRecord = await Services.MongoDB.DoesExistAsync<TwitchStreamer>(col, "_id", FirstMatch.Id);
 
                     ChannelToSendTo CHupdate = new ChannelToSendTo
                     {
@@ -241,7 +241,7 @@ namespace ParTboT.Commands
                         try
                         {
                             Console.WriteLine("inserting streamer");
-                            await Bot.Services.MongoDB.InsertOneRecordAsync<TwitchStreamer>("Streamers", streamer);
+                            await Services.MongoDB.InsertOneRecordAsync<TwitchStreamer>("Streamers", streamer);
 
                             //Platform = "Twitch";
                             FinalEmbed

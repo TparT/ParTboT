@@ -67,7 +67,7 @@ namespace ParTboT.Commands
                 var globals = new TestVariables(ctx.Message, ctx.Client, ctx);
                 var sopts = ScriptOptions.Default;
                 sopts = sopts.WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text",
-                    "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.Entities", "DSharpPlus.VoiceNext", "ParTboT", "YarinGeorge", "YarinGeorge.Utilities.Extra",
+                    "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.Entities", "DSharpPlus.VoiceNext", "ParTboT", "YarinGeorge", "YarinGeorge.Utilities",
                     "DSharpPlus.CommandsNext", "DSharpPlus.Interactivity", "DSharpPlus.Interactivity.Extensions",
                     "Microsoft.Extensions.Logging", "NodaTime");
 

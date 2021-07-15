@@ -19,6 +19,8 @@ namespace ParTboT.Commands
     [Description("search for information around on some of the wikimedia websites")]
     public class WikiCommands : BaseCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         [Command("wikipedia")]
         [Aliases("p")]
         public async Task Wikipedia(CommandContext ctx, [Description("If you want to get results in a specific language, add a language code (E.g: **en** - for english, **he** - for hebrew, **es** - for spanish ...)")] string LanguageCode, [Description("The thing you want to get the information about")][RemainingText] string SearchWords)
@@ -43,7 +45,7 @@ namespace ParTboT.Commands
 
             //using var client = new HttpClient();
 
-            var PageSourceCode = await Bot.Services.HttpClient.GetStringAsync($"http://{LanguageCode}.wikipedia.org/w/api.php?format=xml&action=query&prop=extracts&titles={SearchWords}&redirects=true");
+            var PageSourceCode = await Services.HttpClient.GetStringAsync($"http://{LanguageCode}.wikipedia.org/w/api.php?format=xml&action=query&prop=extracts&titles={SearchWords}&redirects=true");
             var Search = SearchWords.Replace(" ", "_");
             var PageWikiUrl = $"https://{LanguageCode}.wikipedia.org/wiki/{Search}";
 

@@ -8,8 +8,10 @@ using ParTboT.DbModels.ParTboTModels;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using YarinGeorge.Databases.MongoDB;
+using YarinGeorge.Utilities.Extensions;
 
-namespace ParTboT.Events.Guilds.GuildMembers
+namespace ParTboT.Events.GuildEvents.GuildMembers
 {
     public class OnMemberJoined
     {
@@ -86,7 +88,7 @@ namespace ParTboT.Events.Guilds.GuildMembers
             if (e.Member.IsBot == false)
             {
                 DiscordChannel DMChannel = await e.Member.CreateDmChannelAsync().ConfigureAwait(false);
-                ParTboTGuildModel DbGuildConfig = await ParTboT.Bot.Services.MongoDB.LoadOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", e.Guild.Id);
+                ParTboTGuildModel DbGuildConfig = await Bot.Commands.Services.Get<MongoCRUD>().LoadOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", e.Guild.Id);
 
                 await DMChannel.TriggerTypingAsync().ConfigureAwait(false);
 

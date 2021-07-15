@@ -1,16 +1,24 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using Genius.Models.Response;
+using Genius.Models.Song;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using YarinGeorge.Utilities;
+using YarinGeorge.Utilities.Extensions;
 using YarinGeorge.Utilities.Extensions.GeniusAPI;
 
 namespace ParTboT.Commands
 {
     public class MusicCommands : BaseCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         [Command("song")]
         //[Aliases("n")]
         [Description("A new command")]
@@ -18,7 +26,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            var Genius = Bot.Services.GeniusAPI;
+            var Genius = Services.GeniusAPI;
             var Search = await Genius.SearchClient.Search(songName).ConfigureAwait(false);
 
             var hits = Search.Response.Hits;
@@ -56,84 +64,39 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            var Genius = Bot.Services.GeniusAPI;
-
-            if ((ctx.User.Presence.Activities is not null && ctx.User.Presence.Activities.Select(x => x.ActivityType).Contains(ActivityType.ListeningTo)) || !string.IsNullOrWhiteSpace(SongName))
+            if ((ctx.User.Presence.Activities is not null
+                && ctx.User.Presence.Activities.Select(x => x.ActivityType).Contains(ActivityType.ListeningTo))
+                || !string.IsNullOrWhiteSpace(SongName))
             {
-                var UserActivity = ctx.User.Presence.Activities.Where(x => x.ActivityType == ActivityType.ListeningTo).FirstOrDefault();
+                DiscordActivity UserActivity =
+                    ctx.User.Presence.Activities.Where(x => x.ActivityType == ActivityType.ListeningTo).FirstOrDefault();
 
-                if (SongName == null && UserActivity is not null && UserActivity.ActivityType == ActivityType.ListeningTo && UserActivity.Name.ToLower() == "Spotify".ToLower())
-                {
+                if (SongName == null
+                    && UserActivity is not null
+                    && UserActivity.ActivityType == ActivityType.ListeningTo
+                    && UserActivity.Name.ToLower() == "spotify"
+                    )
                     SongName = UserActivity.RichPresence.Details + " " + UserActivity.RichPresence.State;
+
+                SearchResponse Search = await Services.GeniusAPI.SearchClient.Search(SongName).ConfigureAwait(false);
+                Song hit = Search.Response.Hits[0].Result;
+
+                List<string> Lyrics = await hit.GenerateLyricsParagraphs(Services.HttpClient).ConfigureAwait(false);
+                List<string> Parts = Lyrics.Cast<string>().Where(x => x.Length > 1).ToList();
+
+                if (Parts.Count < 25)
+                    await ctx.RespondAsync(await GenerateLyricsEmbed(hit, Parts)).ConfigureAwait(false);
+                else
+                {
+                    await ctx.RespondAsync
+                        (
+                            $"Woa! That seems like a very long song...\n" +
+                            $"Unfotunatly, Discord prevents us (bots) from having more than 25 fields in embeds.\n" +
+                            $"But don't let that destroy your mood!" +
+                            $"If you still want to see the lyrics for {hit.Title} you could still check out {hit.Url}"
+                        )
+                        .ConfigureAwait(false);
                 }
-
-                var Search = await Genius.SearchClient.Search(SongName).ConfigureAwait(false);
-
-                var hits = Search.Response.Hits;
-                var hit = hits[0].Result;
-
-                var Parts = await hit.GenerateLyricsParagraphs();
-
-                //if (Parts.Count < 25)
-                //{
-                //    var interactivity = ctx.Client.GetInteractivity();
-
-                //    var Icon = hit.PrimaryArtist.ImageUrl;
-                //    var ArtistIconEC = await AverageImageColor.GetAverageColorByImageUrlAsync(Icon);
-                //    DiscordEmbedBuilder embed = new()
-                //    {
-                //        Author = new DiscordEmbedBuilder.EmbedAuthor { Name = $"Lyrics for: {hit.FullTitle}", IconUrl = hit.PrimaryArtist.ImageUrl, Url = hit.Url },
-
-                //        Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail { Url = hit.SongArtImageUrl },
-                //        Color = new DiscordColor(ArtistIconEC.R, ArtistIconEC.G, ArtistIconEC.B),
-                //        Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"Source from: {hit.Url}", IconUrl = "https://images.genius.com/ba9fba1d0cdbb5e3f8218cbf779c1a49.300x300x1.jpg" }
-                //    };
-
-                //    //int PartNumber = 0;
-                //    foreach (var Part in Parts)
-                //    {
-                //        var Field = Part;
-                //        var FirstLine = Field.splitlines()[1];
-                //        //PartNumber++;
-                //        try
-                //        {
-                //            if (FirstLine.ToString().TrimStart().StartsWith("[") && FirstLine.ToString().TrimEnd().EndsWith("]"))
-                //            {
-                //                if (Field.Split(FirstLine.ToString())[1].Length > 1024)
-                //                {
-                //                    embed.AddField(FirstLine.ToString(), (Field.Split(FirstLine.ToString())[1]).Substring(0, 1024));
-                //                    embed.AddField($"{FirstLine.ToString().Replace("]", "] - Second part")}", (Field.Split(FirstLine.ToString())[1])[1024..]);
-                //                }
-                //                else
-                //                {
-                //                    embed.AddField(FirstLine.ToString(), Field.Split(FirstLine.ToString())[1]);
-                //                }
-                //            }
-                //            else
-                //            {
-                //                if (Field.Contains("[") && Field.Contains("]"))
-                //                {
-                //                    Field = Field.Replace("[", "**[").Replace("]", "]**");
-                //                }
-                //                embed.AddField($"\u200b", Field);
-                //            }
-
-                //        }
-                //        catch (ArgumentException)
-                //        {
-
-                //        }
-                //    }
-                //    await ctx.RespondAsync(/*$"HeaderImageThumbnailUrl: {hit.HeaderImageThumbnailUrl}\nHeaderImageUrl: {hit.HeaderImageUrl}\nSongArtImageThumbnailUrl: {hit.SongArtImageThumbnailUrl}\nSongArtImageUrl: {hit.SongArtImageUrl}", */embed: embed).ConfigureAwait(false);
-                //}
-                //else
-                //{
-                //    await ctx.RespondAsync(
-                //    $"Woa! That seems like a very long song...\n" +
-                //    $"Unfotunatly, Discord prevents us (bots) from having more than 25 fields in embeds.\n" +
-                //    $"But don't let that destroy your mood!" +
-                //    $"If you still want to see the lyrics for {hit.Title} you could still check out {hit.Url}");
-                //}
             }
             else
             {
@@ -143,5 +106,61 @@ namespace ParTboT.Commands
         }
 
 
+
+        private async Task<DiscordEmbedBuilder> GenerateLyricsEmbed(Song hit, List<string> Parts)
+        {
+            DiscordEmbedBuilder embed = null;
+
+            if (Parts.Count < 25)
+            {
+                Color ArtistIconEC = await ColorMath.GetAverageColorByImageUrlAsync(hit.SongArtImageUrl, Services.HttpClient).ConfigureAwait(false);
+                embed = new()
+                {
+                    Author = new DiscordEmbedBuilder.EmbedAuthor
+                    { Name = $"Lyrics for: {hit.FullTitle}", IconUrl = hit.PrimaryArtist.ImageUrl, Url = hit.Url },
+
+                    Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail
+                    { Url = hit.SongArtImageUrl },
+
+                    Color = new DiscordColor(ArtistIconEC.R, ArtistIconEC.G, ArtistIconEC.B),
+
+                    Footer = new DiscordEmbedBuilder.EmbedFooter
+                    { Text = $"Source from: {hit.Url}", IconUrl = "https://images.genius.com/ba9fba1d0cdbb5e3f8218cbf779c1a49.300x300x1.jpg" }
+                };
+
+                foreach (string Part in Parts)
+                {
+                    string FirstLine = Part.SplitLines()[0].TrimStart().TrimEnd();
+                    try
+                    {
+                        if (FirstLine.StartsWith("[") && FirstLine.EndsWith("]"))
+                        {
+                            if (Part.Split(FirstLine)[1].Length > 1024)
+                            {
+                                embed.AddField(FirstLine, (Part.Split(FirstLine)[1]).Substring(0, 1024));
+                                embed.AddField($"{FirstLine.Replace("]", "] - Second part")}", (Part.Split(FirstLine)[1])[1024..]);
+                            }
+                            else
+                            {
+                                embed.AddField(FirstLine, Part.Split(FirstLine)[1]);
+                            }
+                        }
+                        else
+                        {
+                            if (Part.Contains("[") && Part.Contains("]"))
+                                embed.AddField($"\u200b", Part.Replace("[", "**[").Replace("]", "]**"));
+                            else
+                                embed.AddField($"\u200b", Part);
+                        }
+                    }
+                    catch (ArgumentException)
+                    {
+
+                    }
+                }
+            }
+
+            return embed;
+        }
     }
 }

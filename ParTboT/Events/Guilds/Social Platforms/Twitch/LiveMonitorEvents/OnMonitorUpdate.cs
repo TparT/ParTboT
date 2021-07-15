@@ -9,7 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TwitchLib.Api.Services.Events.LiveStreamMonitor;
 
-namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
+namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
 {
     public class OnMonitorUpdate
     {
@@ -33,7 +33,7 @@ namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
                 Output.WriteLine(ConsoleColor.Blue,
                     $"\n[{DateTime.Now:T} Live monitor - Updating] Fetching streamers information and setting new channels.");
 
-                var API = ParTboT.Bot.Services.TwitchAPI.V5;
+                var API = _services.TwitchAPI.V5;
 
                 //List<string> Channels = new List<string>();
 
@@ -48,16 +48,16 @@ namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
 
                 try
                 {
-                    ParTboT.Bot.Services.LiveMonitorService.SetChannelsById(Streamers.ToList());
+                    _services.LiveMonitorService.SetChannelsById(Streamers.ToList());
                 }
                 catch (NullReferenceException NRE)
                 {
                     Console.WriteLine("No channels to add!");
                 }
 
-                ParTboT.Bot.Services.LiveMonitorService.OnStreamUpdate -= Monitor_OnStreamUpdateAsync;
+                _services.LiveMonitorService.OnStreamUpdate -= Monitor_OnStreamUpdateAsync;
                 await Task.Delay(1000);
-                ParTboT.Bot.Services.LiveMonitorService.OnStreamUpdate += Monitor_OnStreamUpdateAsync;
+                _services.LiveMonitorService.OnStreamUpdate += Monitor_OnStreamUpdateAsync;
             }
             catch (Exception err)
             {

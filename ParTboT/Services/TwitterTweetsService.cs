@@ -6,6 +6,7 @@ using ParTboT.DbModels.SocialPlatforms;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Tweetinvi;
 using Tweetinvi.Events;
@@ -13,6 +14,7 @@ using Tweetinvi.Models;
 //using Tweetinvi.Streaming;
 //using Tweetinvi.Streaming.V2;
 using Tweetinvi.Streaming;
+using YarinGeorge.Databases.MongoDB;
 
 namespace ParTboT.Services
 {
@@ -30,14 +32,14 @@ namespace ParTboT.Services
             Log.Logger.Information("[Tweets service] Tweets service registered!");
         }
 
-        public async Task<NetMQTimer> StartTweetsService(TimeSpan Interval)
+        public async Task<NetMQTimer> StartTweetsService(TimeSpan Interval, MongoCRUD mongo)
         {
             TwitterClient Client = _services.TwitterClient;
 
             IAuthenticatedUser CurrentUser = await Client.Users.GetAuthenticatedUserAsync();
             _logger.Information($"[Tweets service] Logged-In to twitter as {CurrentUser.Name}\n");
 
-            List<TwitterTweeter> Tweeters = await Bot.Services.MongoDB.LoadAllRecordsAsync<TwitterTweeter>("Tweeters");
+            List<TwitterTweeter> Tweeters = await _services.MongoDB.LoadAllRecordsAsync<TwitterTweeter>("Tweeters");
             TweetsStream = Client.Streams.CreateFilteredStream();
 
             SetUsersAsync();
@@ -69,13 +71,16 @@ namespace ParTboT.Services
             {
                 Output.WriteLine(ConsoleColor.Cyan, $"\nNew tweet was posted by {e.Tweet.CreatedBy.ScreenName}!\n\nTweet text was:\n{e.Tweet.Text}");
 
-                await Bot.BotsChannel.SendMessageAsync
-                    (new DiscordEmbedBuilder()
+                DiscordEmbedBuilder TweetEmbed = new DiscordEmbedBuilder()
                         .WithTitle($"{e.Tweet.CreatedBy} just tweeted a new tweet!")
                         .WithUrl(e.Tweet.Url)
                         .WithDescription(e.Tweet.Text)
-                        .WithImageUrl(e.Tweet.Media[0].MediaURLHttps)
-                        .WithColor(new DiscordColor(0x1DA1F2)));
+                        .WithColor(new DiscordColor(0x1DA1F2));
+
+                if (e.Tweet.Media!.Any())
+                    TweetEmbed.WithImageUrl(e.Tweet.Media!.FirstOrDefault().MediaURLHttps);
+
+                await Bot.BotsChannel.SendMessageAsync(TweetEmbed).ConfigureAwait(false);
             }
             else
             {
@@ -87,7 +92,7 @@ namespace ParTboT.Services
         {
             _logger.Information($"[Tweets service] Fetching users from DB");
             long AddedCount = 0;
-            List<TwitterTweeter> Tweeters = await Bot.Services.MongoDB.LoadAllRecordsAsync<TwitterTweeter>("Tweeters");
+            List<TwitterTweeter> Tweeters = await _services.MongoDB.LoadAllRecordsAsync<TwitterTweeter>("Tweeters");
             foreach (TwitterTweeter Tweeter in Tweeters)
             {
                 if (!TweetsStream.ContainsFollow(Tweeter._id))

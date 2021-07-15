@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Zio;
 
-namespace ParTboT.Events.Bot
+namespace ParTboT.Events.BotEvents
 {
     public class UserRecognitionData
     {

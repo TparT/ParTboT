@@ -1,4 +1,5 @@
 ﻿using CaptchaN;
+using DSharpPlus;
 using Genius;
 using Hangfire;
 using Hangfire.Mongo;
@@ -41,6 +42,7 @@ namespace ParTboT
         public TwitterClient TwitterClient { get; private set; }
         public TrackerggClient TrackggClient { get; private set; }
         public HttpClient HttpClient { get; private set; }
+        public DiscordWebhookClient WebhooksClient { get; private set; }
 
         public SpellingCorrectingService SpellingCorrecting { get; private set; }
         public CodeTextGenerator RandomTextGenerator { get; private set; }
@@ -77,7 +79,7 @@ namespace ParTboT
         }
 
 
-        public async Task<ServicesContainer> InitializeServicesAsync(bool TwitchMonitor = true, bool TwitterMonitor = true, bool Reminders = true)
+        public async Task<ServicesContainer> InitializeServicesAsync()
         {
             Logger = Log.Logger;
 
@@ -127,6 +129,7 @@ namespace ParTboT
 
             TrackggClient = new(Config.TrackerGG);
             HttpClient = new();
+            WebhooksClient = new DiscordWebhookClient();
 
             // ========== Bot Util Services =========== \\
             SpellingCorrecting = new SpellingCorrectingService();
@@ -151,16 +154,7 @@ namespace ParTboT
             //    Console.WriteLine("Hangfire on");
             //}
 
-            NetMQPoller netMQPoller = new();
 
-            if (TwitchMonitor)
-                await Task.Run(async () => await LiveMonitor.ConfigLiveMonitorAsync().ConfigureAwait(false));
-            if (TwitterMonitor)
-                netMQPoller.Add(await TweetsService.StartTweetsService(TimeSpan.FromMinutes(1)).ConfigureAwait(false));
-            if (Reminders)
-                netMQPoller.Add(await RemindersService.StartRemindersServiceAsync(TimeSpan.FromMinutes(1)).ConfigureAwait(false));
-
-            netMQPoller.Run();
 
 
 
@@ -219,6 +213,19 @@ namespace ParTboT
             #endregion Surpress Garbage Collector
 
             return this;
+        }
+
+        public async Task StartServicesAsync(bool TwitchMonitor = true, bool TwitterMonitor = true, bool Reminders = true)
+        {
+            NetMQPoller netMQPoller = new();
+            if (TwitchMonitor)
+                await Task.Run(async () => await LiveMonitor.ConfigLiveMonitorAsync().ConfigureAwait(false));
+            if (TwitterMonitor)
+                netMQPoller.Add(await TweetsService.StartTweetsService(TimeSpan.FromMinutes(1), MongoDB).ConfigureAwait(false));
+            if (Reminders)
+                netMQPoller.Add(await RemindersService.StartRemindersServiceAsync(TimeSpan.FromMinutes(1)).ConfigureAwait(false));
+
+            netMQPoller.Run();
         }
 
         public void Configuration(IAppBuilder app)

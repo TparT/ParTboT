@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using YarinGeorge.Utilities.Debugging;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
-namespace ParTboT.Events.Bot
+namespace ParTboT.Events.BotEvents
 {
     public class CommandErrored
     {

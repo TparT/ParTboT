@@ -20,6 +20,8 @@ namespace ParTboT.Commands
     [RequireOwner]
     public class DatabaseCommands : BaseCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         [Command("car")]
         [Description("Adds a new record to the 'cars' database.")]
         public async Task Car(CommandContext ctx,
@@ -43,7 +45,7 @@ namespace ParTboT.Commands
             {
                 var emoji = DiscordEmoji.FromName(ctx.Client, ":white_check_mark:");
 
-                await Bot.Services.MongoDB.InsertOneRecordAsync
+                await Services.MongoDB.InsertOneRecordAsync
                     ("CarsBot", new CarModel
                     {
                         GuildName = guildname,
@@ -77,7 +79,7 @@ namespace ParTboT.Commands
 
             var emoji = DiscordEmoji.FromName(ctx.Client, ":white_check_mark:");
 
-            await Bot.Services.MongoDB.InsertOneRecordAsync
+            await Services.MongoDB.InsertOneRecordAsync
                             ("TwitchStreamers", new StreamersModule
                             {
                                 TwitchChannelName = TwitchChannelName,
@@ -94,7 +96,7 @@ namespace ParTboT.Commands
         public async Task GetRecs(CommandContext ctx, string Database, string table)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
-            var recs = await Bot.Services.MongoDB.LoadAllRecordsAsync<StreamersModule>(table);
+            var recs = await Services.MongoDB.LoadAllRecordsAsync<StreamersModule>(table);
 
             StringBuilder builder = new StringBuilder();
 

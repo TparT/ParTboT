@@ -4,8 +4,10 @@ using Microsoft.Extensions.Logging;
 using ParTboT.DbModels.ParTboTModels;
 using System;
 using System.Threading.Tasks;
+using YarinGeorge.Databases.MongoDB;
+using YarinGeorge.Utilities.Extensions;
 
-namespace ParTboT.Events.Bot
+namespace ParTboT.Events.BotEvents
 {
     class ClientGuildLeft
     {
@@ -18,7 +20,7 @@ namespace ParTboT.Events.Bot
                     $" - Left a Guild! [ Guild name: {e.Guild.Name} | Members count: {e.Guild.MemberCount} | Guild owner: {e.Guild.Owner} ]\n"
                 );
 
-            var DeletedGuild = await ParTboT.Bot.Services.MongoDB.DeleteOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", e.Guild.Id);
+            var DeletedGuild = await Bot.Commands.Services.Get<MongoCRUD>().DeleteOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", e.Guild.Id);
             Console.WriteLine(DeletedGuild.Name + " Was deleted from the database");
 
             //var client = ParTboT.Bot.Client;

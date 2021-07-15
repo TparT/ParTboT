@@ -3,7 +3,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.VoiceNext;
-using ParTboT.Events.Bot;
+using ParTboT.Events.BotEvents;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Concurrent;
@@ -32,7 +32,7 @@ namespace ParTboT.Commands
     //[Description("Testing new commands.")]
     public class NewCommand : BaseCommandModule
     {
-        public ServicesContainer services { private get; set; }
+        public ServicesContainer Services { private get; set; }
 
         public DiscordRole StreamersRole { get; set; }
         public static string OldName { get; set; }
@@ -46,7 +46,7 @@ namespace ParTboT.Commands
         [Description("A new command")]
         public async Task CAPTCHA(CommandContext ctx, int length)
         {
-            byte[] ImageBytes = await Bot.Services.UserVerifications.GenerateCAPTCHAImageAsync(Bot.Services.RandomTextGenerator.Generate(length));
+            byte[] ImageBytes = await Services.UserVerifications.GenerateCAPTCHAImageAsync(Services.RandomTextGenerator.Generate(length));
             MemoryStream ImageFile = new(ImageBytes);
             ImageFile.Position = 0;
 
@@ -75,7 +75,7 @@ namespace ParTboT.Commands
                 Guild = ctx.Guild,
                 Channels = (await ctx.Guild.GetChannelsAsync())
             };
-            await Bot.Services.MongoDB.InsertOneRecordAsync("test", DBG).ConfigureAwait(false);
+            await Services.MongoDB.InsertOneRecordAsync("test", DBG).ConfigureAwait(false);
             await ctx.RespondAsync(":+1:").ConfigureAwait(false);
         }
 

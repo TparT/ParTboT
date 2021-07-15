@@ -1,6 +1,6 @@
 ﻿using MongoDB.Driver;
 using ParTboT.DbModels.SocialPlatforms;
-using ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents;
+using ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using DSharpPlus.Net.Models;
 using System;
 
-namespace ParTboT.Events.Bot
+namespace ParTboT.Events.BotEvents
 {
     class ClientNewGuildJoin
     {

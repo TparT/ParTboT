@@ -14,6 +14,8 @@ namespace ParTboT.Commands
     [Aliases("conv")]
     public class ConvertCommands : BaseCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         #region Convert binary
         [Command("binary")]
         [Aliases("bin")]
@@ -180,7 +182,7 @@ namespace ParTboT.Commands
             try
             {
                 double result =
-                    await Bot.Services.CurrencyConverterAPI.ConvertAsync
+                    await Services.CurrencyConverterAPI.ConvertAsync
                     (Amount, (CurrencyType)Enum.Parse(typeof(CurrencyType), From.ToUpper()), (CurrencyType)Enum.Parse(typeof(CurrencyType), To.ToUpper()));
 
                 await ctx.RespondAsync($"{result}").ConfigureAwait(false);

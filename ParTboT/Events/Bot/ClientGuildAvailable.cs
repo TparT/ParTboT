@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System;
 
-namespace ParTboT.Events.Bot
+namespace ParTboT.Events.BotEvents
 {
     public class ClientGuildAvailable
     {
@@ -25,7 +25,7 @@ namespace ParTboT.Events.Bot
                 Id = e.Guild.Id,
                 Name = e.Guild.Name,
                 MemberCount = e.Guild.MemberCount,
-                Prefixes = new string[] { ParTboT.Bot.Services.Config.Prefix },
+                Prefixes = Bot.DefaultPrefixes,
             };
             if (sender.Guilds.ContainsKey(e.Guild.Id))
             {

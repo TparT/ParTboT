@@ -17,8 +17,20 @@ namespace ParTboT.Commands
 {
     public class FunCommands : BaseCommandModule
     {
-        public ServicesContainer services { private get; set; }
+        public ServicesContainer Services { private get; set; }
+        public Random Rng { private get; set; } // Implied public setter.
 
+        [Command("num")]
+        public async Task ServicesCommand(CommandContext ctx)
+        {
+            await ctx.RespondAsync($"Your number is: {Services.RandomTextGenerator.Generate(5)}");
+        }
+
+        [Command("random")]
+        public async Task RandomCommand(CommandContext ctx, int min, int max)
+        {
+            await ctx.RespondAsync($"Your number is: {Rng.Next(min, max)}");
+        }
 
         [Command("spam")]
         [Description("A new command")]
@@ -51,10 +63,10 @@ namespace ParTboT.Commands
 
             var Interactivity = ctx.Client.GetInteractivity();
 
-            var ReactionResult = await Interactivity.WaitForReactionAsync(
+            var ReactionResult = (await (await Interactivity.WaitForReactionAsync(
                 x => x.Message == Hello &&
                      x.User == ctx.User &&
-                     (x.Emoji == Bad || x.Emoji == Good)).ConfigureAwait(false);
+                     (x.Emoji == Bad || x.Emoji == Good)).ConfigureAwait(false)).HandleTimeouts(Hello).ConfigureAwait(false)).Value;
 
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
@@ -83,25 +95,31 @@ namespace ParTboT.Commands
         private Dictionary<string, string> RenderAllFonts(string Text, int CharsLimit = 0)
         {
             var result = new Dictionary<string, string>();
-
             PropertyInfo[] FontsTypes = typeof(FiggleFonts).GetProperties();
             string Render = string.Empty;
+
             foreach (var f in FontsTypes)
             {
-                Render = (f.GetValue(f.Name) as FiggleFont).Render(Text);
-                switch (CharsLimit)
+                try
                 {
-                    case not 0:
-                        if (Render.Length <= CharsLimit)
+                    Render = (f.GetValue(f.Name) as FiggleFont).Render(Text);
+                    switch (CharsLimit)
+                    {
+                        case not 0:
+                            if (Render.Length <= CharsLimit)
+                                result.Add(f.Name, Render);
+                            break;
+                        default:
                             result.Add(f.Name, Render);
-                        break;
-                    default:
-                        result.Add(f.Name, Render);
-                        break;
+                            break;
+                    }
                 }
+                catch { }
             }
+
             return result;
         }
+
 
         [Command("ascii")]
         [Aliases("textart")]
@@ -193,7 +211,7 @@ namespace ParTboT.Commands
         public async Task Chat(CommandContext ctx, string StreamerName)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
-            var chatters = await Bot.Services.TwitchAPI.Undocumented.GetChattersAsync(StreamerName).ConfigureAwait(false);
+            var chatters = await Services.TwitchAPI.Undocumented.GetChattersAsync(StreamerName).ConfigureAwait(false);
 
             using (MemoryStream ms = new MemoryStream())
             {

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ParTboT.Events.Guilds.Socials.Twitch.API_Services.LiveMonitor
+namespace ParTboT.Events.GuildEvents.Socials.Twitch.API_Services.LiveMonitor
 {
     public class MemberStreaming
     {

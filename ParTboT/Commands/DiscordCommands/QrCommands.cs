@@ -11,6 +11,8 @@ namespace ParTboT.Commands
     [Group("qr")]
     public class QrCommands : BaseCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         [Command("make")]
         [Aliases("n", "new", "create", "generate", "encode")]
         [Description("Generates a QR code from link or just text.")]
@@ -18,7 +20,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            MemoryStream ms = Bot.Services.BarcodeService.GenerateBarcodeImage(contents);
+            MemoryStream ms = Services.BarcodeService.GenerateBarcodeImage(contents);
             ms.Position = 0;
             await ctx.RespondAsync(new DiscordMessageBuilder().WithFile("Barcode.png", ms)).ConfigureAwait(false);
 
@@ -69,7 +71,7 @@ namespace ParTboT.Commands
         [Description("Reads a QR code from link or attachment.")]
         public async Task QrRead(CommandContext ctx, string Link = null)
         {
-            string BarcodeText = Bot.Services.BarcodeService.ReadBarcode
+            string BarcodeText = Services.BarcodeService.ReadBarcode
                 ((await WebRequest.Create(Link ?? ctx.Message.Attachments[0].Url).GetResponseAsync().ConfigureAwait(false)).GetResponseStream());
 
             await ctx.RespondAsync(BarcodeText).ConfigureAwait(false);

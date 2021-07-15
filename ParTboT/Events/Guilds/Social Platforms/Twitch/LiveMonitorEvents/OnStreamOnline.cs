@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using EasyConsole;
 using Figgle;
+using ParTboT;
 using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
@@ -11,7 +12,7 @@ using TwitchLib.Api.Helix.Models.Streams.GetStreams;
 using TwitchLib.Api.Helix.Models.Users.GetUsers;
 using TwitchLib.Api.Services.Events.LiveStreamMonitor;
 
-namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
+namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
 {
     public class OnStreamOnline
     {
@@ -38,7 +39,6 @@ namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
                 User channel = (await _services.TwitchAPI.Helix.Users.GetUsersAsync(ids: new List<string> { e.Stream.UserId }).ConfigureAwait(false)).Users.First();
 
                 Stream stream = e.Stream;
-
                 string name = stream.UserName;
                 string game = stream.GameName;
                 string avatar = channel.ProfileImageUrl;

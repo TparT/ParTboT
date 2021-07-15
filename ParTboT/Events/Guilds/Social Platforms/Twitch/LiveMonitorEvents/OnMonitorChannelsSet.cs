@@ -3,7 +3,7 @@ using Figgle;
 using System;
 using TwitchLib.Api.Services.Events;
 
-namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
+namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
 {
     public class OnMonitorChannelsSet
     {

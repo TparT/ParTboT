@@ -25,9 +25,10 @@ using YarinGeorge.Utilities.Twitch.BttvFzz;
 
 namespace ParTboT.Commands
 {
-
     public class UtilitiesCommands : BaseCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         [Command("nick")]
         [Description("Gives someone a new nickname.")]
         //[RequirePermissions(Permissions.ManageNicknames)]
@@ -102,7 +103,7 @@ namespace ParTboT.Commands
         public async Task Restore(CommandContext ctx)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
-            var Record = await Bot.Services.MongoDB.LoadOneRecByFieldAndValueAsync<GuildBackup>("Guilds", "_id", ctx.Guild.Id);
+            var Record = await Services.MongoDB.LoadOneRecByFieldAndValueAsync<GuildBackup>("Guilds", "_id", ctx.Guild.Id);
             var EmotesToUpload = Record.SourceGuild.Emojis.Where(x => !ctx.Guild.Emojis.Any(y => y.Value.Id == x.Value.Id)).ToList();
 
             foreach (var Emote in EmotesToUpload.Select(x => x.Value))
@@ -201,7 +202,7 @@ namespace ParTboT.Commands
                 };
 
 
-                await Bot.Services.MongoDB.UpsertAsync<GuildBackup>("Guilds", ctx.Guild.Id, GB).ConfigureAwait(false);
+                await Services.MongoDB.UpsertAsync<GuildBackup>("Guilds", ctx.Guild.Id, GB).ConfigureAwait(false);
                 //await ctx.RespondAsync(":+1:").ConfigureAwait(false);
 
                 using (MemoryStream ms = new MemoryStream())

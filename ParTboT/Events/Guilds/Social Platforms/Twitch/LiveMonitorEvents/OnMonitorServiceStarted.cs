@@ -3,7 +3,7 @@ using System;
 using TwitchLib.Api.Services.Events;
 using YarinGeorge.Utilities.Debugging;
 
-namespace ParTboT.Events.Guilds.SocialPlatforms.Twitch.LiveMonitorEvents
+namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
 {
     public class OnMonitorServiceStarted
     {

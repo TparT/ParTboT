@@ -3,7 +3,6 @@ using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
 using Genius.Models.Response;
 using Genius.Models.Song;
-using IronPython.Runtime.Operations;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -17,8 +16,10 @@ namespace ParTboT.Commands.SlashCommands
 {
     public class MusicSCommands : SlashCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         [SlashCommandGroup("Music", "Play songs and find information such as Lyrics, Singer, Release date and more using this catagory.")]
-        public class Lyrics : SlashCommandModule
+        public class Lyrics : MusicSCommands
         {
             [SlashCommand("lyrics", "Find lyrics for a song you like (or hate), by name or by the song you are listening to on Spotify.")]
             public async Task SongLyrics
@@ -42,10 +43,10 @@ namespace ParTboT.Commands.SlashCommands
                         )
                         SongName = UserActivity.RichPresence.Details + " " + UserActivity.RichPresence.State;
 
-                    SearchResponse Search = await Bot.Services.GeniusAPI.SearchClient.Search(SongName).ConfigureAwait(false);
+                    SearchResponse Search = await Services.GeniusAPI.SearchClient.Search(SongName).ConfigureAwait(false);
                     Song hit = Search.Response.Hits[0].Result;
 
-                    List<string> Lyrics = await hit.GenerateLyricsParagraphs(Bot.Services.HttpClient).ConfigureAwait(false);
+                    List<string> Lyrics = await hit.GenerateLyricsParagraphs(Services.HttpClient).ConfigureAwait(false);
                     List<string> Parts = Lyrics.Cast<string>().Where(x => x.Length > 1).ToList();
 
                     if (Parts.Count < 25)
@@ -84,7 +85,7 @@ namespace ParTboT.Commands.SlashCommands
 
                 if (Parts.Count < 25)
                 {
-                    Color ArtistIconEC = await ColorMath.GetAverageColorByImageUrlAsync(hit.SongArtImageUrl).ConfigureAwait(false);
+                    Color ArtistIconEC = await ColorMath.GetAverageColorByImageUrlAsync(hit.SongArtImageUrl, Services.HttpClient).ConfigureAwait(false);
                     embed = new()
                     {
                         Author = new DiscordEmbedBuilder.EmbedAuthor

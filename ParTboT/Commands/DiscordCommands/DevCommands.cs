@@ -3,6 +3,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using EasyConsole;
+using Newtonsoft.Json;
 using ParTboT.Services;
 using System;
 using System.Diagnostics;
@@ -21,6 +22,7 @@ namespace ParTboT.Commands
     //[Hidden]
     public class DevCommands : BaseCommandModule
     {
+        public ServicesContainer Services { private get; set; }
 
         //[Command("slashadd")]
         ////[Description("A new command")]
@@ -48,7 +50,23 @@ namespace ParTboT.Commands
         //    await ctx.RespondAsync($"Uploaded with code {UploadedCommand.Id}").ConfigureAwait(false);
         //}
 
+        [Command("wh")]
+        public async Task Webhook(CommandContext ctx, [RemainingText] string Name)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
+            //DiscordMessage msg = await ctx.Channel.GetMessageAsync(msgid).ConfigureAwait(false);
+            DiscordWebhook wh = await ctx.Channel.CreateWebhookAsync(Name).ConfigureAwait(false);
+            await ctx.RespondAsync(JsonConvert.SerializeObject(wh)/*Bot.Services.WebhooksClient.AddWebhook(wh).Id.ToString()*/).ConfigureAwait(false);
+        }
+
+        [Command("broadcast")]
+        [Aliases("bc")]
+        public async Task Broadcast(CommandContext ctx, ulong WebhookId, [RemainingText] string text)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+            await Services.WebhooksClient.GetRegisteredWebhook(WebhookId).ExecuteAsync(new DiscordWebhookBuilder().WithContent(text)).ConfigureAwait(false);
+        }
 
         [Command("edit")]
         public async Task Edit(CommandContext ctx, ulong msgid, [RemainingText] string text)

@@ -8,15 +8,13 @@ using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
 using DSharpPlus.VoiceNext;
 using EasyConsole;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ParTboT.Commands;
 using ParTboT.Commands.SlashCommands;
-using ParTboT.Events.Bot;
-using ParTboT.Events.Guilds.GuildMembers;
-using ParTboT.Services;
+using ParTboT.Events.BotEvents;
+using ParTboT.Events.GuildEvents.GuildMembers;
+using Seq.App.Discord;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
@@ -35,17 +33,21 @@ namespace ParTboT
 {
     public class Bot
     {
+        //public AsyncEventHandler<Bot, BotInitializedEventArgs> BotInitialized;
+
         #region GET-SET
 
-        public static ServicesContainer Services { get; private set; }
+        public ServicesContainer Services { get; private set; }
         public static ConcurrentDictionary<ulong, PagedMessage> PagedMessagesPool { get; set; } = new();
         public static DateTime UpTime { get; private set; }
         public static DiscordClient Client { get; private set; }
         public static CommandsNextExtension Commands { get; private set; }
+        public static string[] DefaultPrefixes { get; private set; }
         public VoiceNextExtension Voice { get; private set; }
         public Dictionary<ulong, DiscordChannel> TempCreatedVoiceChannels = new();
 
         public static DiscordChannel BotsChannel { get; set; }
+        public static DiscordChannel LoggingChannel { get; set; }
 
         #endregion
 
@@ -61,9 +63,13 @@ namespace ParTboT
                 .WriteTo.Seq("http://localhost:5341")
                 //.WriteTo.EventLog(typeof(Bot).Assembly.FullName, typeof(Bot).Assembly.FullName, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
                 .CreateLogger();
+            DiscordReactor reactor = new()
+            {
+                BaseUrl = "http://localhost:5341/",
+                DiscordWebhookUrl = "https://canary.discord.com/api/webhooks/864172525301923840/kprd3Hkg22CW67-ohoseCGQOi6LHROwTUkg2_kbB4Hlo5H7UNraAch4M8nhypv79ftkt"
+            };
 
             ILoggerFactory logFactory = new LoggerFactory().AddSerilog();
-
             #endregion
 
             #region SETUP: Bot config
@@ -71,6 +77,7 @@ namespace ParTboT
             Services = new ServicesContainer();
 
             ConfigJson configJson = await Services.InitConfig("config.json");
+            DefaultPrefixes = new string[] { configJson.Prefix };
 
             DiscordConfiguration config = new DiscordConfiguration
             {
@@ -88,10 +95,11 @@ namespace ParTboT
 
             #region Services
 
+            Services = await Services.InitializeServicesAsync();
             ServiceProvider services =
                 new ServiceCollection()
-                    .AddSingleton<ServicesContainer>()
-                    .AddSingleton<RemindersService>()
+                    .AddSingleton(Services)
+                    .AddSingleton<Random>()
 
                 .BuildServiceProvider();
 
@@ -131,7 +139,8 @@ namespace ParTboT
 
             #endregion
 
-
+            Client.SocketErrored += (s, e) => { _ = Task.Run(async () => { Console.WriteLine(e.Exception.ToString()); }); return Task.CompletedTask;  };
+            Client.ClientErrored += (s, e) => { _ = Task.Run(async () => { Console.WriteLine(e.Exception.ToString()); }); return Task.CompletedTask;  };
 
             #endregion
 
@@ -550,7 +559,6 @@ namespace ParTboT
 
             #endregion
 
-            DiscordActivity BootingUp = new DiscordActivity("booting up", ActivityType.Playing);
 
             UpTime = DateTime.Now;
 
@@ -570,14 +578,15 @@ namespace ParTboT
             //slash.RegisterCommands<MainSlashCommandsContainer>(745008583178977370);
             #endregion
 
+            DiscordActivity BootingUp = new DiscordActivity("booting up", ActivityType.Playing);
             await Client.ConnectAsync(BootingUp);
 
             BotsChannel = await Client.GetChannelAsync(784445037244186734).ConfigureAwait(false);
+            LoggingChannel = await Client.GetChannelAsync(864128561728454666).ConfigureAwait(false);
 
 
             Task.Run(async () => StatsTrack());
 
-            await Services.InitializeServicesAsync(true, true, true);
 
             //Task.Run(async () =>
             //{
@@ -608,6 +617,8 @@ namespace ParTboT
 
 
             //await CreateHostBuilder(Program.Args).Build().StartAsync();
+            //await BotInitialized.Invoke(this, new BotInitializedEventArgs { Bot = this });
+            await Services.StartServicesAsync(true, true, true);
             await Task.Delay(-1);
         }
 
