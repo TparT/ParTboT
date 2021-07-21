@@ -109,6 +109,37 @@ namespace ParTboT.Commands
             await ctx.RespondAsync($"Results:\n{results}").ConfigureAwait(false);
         }
 
+        [Command("renamecol")]
+        public async Task RenameCollectionCMD(CommandContext ctx, string From, string To)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            var col = await Services.MongoDB.GetCollectionAsync<dynamic>(From).ConfigureAwait(false);
+            await col.Database.RenameCollectionAsync(From, To);
+
+            await ctx.RespondAsync($"Successfully changed collection name from: {From} | to: {To}").ConfigureAwait(false);
+        }
+
+        [Command("transfer")]
+        public async Task RenameDBCommand(CommandContext ctx, string SchemaTypeName, string From, string To)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            var FromDB = Services.MongoDB.MongoClient.GetDatabase(From);
+            var ToDB = Services.MongoDB.MongoClient.GetDatabase(To);
+
+            //List<string> ColsList = await (await FromDB.ListCollectionNamesAsync().ConfigureAwait(false)).ToListAsync().ConfigureAwait(false);
+            //foreach (var Collection in ColsList)
+            //{
+            //    await ToDB.CreateCollectionAsync(Collection).ConfigureAwait(false);
+            //    var ColRecs = await FromDB.GetCollection<BsonDocument>(Collection).FindAsync(new BsonDocument());
+            //    ToDB.GetCollection(Collection).InsertManyAsync(ColRecs.ToEnumerable())
+            //}
+
+
+            await ctx.RespondAsync($"Successfully changed collection name from: {From} | to: {To}").ConfigureAwait(false);
+        }
+
         public class StreamersModule
         {
             [BsonId]

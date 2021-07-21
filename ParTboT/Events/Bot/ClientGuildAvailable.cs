@@ -16,8 +16,14 @@ namespace ParTboT.Events.BotEvents
     {
         private static readonly EventId BotEventId;
         public DiscordMember Discordmember { get; }
+        private ServicesContainer Services { get; }
 
-        public async static Task Client_GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
+        public ClientGuildAvailable(ServicesContainer services)
+        {
+            Services = services;
+        }
+
+        public async Task Client_GuildAvailable(DiscordClient sender, GuildCreateEventArgs e)
         {
             #region New server... yes? Then add to database!
             ParTboTGuildModel NewGuild = new()
@@ -26,10 +32,11 @@ namespace ParTboT.Events.BotEvents
                 Name = e.Guild.Name,
                 MemberCount = e.Guild.MemberCount,
                 Prefixes = Bot.DefaultPrefixes,
+                SocialsFollows = new() { Facebook = new(), FloatPlane = new(), Instagram = new(), LinkedIn = new(), TwitchStreamers = new(), Twitter = new(), YouTubers = new() }
             };
             if (sender.Guilds.ContainsKey(e.Guild.Id))
             {
-                //await Bot.Services.MongoDB.InsertOneRecordAsync("Guilds", NewGuild).ConfigureAwait(false);
+                await Services.MongoDB.InsertOneRecordAsync("Guilds", NewGuild).ConfigureAwait(false);
             }
 
             #endregion

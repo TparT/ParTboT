@@ -1,8 +1,8 @@
-﻿//using Microsoft.Extensions.Logging;
-using DSharpPlus.Entities;
+﻿using DSharpPlus.Entities;
 using EasyConsole;
 using NetMQ;
 using ParTboT.DbModels.SocialPlatforms;
+using ParTboT.DbModels.SocialPlatforms.Shared;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -11,10 +11,7 @@ using System.Threading.Tasks;
 using Tweetinvi;
 using Tweetinvi.Events;
 using Tweetinvi.Models;
-//using Tweetinvi.Streaming;
-//using Tweetinvi.Streaming.V2;
 using Tweetinvi.Streaming;
-using YarinGeorge.Databases.MongoDB;
 
 namespace ParTboT.Services
 {
@@ -32,7 +29,7 @@ namespace ParTboT.Services
             Log.Logger.Information("[Tweets service] Tweets service registered!");
         }
 
-        public async Task<NetMQTimer> StartTweetsService(TimeSpan Interval, MongoCRUD mongo)
+        public async Task<NetMQTimer> StartTweetsService(TimeSpan Interval)
         {
             TwitterClient Client = _services.TwitterClient;
 
@@ -71,6 +68,9 @@ namespace ParTboT.Services
             {
                 Output.WriteLine(ConsoleColor.Cyan, $"\nNew tweet was posted by {e.Tweet.CreatedBy.ScreenName}!\n\nTweet text was:\n{e.Tweet.Text}");
 
+                TwitterTweeter tweeter =
+                    await _services.MongoDB.LoadOneRecByFieldAndValueAsync<TwitterTweeter>("Tweeters", "_id", e.Tweet.CreatedBy.Id).ConfigureAwait(false);
+
                 DiscordEmbedBuilder TweetEmbed = new DiscordEmbedBuilder()
                         .WithTitle($"{e.Tweet.CreatedBy} just tweeted a new tweet!")
                         .WithUrl(e.Tweet.Url)
@@ -80,11 +80,15 @@ namespace ParTboT.Services
                 if (e.Tweet.Media!.Any())
                     TweetEmbed.WithImageUrl(e.Tweet.Media!.FirstOrDefault().MediaURLHttps);
 
-                await Bot.BotsChannel.SendMessageAsync(TweetEmbed).ConfigureAwait(false);
+                foreach (FollowingGuild Guild in tweeter.FollowingGuilds.Values)
+                {
+                    await (await Bot.Client.GetChannelAsync(Guild.ChannelToSendTo.ChannelIDToSend).ConfigureAwait(false))
+                        .SendMessageAsync(Guild.ChannelToSendTo.CustomMessage, TweetEmbed).ConfigureAwait(false);
+                }
             }
             else
             {
-                Output.WriteLine(ConsoleColor.Cyan, $"\nNONONONOPPPP posted by {e.Tweet.CreatedBy.ScreenName}!\n\nRe-Tweet text was:\n{e.Tweet.Text}");
+                //Output.WriteLine(ConsoleColor.Cyan, $"\nNONONONOPPPP posted by {e.Tweet.CreatedBy.ScreenName}!\n\nRe-Tweet text was:\n{e.Tweet.Text}");
             }
         }
 

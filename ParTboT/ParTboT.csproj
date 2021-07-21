@@ -127,7 +127,6 @@
   <ItemGroup>
     <Folder Include="Events\Guilds\Social Platforms\Instagram\" />
     <Folder Include="Events\Guilds\Social Platforms\Reddit\" />
-    <Folder Include="Events\Guilds\Social Platforms\Twitter\" />
     <Folder Include="Events\Guilds\Social Platforms\YouTube\" />
     <Folder Include="TempFiles\" />
   </ItemGroup>

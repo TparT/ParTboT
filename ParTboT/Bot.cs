@@ -134,7 +134,7 @@ namespace ParTboT
 
             Client.UseInteractivity(new InteractivityConfiguration
             {
-                Timeout = TimeSpan.FromSeconds(10)
+                Timeout = TimeSpan.FromSeconds(90)
             });
 
             #endregion
@@ -223,8 +223,10 @@ namespace ParTboT
 
             #region REGISTRATION: *BOT* Events
 
+            ClientGuildAvailable cga = new(Services);
+
             Client.Ready += ClientReady.Client_ReadyEvent;
-            Client.GuildAvailable += ClientGuildAvailable.Client_GuildAvailable;
+            Client.GuildAvailable += cga.Client_GuildAvailable;
             Client.GuildCreated += ClientNewGuildJoin.Client_NewGuildJoin;
             Client.GuildDeleted += ClientGuildLeft.Client_GuildLeft;
 
@@ -572,6 +574,7 @@ namespace ParTboT
             slash.RegisterCommands<MusicSCommands>(745008583178977370);
             //slash.RegisterCommands<Reminders>(745008583178977370);
             slash.RegisterCommands<SocialPlatformsCommands>(745008583178977370);
+            slash.RegisterCommands<SocialPlatformsCommands>(778975635514982421);
             slash.RegisterCommands<ChannelSCommands>(745008583178977370);
             slash.RegisterCommands<TestCommands>(745008583178977370);
             //slash.RegisterCommands<EditChannel>(745008583178977370);

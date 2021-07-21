@@ -1,6 +1,8 @@
 ﻿using DSharpPlus.Entities;
 using EasyConsole;
 using Figgle;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using ParTboT;
 using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.DbModels.SocialPlatforms.Shared;
@@ -29,12 +31,24 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
 
         public async void Monitor_OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+            Console.WriteLine("EEEEEEEEEEEEEEEEE");
+
             try
             {
                 #region API Fetch info
-                List<FollowingGuild> FollowingGuilds =
+                var StreamerRecord =
                     (await _services.MongoDB.LoadOneRecByFieldAndValueAsync<TwitchStreamer>
-                    (_services.Config.LocalMongoDB_Streamers, "_id", e.Stream.UserId).ConfigureAwait(false)).FollowingGuilds;
+                    (_services.Config.LocalMongoDB_Streamers, "_id", e.Stream.UserId).ConfigureAwait(false));
 
                 User channel = (await _services.TwitchAPI.Helix.Users.GetUsersAsync(ids: new List<string> { e.Stream.UserId }).ConfigureAwait(false)).Users.First();
 
@@ -68,7 +82,8 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
 
                 embed.ImageUrl = $"{preview}?time={DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
 
-                foreach (FollowingGuild FollowingGuild in FollowingGuilds)
+
+                foreach (FollowingGuild FollowingGuild in StreamerRecord.FollowingGuilds.Select(x => x.Value))
                 {
                     try
                     {
@@ -78,7 +93,7 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
                         //if (FollowingGuild.EmbedColor != 0)
                         //    embed.Color = new DiscordColor(FollowingGuild.EmbedColor);
 
-                        await client.SendMessageAsync(GuildAlertChannel, $"{FollowingGuild.ChannelToSendTo.CustomMessage}\n", embed: embed).ConfigureAwait(false);
+                        await GuildAlertChannel.SendMessageAsync($"{FollowingGuild.ChannelToSendTo.CustomMessage}\n", embed: embed).ConfigureAwait(false);
                     }
                     catch (Exception exc)
                     {

@@ -19,6 +19,9 @@
     <Reference Include="YarinGeorge">
       <HintPath>..\YarinGeorge\bin\Debug\net5.0\YarinGeorge.dll</HintPath>
     </Reference>
+    <Reference Include="YarinGeorge.Databases.MongoDB">
+      <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Databases.MongoDB\bin\Debug\netstandard2.1\YarinGeorge.Databases.MongoDB.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

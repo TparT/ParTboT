@@ -15,6 +15,8 @@ namespace ParTboT.Commands
     // THIS COMMAND WAS RIPPED FROM VelvetThePanda which ripped it from Emzi0767#1837.
     public class EvalCommand : BaseCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         [Command("eval")]
         [Aliases("evalcs", "cseval", "roslyn")]
         [Description("Evaluates C# code.")]
@@ -64,7 +66,7 @@ namespace ParTboT.Commands
             try
             {
                 // TODO: make sure all imports are good again!
-                var globals = new TestVariables(ctx.Message, ctx.Client, ctx);
+                var globals = new TestVariables(ctx.Message, ctx.Client, ctx, Services);
                 var sopts = ScriptOptions.Default;
                 sopts = sopts.WithImports("System", "System.Collections.Generic", "System.Linq", "System.Text",
                     "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.Entities", "DSharpPlus.VoiceNext", "ParTboT", "YarinGeorge", "YarinGeorge.Utilities",
@@ -114,7 +116,7 @@ namespace ParTboT.Commands
 
         public record TestVariables
         {
-            public TestVariables(DiscordMessage msg, DiscordClient client, CommandContext ctx)
+            public TestVariables(DiscordMessage msg, DiscordClient client, CommandContext ctx, ServicesContainer services)
             {
                 Client = client;
                 Context = ctx;
@@ -122,6 +124,7 @@ namespace ParTboT.Commands
                 Channel = msg.Channel;
                 Guild = Channel.Guild;
                 User = Message.Author;
+                Services = services;
 
                 if (Guild != null) Member = Guild.GetMemberAsync(User.Id).ConfigureAwait(false).GetAwaiter().GetResult();
             }
@@ -131,7 +134,7 @@ namespace ParTboT.Commands
             public DiscordUser User { get; }
             public DiscordMember Member { get; }
             public CommandContext Context { get; }
-
+            public ServicesContainer Services { get; }
             public DiscordClient Client { get; }
         }
     }

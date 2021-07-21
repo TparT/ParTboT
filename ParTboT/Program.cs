@@ -1,6 +1,15 @@
 ﻿using DSharpPlus.CommandsNext.Exceptions;
 using Microsoft.Owin.Hosting;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.Options;
+using MongoDB.Bson.Serialization.Serializers;
+using ParTboT.DbModels.SocialPlatforms;
+using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ParTboT
@@ -15,6 +24,21 @@ namespace ParTboT
             Console.BackgroundColor = ConsoleColor.Black;
             Console.ForegroundColor = ConsoleColor.Black;
             Console.Clear();
+
+            //ConventionRegistry.Register(
+            //    "DictionaryRepresentationConvention",
+            //    new ConventionPack { new DictionaryRepresentationConvention(DictionaryRepresentation.ArrayOfArrays) },
+            //    _ => true);
+
+            //BsonClassMap.RegisterClassMap<TwitchStreamer>(cm =>
+            //{
+            //    cm.AutoMap();
+            //    var memberMap = cm.GetMemberMap(x => x.FollowingGuilds);
+            //    var serializer = memberMap.GetSerializer();
+            //    if (serializer is IDictionaryRepresentationConfigurable dictionaryRepresentationSerializer)
+            //        serializer = dictionaryRepresentationSerializer.WithDictionaryRepresentation(DictionaryRepresentation.Document);
+            //    memberMap.SetSerializer(serializer);
+            //});
 
             try
             {

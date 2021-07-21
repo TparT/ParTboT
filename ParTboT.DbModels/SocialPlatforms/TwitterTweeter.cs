@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Options;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,8 @@ namespace ParTboT.DbModels.SocialPlatforms
         //public long LastTweetID { get; set; }
         public string UserPageURL { get; set; }
         public string UserProfileImgURL { get; set; }
-        public List<FollowingGuild> FollowingGuilds { get; set; }
+        [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]
+        public Dictionary<string, FollowingGuild> FollowingGuilds { get; set; }
         public DateTime DateTimeAddedToTheDatabase { get; set; }
     }
 }

@@ -14,26 +14,25 @@ namespace ParTboT.Services
         private ServicesContainer _services { get; set; }
 
         public TwitchLiveMonitorService(ServicesContainer services)
-        {
-            _services = services;
-        }
+            => _services = services;
 
         public async Task ConfigLiveMonitorAsync()
         {
-            //List<string> Channels = new List<string>();
-
             try
             {
                 var Streamers =
                     _services.MongoDB.GetCollectionAsync<TwitchStreamer>(_services.Config.LocalMongoDB_Streamers).GetAwaiter().GetResult()
                     .AsQueryable().Select(f => f._id).Distinct();
 
+                var strmrs = Streamers.ToList();
+                strmrs.Add("248431239");
+
                 //foreach (var Streamer in Streamers)
                 //{
                 //    Channels.Add(Streamer);
                 //}
 
-                _services.LiveMonitorService.SetChannelsById(Streamers.ToList());
+                _services.LiveMonitorService.SetChannelsById(strmrs);
             }
             catch (Exception err)
             {

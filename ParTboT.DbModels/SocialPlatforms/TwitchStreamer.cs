@@ -1,4 +1,6 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Options;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
 using System.Collections.Concurrent;
@@ -34,7 +36,8 @@ namespace ParTboT.DbModels.SocialPlatforms
         public string StreamerName { get; set; }
         public string ChannelURL { get; set; }
         public string ChannelIconURL { get; set; }
-        public List<FollowingGuild> FollowingGuilds { get; set; }
+        [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]
+        public Dictionary<string, FollowingGuild> FollowingGuilds { get; set; }
         public DateTime DateTimeAddedToTheDatabase { get; set; }
     }
 }

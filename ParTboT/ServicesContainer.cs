@@ -221,7 +221,7 @@ namespace ParTboT
             if (TwitchMonitor)
                 await Task.Run(async () => await LiveMonitor.ConfigLiveMonitorAsync().ConfigureAwait(false));
             if (TwitterMonitor)
-                netMQPoller.Add(await TweetsService.StartTweetsService(TimeSpan.FromMinutes(1), MongoDB).ConfigureAwait(false));
+                netMQPoller.Add(await TweetsService.StartTweetsService(TimeSpan.FromMinutes(1)).ConfigureAwait(false));
             if (Reminders)
                 netMQPoller.Add(await RemindersService.StartRemindersServiceAsync(TimeSpan.FromMinutes(1)).ConfigureAwait(false));
 

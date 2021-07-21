@@ -57,7 +57,7 @@ namespace ParTboT.Commands.SlashCommands
 
                 //msg = StartMessage;
 
-                InteractivityResult<ComponentInteractionCreateEventArgs> FirstSideDecision = (await (await StartMessage.WaitForButtonAsync(timeoutOverride: TimeSpan.FromMinutes(0.5))).HandleTimeouts(ctx, MsgBuilder).ConfigureAwait(false)).Value; ;
+                InteractivityResult<ComponentInteractionCreateEventArgs> FirstSideDecision = (await (await StartMessage.WaitForButtonAsync(timeoutOverride: TimeSpan.FromSeconds(40))).HandleTimeouts(ctx, MsgBuilder).ConfigureAwait(false)).Value; ;
                 TicTacToeSide FirstChosenSide = FirstSideDecision.Result.Id == "SideX" ? TicTacToeSide.X : TicTacToeSide.O;
 
                 TicTacToePlayer Player1 = new()
@@ -85,7 +85,7 @@ namespace ParTboT.Commands.SlashCommands
 
                 DiscordUser SecondUser = FirstSideDecision.Result.User == ctx.User ? Opponent : ctx.User;
 
-                InteractivityResult<ComponentInteractionCreateEventArgs> SecondSideDecision = (await (await FirstSideDecision.Result.Message.WaitForButtonAsync(SecondUser, timeoutOverride: TimeSpan.FromSeconds(10))).HandleTimeouts(ctx, MsgBuilder).ConfigureAwait(false)).Value;
+                InteractivityResult<ComponentInteractionCreateEventArgs> SecondSideDecision = (await (await FirstSideDecision.Result.Message.WaitForButtonAsync(SecondUser, timeoutOverride: TimeSpan.FromSeconds(15))).HandleTimeouts(ctx, MsgBuilder).ConfigureAwait(false)).Value;
                 TicTacToeSide SecondChosenSide = SecondSideDecision.Result.Id == "SideX" ? TicTacToeSide.X : TicTacToeSide.O;
 
                 TicTacToePlayer Player2 = new()
@@ -156,7 +156,7 @@ namespace ParTboT.Commands.SlashCommands
                     if (Ended == true)
                         break;
 
-                    InteractivityResult<ComponentInteractionCreateEventArgs> ButtonPressed = (await (await SecondSideDecision.Result.Message.WaitForButtonAsync(UserWithTurn, timeoutOverride: TimeSpan.FromSeconds(10))).HandleTimeouts(ctx, MsgBuilder).ConfigureAwait(false)).Value;
+                    InteractivityResult<ComponentInteractionCreateEventArgs> ButtonPressed = (await (await SecondSideDecision.Result.Message.WaitForButtonAsync(UserWithTurn, timeoutOverride: TimeSpan.FromSeconds(15))).HandleTimeouts(ctx, MsgBuilder).ConfigureAwait(false)).Value;
                     UserWithTurn = ButtonPressed.Result.User == ctx.User ? SecondUser : ctx.User;
 
                     TicTacToeGameResponse GameAct = TicTacToe.Play(TicTacToe.Players[ButtonPressed.Result.User.Id.ToString()], int.Parse(ButtonPressed.Result.Id));

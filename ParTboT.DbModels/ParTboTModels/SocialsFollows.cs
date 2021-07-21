@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Options;
+using System.Collections.Generic;
 
 namespace ParTboT.DbModels.ParTboTModels
 {
@@ -7,12 +9,12 @@ namespace ParTboT.DbModels.ParTboTModels
     /// </summary>
     public class SocialsFollows
     {
-        public Dictionary<string, string> TwitchStreamers { get; set; } = null;
-        public Dictionary<string, string> YouTubers { get; set; } = null;
-        public Dictionary<string, string> FloatPlane { get; set; } = null;
-        public Dictionary<string, string> Twitter { get; set; } = null;
-        public Dictionary<string, string> Instagram { get; set; } = null;
-        public Dictionary<string, string> Facebook { get; set; } = null;
-        public Dictionary<string, string> LinkedIn { get; set; } = null;
+        public List<KeyValuePair<string, string>> TwitchStreamers { get; set; }
+        public List<KeyValuePair<string, string>> YouTubers { get; set; }
+        public List<KeyValuePair<string, string>> FloatPlane { get; set; }
+        public List<KeyValuePair<string, string>> Twitter { get; set; }
+        public List<KeyValuePair<string, string>> Instagram { get; set; }
+        public List<KeyValuePair<string, string>> Facebook { get; set; }
+        public List<KeyValuePair<string, string>> LinkedIn { get; set; }
     }
 }
