@@ -7,7 +7,6 @@ using ParTboT.Converters;
 using ParTboT.DbModels.ParTboTModels;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -86,7 +85,7 @@ namespace ParTboT.Commands.SlashCommands
             [SlashCommand("remind_me", "Sets a new reminder.")]
             public async Task Remind(InteractionContext ctx, [Option("minutes", "In how many minutes to remind")] long Minutes, [Option("description", "The description of the reminder.")] string Description, [Option("remind_in_dms", "Wether to remind you here with a @mention or in DMs.")] bool RemindInDMs = true)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
+                await ctx.TriggerThinkingAsync().ConfigureAwait(false);
                 ulong ChannelToSendTo = RemindInDMs ? (await ctx.Member.CreateDmChannelAsync().ConfigureAwait(false)).Id : ctx.Channel.Id;
 
                 DateTime now = DateTime.UtcNow;
@@ -113,7 +112,7 @@ namespace ParTboT.Commands.SlashCommands
             [SlashCommand("active_reminders", "Gets reminders")]
             public async Task Reminder(InteractionContext ctx)
             {
-                await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
+                await ctx.TriggerThinkingAsync().ConfigureAwait(false);
 
                 List<Reminder> reminders = await Services.MongoDB.LoadAllRecordsAsync<Reminder>("Reminders").ConfigureAwait(false);
 
