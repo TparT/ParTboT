@@ -83,7 +83,7 @@ namespace ParTboT.Commands.SlashCommands
         [SlashCommandGroup("Reminders", "You know when you need to use one")]
         public class Reminders : UtilsSCommands
         {
-            [SlashCommand("remind_me", "Sets a new reminder")]
+            [SlashCommand("remind_me", "Sets a new reminder.")]
             public async Task Remind(InteractionContext ctx, [Option("minutes", "In how many minutes to remind")] long Minutes, [Option("description", "The description of the reminder.")] string Description, [Option("remind_in_dms", "Wether to remind you here with a @mention or in DMs.")] bool RemindInDMs = true)
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource).ConfigureAwait(false);
