@@ -708,7 +708,7 @@ namespace ParTboT
         private async Task Slash_SlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
         {
             //e.Exception.OutputBigExceptionError();
-            Console.WriteLine(e.Exception.ToString());
+            e.LogBotError();
             await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent("An error has occurred, Please try again later.")).ConfigureAwait(false);
         }
 

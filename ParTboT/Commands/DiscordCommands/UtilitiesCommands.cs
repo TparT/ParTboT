@@ -484,7 +484,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            BttvEmotesInfo BttvEmotes = await BttvFzzEmotes.GetBttvChannelEmotesList(ChannelID).ConfigureAwait(false);
+            BttvEmotesInfo BttvEmotes = await BttvFzzEmotes.GetBttvChannelEmotesListAsync(ChannelID, Services.HttpClient).ConfigureAwait(false);
 
             var ChannelEmotes = BttvEmotes.ChannelEmotes.OrderBy(x => x.Code);
             var SharedEmotes = BttvEmotes.SharedEmotes.OrderBy(x => x.Code);
@@ -549,7 +549,7 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            FzzEmotesInfo FzzEmotesInfo = await BttvFzzEmotes.GetFzzChannelEmotesList(ChannelID).ConfigureAwait(false);
+            FzzEmotesInfo FzzEmotesInfo = await BttvFzzEmotes.GetFzzChannelEmotesListAsync(ChannelID, Services.HttpClient).ConfigureAwait(false);
 
             var emotes =
                 from es in FzzEmotesInfo.Sets.Values

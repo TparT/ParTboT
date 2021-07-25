@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00919" />
+    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00928" />
     <PackageReference Include="EasyConsole" Version="1.1.0" />
     <PackageReference Include="Figgle" Version="0.4.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.13.0" />

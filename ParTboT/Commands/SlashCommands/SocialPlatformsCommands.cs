@@ -5,15 +5,15 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using EasyConsole;
-using MongoDB.Bson;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using ParTboT.DbModels.ParTboTModels;
 using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.DbModels.SocialPlatforms.Shared;
-using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Tweetinvi.Models;
 using TwitchLib.Api.V5.Models.Users;
@@ -189,7 +189,7 @@ namespace ParTboT.Commands.SlashCommands
                                     ).ConfigureAwait(false);
 
                                 InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelected =
-                                    (await (await ConfirmingMessage.WaitForButtonAsync(ctx.User).ConfigureAwait(false))
+                                    (await (await ConfirmingMessage.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
                                     .HandleTimeouts(ConfirmingMessage).ConfigureAwait(false)).Value;
 
                                 interaction = ButtonSelected.Result.Interaction;
@@ -258,7 +258,7 @@ namespace ParTboT.Commands.SlashCommands
                                             .ConfigureAwait(false);
 
                                             InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelectedSecondStep =
-                                                (await (await ButtonSelected.Result.Message.WaitForButtonAsync(ctx.User).ConfigureAwait(false))
+                                                (await (await ButtonSelected.Result.Message.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
                                                 .HandleTimeouts(ConfirmingMessage)).Value;
 
                                             interaction = ButtonSelectedSecondStep.Result.Interaction;
@@ -409,7 +409,7 @@ namespace ParTboT.Commands.SlashCommands
                                     ).ConfigureAwait(false);
 
                                 InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelected =
-                                    (await (await ConfirmingMessage.WaitForButtonAsync(ctx.User).ConfigureAwait(false))
+                                    (await (await ConfirmingMessage.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
                                     .HandleTimeouts(ConfirmingMessage).ConfigureAwait(false)).Value;
 
                                 interaction = ButtonSelected.Result.Interaction;
@@ -480,7 +480,7 @@ namespace ParTboT.Commands.SlashCommands
                                             .ConfigureAwait(false);
 
                                             InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelectedSecondStep =
-                                                (await (await ButtonSelected.Result.Message.WaitForButtonAsync(ctx.User).ConfigureAwait(false))
+                                                (await (await ButtonSelected.Result.Message.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
                                                 .HandleTimeouts(ConfirmingMessage)).Value;
 
                                             interaction = ButtonSelectedSecondStep.Result.Interaction;
@@ -632,7 +632,7 @@ namespace ParTboT.Commands.SlashCommands
                     .WithTitle($":no_entry:  error!")
                     .WithDescription(exc.ToString());
 
-                Log.Error(exc, $"Error in: {nameof(SocialPlatformsCommands)}");
+                ctx.Client.Logger.LogError(exc, $"Error in: {nameof(SocialPlatformsCommands)}");
             }
 
             if (interaction.Type == InteractionType.ApplicationCommand)
@@ -675,9 +675,8 @@ namespace ParTboT.Commands.SlashCommands
             //await Services.MongoDB.LoadOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", ctx.Guild.Id).ConfigureAwait(false);
             List<TwitchStreamer> FollowedStreamers =
                 await (await (await Services.MongoDB.GetCollectionAsync<TwitchStreamer>
-                (Services.Config.LocalMongoDB_Streamers).ConfigureAwait(false)).FindAsync(Builders<TwitchStreamer>.Filter.AnyEq
-                ("FollowingGuilds.k", GuildIdStr))).ToListAsync();
-
+                (Services.Config.LocalMongoDB_Streamers).ConfigureAwait(false))
+                .FindAsync(Builders<TwitchStreamer>.Filter.AnyEq("FollowingGuilds.k", GuildIdStr))).ToListAsync();
 
             //MongoDB.Driver.GeoJsonObjectModel.GeoJson
 
@@ -701,7 +700,7 @@ namespace ParTboT.Commands.SlashCommands
             DiscordMessage msg = await ctx.EditResponseAsync(wb).ConfigureAwait(false);
 
             InteractivityResult<ComponentInteractionCreateEventArgs> SelectionResult =
-                await ctx.Client.GetInteractivity().WaitForSelectAsync(msg, ComponentID).ConfigureAwait(false);
+                await msg.WaitForSelectAsync(ctx.User, ComponentID, CancellationToken.None).ConfigureAwait(false);
 
             string Selection = SelectionResult.Result.Values.FirstOrDefault();
 

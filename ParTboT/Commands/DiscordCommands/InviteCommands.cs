@@ -1,60 +1,43 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using System;
-using System.Drawing.Imaging;
+using DSharpPlus.Entities;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using DSharpPlus.Entities;
-using ZXing;
-using ZXing.QrCode;
-
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
 namespace ParTboT.Commands
 {
     [Group("invite")]
+    [Description("Invite people to this server using these commands!")]
     public class InviteCommands : BaseCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         [Command("inviteqr")]
-        //[Aliases("")]
-        [Description("Generates a QR code from link or just text.")]
-        public async Task InviteQR(CommandContext ctx, [RemainingText, Description("The contents of the QR code")] string contents)
+        [Aliases("qr")]
+        [Description("Generates a QR code containing this server's invite link.")]
+        public async Task InviteQR
+            (CommandContext ctx,
+            [Description("Time until this invite will expire (Defaults to 1 Day).")] int TimeInSecs = 86400,
+            [Description("Maximum number of uses (Defaults to no limit).")] int Uses = 0,
+            [Description("Automatically kicks members who joined and dissconnected without assigning a role.")] bool Temp = false)
         {
-            await ctx.TriggerTypingAsync();
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            // instantiate a writer object
-            var barcodeWriter = new BarcodeWriter
-            {
-                // QR code format/type
-                Format = BarcodeFormat.QR_CODE,
-                // QR code image output size
-                Options = new QrCodeEncodingOptions
-                {
-                    Width = 400,
-                    Height = 400
-                }
-            };
+            DiscordInvite invite = await ctx.Guild.GetOrCreateInviteAsync(TimeInSecs, Uses, Temp).ConfigureAwait(false);
 
-            var ms = new MemoryStream();
-            barcodeWriter.Write(contents).Save(ms, ImageFormat.Png);
-
-            // If you're going to read from the stream, you may need to reset the position to the start
+            MemoryStream ms = Services.BarcodeService.GenerateBarcodeImage(invite.ToString());
             ms.Position = 0;
 
-            var Message = new DiscordMessageBuilder();
-            Message.WithFile("BarcodeFileFromStream.png", ms);
+            await ctx.RespondAsync
+                (new DiscordMessageBuilder()
+                    .WithFile($"Invite_{invite.Code}.png", ms)
+                    .AddEmbed(new DiscordEmbedBuilder().WithThumbnail(Formatter.AttachedImageUrl($"Invite_{invite.Code}.png"))))
+                .ConfigureAwait(false);
 
-
-            await ctx.RespondAsync(Message).ConfigureAwait(false);
-
-            //System.IO.MemoryStream.Reset
-
-            byte[] buffer = ms.GetBuffer();
-            Array.Clear(buffer, 0, buffer.Length);
-            ms.Position = 0;
-            ms.SetLength(0);
-            ms.Dispose();
-            ms.Close();
+            await ms.DisposeAsync();
         }
     }
 

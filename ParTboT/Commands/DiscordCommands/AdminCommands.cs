@@ -1,13 +1,8 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using System.Net;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using DSharpPlus.Entities;
-using DSharpPlus;
-using System.IO;
-using System;
+using System.Threading.Tasks;
 
 namespace ParTboT.Commands
 {

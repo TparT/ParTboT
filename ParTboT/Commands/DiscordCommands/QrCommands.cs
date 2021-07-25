@@ -27,7 +27,6 @@ namespace ParTboT.Commands
             ms.SetLength(0);
             ms.Dispose();
             ms.Close();
-
             #region old way
             /*System.IO.DirectoryInfo WorkingPath = new DirectoryInfo($"C:\\Users\\yarin\\Documents\\Visual studio projects\\Discord\\C# Discord bots\\GogyBot_Alpha\\GogyBot Alpha\\GogyBot Alpha\\TempFiles\\QR\\Generated\\");
 

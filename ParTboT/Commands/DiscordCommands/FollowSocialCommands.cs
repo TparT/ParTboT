@@ -11,9 +11,11 @@ using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TwitchLib.Api.V5.Models.Users;
 using YarinGeorge.Databases.MongoDB;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 using static ParTboT.Commands.DatabaseCommands;
 
 namespace ParTboT.Commands
@@ -90,7 +92,8 @@ namespace ParTboT.Commands
                     ).ConfigureAwait(false);
 
                 InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelected =
-                    await ConfirmingMessage.WaitForButtonAsync(ctx.User).ConfigureAwait(false);
+                    (await (await ConfirmingMessage.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
+                    .HandleTimeouts(ConfirmingMessage).ConfigureAwait(false)).Value;
 
                 if (ButtonSelected.Result.Id == "Confirm")
                 {

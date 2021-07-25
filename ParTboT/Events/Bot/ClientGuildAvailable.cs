@@ -36,7 +36,7 @@ namespace ParTboT.Events.BotEvents
             };
             if (sender.Guilds.ContainsKey(e.Guild.Id))
             {
-                await Services.MongoDB.InsertOneRecordAsync("Guilds", NewGuild).ConfigureAwait(false);
+                //await Services.MongoDB.InsertOneRecordAsync("Guilds", NewGuild).ConfigureAwait(false);
             }
 
             #endregion

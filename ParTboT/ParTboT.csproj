@@ -46,11 +46,11 @@
     <PackageReference Include="ConsoleTables" Version="2.4.2" />
     <PackageReference Include="CSCore" Version="1.2.1.2" />
     <PackageReference Include="DotImaging.BitmapSourceInterop" Version="4.8.3" />
-    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00919" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00919" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00919" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.1.0-nightly-00919" />
-    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00919" />
+    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00928" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00928" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00928" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.1.0-nightly-00928" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00928" />
     <PackageReference Include="EasyConsole" Version="1.1.0" />
     <PackageReference Include="Emzi0767.Common" Version="2.6.2" />
     <PackageReference Include="Figgle" Version="0.4.0" />
@@ -61,7 +61,7 @@
     <PackageReference Include="Hangfire.Mongo" Version="0.7.22" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.34" />
     <PackageReference Include="Ical.Net" Version="4.2.0" />
-    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.6.1" />
+    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.7.0" />
     <PackageReference Include="ImgFlip4NET" Version="1.0.0" />
     <PackageReference Include="IronPython" Version="3.4.0-alpha1" />
     <PackageReference Include="logger-discord-provider" Version="2.2.0" />
@@ -69,8 +69,8 @@
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.18.0-beta3" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.0.0-1.final" />
-    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.17.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.0.0-2.final" />
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.18.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.0-preview.6.21352.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -87,7 +87,7 @@
     <PackageReference Include="Quartz" Version="3.3.2" />
     <PackageReference Include="Ramzes.ImageColorDefiner" Version="1.0.1" />
     <PackageReference Include="Renci.SshNet.Async" Version="1.4.0" />
-    <PackageReference Include="RestSharp" Version="106.11.8-alpha.0.14" />
+    <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="Seq.App.Discord" Version="0.5.0" />
     <PackageReference Include="Serilog" Version="2.10.1-dev-01343" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1-dev-00874" />
@@ -109,12 +109,12 @@
     <PackageReference Include="TweetinviAPI" Version="5.0.4" />
     <PackageReference Include="TweetinviAPI.AspNetPlugin" Version="5.0.4" />
     <PackageReference Include="TwitchLib" Version="3.2.0" />
-    <PackageReference Include="TwitchLib.Api" Version="3.2.4-preview-fc7c5711a8dfc22ae7b2777b6dcabd03a5aac089" />
-    <PackageReference Include="TwitchLib.Api.Core" Version="3.2.4-preview-fc7c5711a8dfc22ae7b2777b6dcabd03a5aac089" />
-    <PackageReference Include="TwitchLib.Api.Helix" Version="3.2.4-preview-fc7c5711a8dfc22ae7b2777b6dcabd03a5aac089" />
-    <PackageReference Include="TwitchLib.Api.V5" Version="3.2.4-preview-fc7c5711a8dfc22ae7b2777b6dcabd03a5aac089" />
-    <PackageReference Include="TwitchLib.Client" Version="3.2.3-preview-94b33cd801bf51e1d81b179ce10c7d896072b4c3" />
-    <PackageReference Include="TwitchLib.PubSub" Version="3.2.3-preview-ffaccb5be075122332aeb3ca0358407df0276b25" />
+    <PackageReference Include="TwitchLib.Api" Version="3.2.4" />
+    <PackageReference Include="TwitchLib.Api.Core" Version="3.2.4" />
+    <PackageReference Include="TwitchLib.Api.Helix" Version="3.2.4" />
+    <PackageReference Include="TwitchLib.Api.V5" Version="3.2.4" />
+    <PackageReference Include="TwitchLib.Client" Version="3.2.3" />
+    <PackageReference Include="TwitchLib.PubSub" Version="3.2.3" />
     <PackageReference Include="Universe.CpuUsage" Version="2.2.497.598" />
     <PackageReference Include="Zio" Version="0.12.0" />
     <PackageReference Include="ZXing.Net" Version="0.16.6" />
@@ -168,7 +168,7 @@
       <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Twitch\bin\Debug\netstandard2.1\YarinGeorge.Utilities.Twitch.dll</HintPath>
     </Reference>
     <Reference Include="YarinGeorge.Utilities.ZXingUtils">
-      <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.ZXingUtils\bin\Debug\netstandard2.1\YarinGeorge.Utilities.ZXingUtils.dll</HintPath>
+      <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.ZXingUtils\obj\Debug\netcoreapp3.1\YarinGeorge.Utilities.ZXingUtils.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties bin_4debug_4netcoreapp3_11_4config_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

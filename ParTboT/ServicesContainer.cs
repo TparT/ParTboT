@@ -1,13 +1,9 @@
 ﻿using CaptchaN;
 using DSharpPlus;
 using Genius;
-using Hangfire;
-using Hangfire.Mongo;
 using LiteDB;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Owin.Hosting;
-using MongoDB.Driver;
 using NetMQ;
 using Newtonsoft.Json;
 using Owin;
@@ -134,7 +130,7 @@ namespace ParTboT
             // ========== Bot Util Services =========== \\
             SpellingCorrecting = new SpellingCorrectingService();
             RandomTextGenerator = new CodeTextGenerator();
-            BarcodeService = new();
+            BarcodeService = new BarcodeService();
             UserVerifications = new UserVerifications().InitImageCAPTCHAGeneratorService();
 
             // ========== Social media notifs ========= \\
