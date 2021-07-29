@@ -37,6 +37,8 @@ namespace ParTboT
 
         #region GET-SET
 
+        public const string LogFormat = "[{Timestamp:h:mm:ss ff tt}] [{Level:u3}] [{SourceContext}] {Message:lj} {Exception:j}{NewLine}";
+
         public ServicesContainer Services { get; private set; }
         public static ConcurrentDictionary<ulong, PagedMessage> PagedMessagesPool { get; set; } = new();
         public static DateTime UpTime { get; private set; }
@@ -63,11 +65,6 @@ namespace ParTboT
                 .WriteTo.Seq("http://localhost:5341")
                 //.WriteTo.EventLog(typeof(Bot).Assembly.FullName, typeof(Bot).Assembly.FullName, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
                 .CreateLogger();
-            DiscordReactor reactor = new()
-            {
-                BaseUrl = "http://localhost:5341/",
-                DiscordWebhookUrl = "https://canary.discord.com/api/webhooks/864172525301923840/kprd3Hkg22CW67-ohoseCGQOi6LHROwTUkg2_kbB4Hlo5H7UNraAch4M8nhypv79ftkt"
-            };
 
             ILoggerFactory logFactory = new LoggerFactory().AddSerilog();
             #endregion
@@ -95,7 +92,7 @@ namespace ParTboT
 
             #region Services
 
-            Services = await Services.InitializeServicesAsync();
+            Services = await Services.InitializeServicesAsync(logFactory, Client.Logger);
             ServiceProvider services =
                 new ServiceCollection()
                     .AddSingleton(Services)
@@ -589,6 +586,7 @@ namespace ParTboT
 
 
             Task.Run(async () => StatsTrack());
+            await Services.StartServicesAsync(true, true, true);
 
 
             //Task.Run(async () =>
@@ -621,7 +619,6 @@ namespace ParTboT
 
             //await CreateHostBuilder(Program.Args).Build().StartAsync();
             //await BotInitialized.Invoke(this, new BotInitializedEventArgs { Bot = this });
-            await Services.StartServicesAsync(true, true, true);
             await Task.Delay(-1);
         }
 

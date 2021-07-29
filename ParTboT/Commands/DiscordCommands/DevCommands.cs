@@ -1,6 +1,9 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using EasyConsole;
 using Newtonsoft.Json;
@@ -12,6 +15,8 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using TwitchLib.Api.Auth;
+using TwitchLib.Api.Core.Models;
 using static ParTboT.Commands.DatabaseCommands;
 
 namespace ParTboT.Commands
@@ -60,6 +65,48 @@ namespace ParTboT.Commands
             await ctx.RespondAsync(JsonConvert.SerializeObject(wh)/*Bot.Services.WebhooksClient.AddWebhook(wh).Id.ToString()*/).ConfigureAwait(false);
         }
 
+
+        [Command("twcrefresh")]
+        //[Description("A new command")]
+        public async Task New(CommandContext ctx)
+        {
+            //await ctx.Message.DeleteAsync().ConfigureAwait(false);
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            ValidateAccessTokenResponse response = await Services.TwitchAPI.Auth.ValidateAccessTokenAsync();
+
+            DiscordMessageBuilder mb = new();
+
+            if (response == null)
+                mb.WithEmbed(new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.Red).WithTitle("Invalid token!")
+                    .WithDescription("Do you want to generate a new one?"))
+
+                  .AddComponents
+                  (new DiscordButtonComponent(ButtonStyle.Success, bool.TrueString, "Yes"),
+                  new DiscordButtonComponent(ButtonStyle.Success, bool.FalseString, "No"));
+            else
+                mb.WithEmbed(new DiscordEmbedBuilder().WithColor(DiscordColor.Green).WithTitle("Token is still valid!"));
+
+            DiscordMessage msg = await ctx.RespondAsync(mb).ConfigureAwait(false);
+
+            if (msg.Components.Any())
+            {
+                InteractivityResult<ComponentInteractionCreateEventArgs> result = await msg.WaitForButtonAsync(System.Threading.CancellationToken.None).ConfigureAwait(false);
+                if (!result.TimedOut)
+                {
+                    switch (result.Result.Id)
+                    {
+                        case "True":
+                            //TwitchTokenGeneratorNET.Api.
+                            await result.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().WithContent($"Token was changed to:").AsEphemeral(true)).ConfigureAwait(false);
+                            break;
+                        case "False": return;
+                    }
+                }
+            }
+        }
+
         [Command("broadcast")]
         [Aliases("bc")]
         public async Task Broadcast(CommandContext ctx, ulong WebhookId, [RemainingText] string text)
@@ -86,30 +133,6 @@ namespace ParTboT.Commands
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
             await ctx.RespondAsync(DiscordEmoji.FromUnicode(ctx.Client, Unicode)).ConfigureAwait(false);
-        }
-
-
-        [Command("services")]
-        //[Aliases("n")]
-        [Description("A new command")]
-        [RequireOwner]
-        public async Task New(CommandContext ctx)
-        {
-            //await ctx.TriggerTypingAsync().ConfigureAwait(false);
-
-            //var services = ctx.CommandsNext.Services;
-            //var mongo = (MongoCRUD)services.GetService(typeof(MongoCRUD));
-            //StringBuilder sb = new();
-
-            //foreach (var db in (await mongo.MongoClien.ListDatabaseNamesAsync()).Current)
-            //{
-            //    sb.AppendLine(db);
-            //}
-
-
-            //await ctx.RespondAsync($"{sb}").ConfigureAwait(false);
-
-
         }
 
         [Command("slashstart")]

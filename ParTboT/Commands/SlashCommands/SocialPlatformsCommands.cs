@@ -7,6 +7,7 @@ using DSharpPlus.SlashCommands;
 using EasyConsole;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using Newtonsoft.Json.Linq;
 using ParTboT.DbModels.ParTboTModels;
 using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.DbModels.SocialPlatforms.Shared;
@@ -16,14 +17,23 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tweetinvi.Models;
+using TwitchLib.Api.Helix.Models.Search;
 using TwitchLib.Api.V5.Models.Users;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils.Builders;
 
 namespace ParTboT.Commands.SlashCommands
 {
     [SlashCommandGroup("socials", "Plug socials or even follow them to get notified when people do stuff")]
     public class SocialPlatformsCommands : SlashCommandModule
     {
+        public readonly DiscordColor TwitchColor = new DiscordColor(0x6d28f1);
+
+        public DiscordEmoji Yes { get; set; }
+        public DiscordEmoji No { get; set; }
+        public DiscordEmoji ChooseAnother { get; set; }
+
+        public const string TwitchChannelBaseLink = "https://www.twitch.tv/";
         public ServicesContainer Services { private get; set; }
 
 
@@ -134,107 +144,112 @@ namespace ParTboT.Commands.SlashCommands
                 {
                     string GuildIdString = ctx.Guild.Id.ToString();
 
-                    DiscordEmoji Yes = DiscordEmoji.FromName(ctx.Client, ":heavy_check_mark:");
-                    DiscordEmoji No = DiscordEmoji.FromName(ctx.Client, ":heavy_multiplication_x:");
+                    Yes = DiscordEmoji.FromName(ctx.Client, ":heavy_check_mark:");
+                    No = DiscordEmoji.FromName(ctx.Client, ":heavy_multiplication_x:");
 
                     switch (Platform)
                     {
                         case "Twitch":
                             {
-                                DiscordColor TwitchColor = new DiscordColor(0x6d28f1);
                                 FinalEmbed.WithColor(TwitchColor); // Purple
-
-                                string TwitchChannelBaseLink = "https://www.twitch.tv/";
 
                                 if (User_Name_To_Follow.ToLower().StartsWith(TwitchChannelBaseLink))
                                     User_Name_To_Follow = User_Name_To_Follow.Split(TwitchChannelBaseLink)[1];
 
-                                Users Search = await Services.TwitchAPI.V5.Users.GetUserByNameAsync(User_Name_To_Follow).ConfigureAwait(false);
-                                User FirstMatch = Search.Matches[0];
+                                SearchChannelsResponse Search = await Services.TwitchAPI.Helix.Search.SearchChannelsAsync(User_Name_To_Follow).ConfigureAwait(false);
 
-                                DiscordEmbedBuilder Embed = new DiscordEmbedBuilder()
-                                        .WithTitle($"Found {Search.Total} results for {User_Name_To_Follow}")
-                                        .WithUrl($"{TwitchChannelBaseLink}{FirstMatch.Name}")
-                                        .WithDescription($"The best match was: {FirstMatch.DisplayName}\n__Bio:__ {FirstMatch.Bio}")
-                                        .WithColor(TwitchColor) // Purple
-                                        .WithImageUrl(FirstMatch.Logo);
-
-                                DiscordMessage ConfirmingMessage =
-                                    await ctx.EditResponseAsync
-                                    (
-                                        new DiscordWebhookBuilder()
-                                        .AddEmbed(Embed)
-                                        .AddComponents
-                                        (new List<DiscordButtonComponent>()
-                                            {
-                                                    new DiscordButtonComponent
-                                                    (
-                                                        ButtonStyle.Success,
-                                                        "Confirm",
-                                                        "Yes! this one!",
-                                                        false,
-                                                        new DiscordComponentEmoji(Yes)
-                                                    ),
-
-                                                    new DiscordButtonComponent
-                                                    (
-                                                        ButtonStyle.Danger,
-                                                        "Cancel",
-                                                        "Cancel",
-                                                        false,
-                                                        new DiscordComponentEmoji(No)
-                                                    )
-                                            }
-                                        )
-                                    ).ConfigureAwait(false);
-
-                                InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelected =
-                                    (await (await ConfirmingMessage.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
-                                    .HandleTimeouts(ConfirmingMessage).ConfigureAwait(false)).Value;
-
-                                interaction = ButtonSelected.Result.Interaction;
-
-                                if (ButtonSelected.Result.Id == "Confirm")
+                                if (Search.Channels.Any())
                                 {
-                                    IMongoCollection<TwitchStreamer> col = await Services.MongoDB.GetCollectionAsync<TwitchStreamer>(Services.Config.LocalMongoDB_Streamers);
-                                    (bool Exists, TwitchStreamer FoundRecord) StreamerRecord = await Services.MongoDB.DoesExistAsync<TwitchStreamer>(col, "_id", FirstMatch.Id);
+                                    DiscordWebhookBuilder wb = new();
 
-                                    ChannelToSendTo CHupdate = new ChannelToSendTo
+                                    string CustomID = Guid.NewGuid().ToString();
+                                    if (Search.Channels.Length > 1)
                                     {
-                                        ChannelIDToSend = Channel_To_Receive_Alerts_On.Id,
-                                        ChannelNameToSend = Channel_To_Receive_Alerts_On.Name,
-                                        CustomMessage = Custom_Message,
-                                        DateTimeSetThisAlertsChannel = DateTime.UtcNow
-                                    };
+                                        DiscordSelectComponentBuilder select = new DiscordSelectComponentBuilder().WithCustomID(CustomID);
 
-                                    FollowingGuild GUupdate = new FollowingGuild
-                                    {
-                                        GuildIDToSend = ctx.Guild.Id,
-                                        GuildNameToSend = ctx.Guild.Name,
-                                        ChannelToSendTo = CHupdate,
-                                        DateTimeStartedFollowing = DateTime.UtcNow
-                                    };
-
-                                    if (StreamerRecord.Exists == true)
-                                    {
-                                        if (StreamerRecord.FoundRecord.FollowingGuilds.TryGetValue(GuildIdString, out FollowingGuild followingGuild)) // If guild is following the streamer
+                                        foreach (Channel Match in Search.Channels)
                                         {
-                                            DiscordEmbedBuilder OverWriteEmbed = new DiscordEmbedBuilder()
-                                                .WithTitle($"You are already following {FirstMatch.DisplayName}'s channel.")
-                                                .WithDescription($"__Here are the current followage settings for {FirstMatch.DisplayName}:__\n" +
-                                                                 $"**Alerts channel name:** {followingGuild.ChannelToSendTo.ChannelNameToSend}\n" +
-                                                                 $"**Alerts channel ID:** {followingGuild.ChannelToSendTo.ChannelIDToSend}\n" +
-                                                                 $"**Custom message:** {followingGuild.ChannelToSendTo.CustomMessage}\n\n" +
-                                                                 $"Would you like to over-write these settings?")
-                                                .WithFooter($"These settings were made on {followingGuild.DateTimeStartedFollowing}")
-                                                .WithColor(TwitchColor); // Purple
+                                            select.AddOption
+                                                (new DiscordSelectComponentOptionBuilder()
+                                                .WithLabel(Match.DisplayName)
+                                                .WithValue(Match.Id)
+                                                .WithDescription($"{TwitchChannelBaseLink}{Match.DisplayName}"));
+                                        }
 
-                                            await ButtonSelected.Result.Interaction.CreateResponseAsync
-                                            (InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder()
-                                            .AddEmbed(OverWriteEmbed.Build())
-                                            .AddComponents
-                                            (new List<DiscordButtonComponent>()
-                                                {
+                                        wb.AddComponents(select);
+                                    }
+
+
+                                ChooseChannel:
+                                    DiscordMessage ConfirmingMessage = await ctx.EditResponseAsync(wb.WithContent("Here are the search results for [HERE]")).ConfigureAwait(false);
+
+                                    InteractivityResult<ComponentInteractionCreateEventArgs> SelectResult = (await (await ConfirmingMessage.WaitForSelectAsync(ctx.User, CustomID, CancellationToken.None).ConfigureAwait(false))
+                                        .HandleTimeouts(ConfirmingMessage).ConfigureAwait(false)).Value;
+
+
+                                    Channel FirstMatch = Search.Channels.FirstOrDefault(x => x.Id == SelectResult.Result.Values.FirstOrDefault());
+
+                                    InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelected =
+                                        await AskIfThisChannel(ctx, SelectResult, FirstMatch, User_Name_To_Follow, Search.Channels.Length).ConfigureAwait(false);
+                                    interaction = ButtonSelected.Result.Interaction;
+
+                                    //DiscordEmbedBuilder Embed = new DiscordEmbedBuilder()
+                                    //    .WithTitle($"Found {Search.Channels.Length} results for {User_Name_To_Follow}")
+                                    //    .WithUrl($"{TwitchChannelBaseLink}{FirstMatch.DisplayName}")
+                                    //    .WithDescription($"The best match was: {FirstMatch.DisplayName}\n__Bio:__ {FirstMatch}")
+                                    //    .WithColor(TwitchColor) // Purple
+                                    //    .WithImageUrl(FirstMatch.ThumbnailUrl);
+
+                                    //wb.AddEmbed(Embed);
+
+                                    //await ctx.EditResponseAsync(wb).ConfigureAwait(false);
+
+                                    if (ButtonSelected.Result.Id == "ChooseAgain")
+                                    {
+                                        await interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+                                        goto ChooseChannel;
+                                    }
+                                    else if (ButtonSelected.Result.Id == "Confirm")
+                                    {
+                                        IMongoCollection<TwitchStreamer> col = await Services.MongoDB.GetCollectionAsync<TwitchStreamer>(Services.Config.LocalMongoDB_Streamers);
+                                        (bool Exists, TwitchStreamer FoundRecord) StreamerRecord = await Services.MongoDB.DoesExistAsync<TwitchStreamer>(col, "_id", FirstMatch.Id);
+
+                                        ChannelToSendTo CHupdate = new ChannelToSendTo
+                                        {
+                                            ChannelIDToSend = Channel_To_Receive_Alerts_On.Id,
+                                            ChannelNameToSend = Channel_To_Receive_Alerts_On.Name,
+                                            CustomMessage = Custom_Message,
+                                            DateTimeSetThisAlertsChannel = DateTime.UtcNow
+                                        };
+
+                                        FollowingGuild GUupdate = new FollowingGuild
+                                        {
+                                            GuildIDToSend = ctx.Guild.Id,
+                                            GuildNameToSend = ctx.Guild.Name,
+                                            ChannelToSendTo = CHupdate,
+                                            DateTimeStartedFollowing = DateTime.UtcNow
+                                        };
+
+                                        if (StreamerRecord.Exists == true)
+                                        {
+                                            if (StreamerRecord.FoundRecord.FollowingGuilds.TryGetValue(GuildIdString, out FollowingGuild followingGuild)) // If guild is following the streamer
+                                            {
+                                                DiscordEmbedBuilder OverWriteEmbed = new DiscordEmbedBuilder()
+                                                    .WithTitle($"You are already following {FirstMatch.DisplayName}'s channel.")
+                                                    .WithDescription($"__Here are the current followage settings for {FirstMatch.DisplayName}:__\n" +
+                                                                     $"**Alerts channel name:** {followingGuild.ChannelToSendTo.ChannelNameToSend}\n" +
+                                                                     $"**Alerts channel ID:** {followingGuild.ChannelToSendTo.ChannelIDToSend}\n" +
+                                                                     $"**Custom message:** {followingGuild.ChannelToSendTo.CustomMessage}\n\n" +
+                                                                     $"Would you like to over-write these settings?")
+                                                    .WithFooter($"These settings were made on {followingGuild.DateTimeStartedFollowing}")
+                                                    .WithColor(TwitchColor); // Purple
+
+                                                await interaction.CreateResponseAsync
+                                                (InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder()
+                                                .AddEmbed(OverWriteEmbed.Build())
+                                                .AddComponents
+                                                (new List<DiscordButtonComponent>()
+                                                    {
                                                         new DiscordButtonComponent
                                                         (
                                                             ButtonStyle.Success,
@@ -252,54 +267,81 @@ namespace ParTboT.Commands.SlashCommands
                                                             false,
                                                             new DiscordComponentEmoji(No)
                                                         )
+                                                    }
+                                                )
+                                                ).ConfigureAwait(false);
+
+                                                InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelectedSecondStep =
+                                                    (await (await ButtonSelected.Result.Message.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
+                                                    .HandleTimeouts(ConfirmingMessage)).Value;
+
+                                                interaction = ButtonSelectedSecondStep.Result.Interaction;
+
+                                                if (ButtonSelectedSecondStep.Result.Id == "Confirm")
+                                                {
+                                                    UpdateResult result =
+                                                        await col.UpdateOneAsync(Builders<TwitchStreamer>.Filter.Where
+                                                        (u => u._id == FirstMatch.Id & u.FollowingGuilds.Any(a => a.Key == GuildIdString)),
+                                                        Builders<TwitchStreamer>.Update.Set("FollowingGuilds.$.v", GUupdate));
+
+                                                    FinalEmbed
+                                                        .WithTitle
+                                                            ($"{FirstMatch.DisplayName}'s {Platform} was successfully updated to the following settings:\n" +
+                                                            $"[*\\*INSERT GUILD SETTINGS HERE\\*\\*]\n" +
+                                                            $"by: {ctx.Member.DisplayName}")
+                                                        .WithDescription
+                                                            ($"You are now following {User_Name_To_Follow} in the {Channel_To_Receive_Alerts_On.Name}!\n" +
+                                                            $"You will get notified as soon as they go live.");
                                                 }
-                                            )
-                                            )
-                                            .ConfigureAwait(false);
-
-                                            InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelectedSecondStep =
-                                                (await (await ButtonSelected.Result.Message.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
-                                                .HandleTimeouts(ConfirmingMessage)).Value;
-
-                                            interaction = ButtonSelectedSecondStep.Result.Interaction;
-
-                                            if (ButtonSelectedSecondStep.Result.Id == "Confirm")
+                                                else if (ButtonSelectedSecondStep.Result.Id == "Cancel")
+                                                {
+                                                    FinalEmbed
+                                                        .WithTitle
+                                                            ($"The operation was canceled by {ctx.Member.DisplayName}")
+                                                        .WithDescription
+                                                            ($"**If the command was canceled due to the search result not being what you wanted," +
+                                                            $"\nyou can use the streamer's link channel to get a 100% sure accurate match**");
+                                                }
+                                            }
+                                            else
                                             {
-                                                UpdateResult result =
-                                                    await col.UpdateOneAsync(Builders<TwitchStreamer>.Filter.Where
-                                                    (u => u._id == FirstMatch.Id & u.FollowingGuilds.Any(a => a.Key == GuildIdString)),
-                                                    Builders<TwitchStreamer>.Update.Set("FollowingGuilds.$.v", GUupdate));
+                                                FilterDefinition<TwitchStreamer> SecondFilter =
+                                                // Second check to see if the guild is already following the streamer in one or more channels.
+                                                // If guild does not follow the streamer at all (Does not exist in the list of the streamer's 'FollowingGuilds' list):
+                                                // ===================================================================================================================
+                                                // Add the guild to the 'FollowingGuilds' list along with the channel that was requested to add.
+                                                Builders<TwitchStreamer>.Filter.Eq(x => x._id, FirstMatch.Id);
+
+                                                UpdateDefinition<TwitchStreamer> update = Builders<TwitchStreamer>.Update.Push(x => x.FollowingGuilds, new KeyValuePair<string, FollowingGuild>(GuildIdString, GUupdate));
+                                                TwitchStreamer result = await col.FindOneAndUpdateAsync(SecondFilter, update);
+
+                                                await (await Services.MongoDB.GetCollectionAsync<ParTboTGuildModel>("Guilds").ConfigureAwait(false))
+                                                    .UpdateOneAsync(Builders<ParTboTGuildModel>.Filter.Eq(x => x.Id, ctx.Guild.Id),
+                                                    Builders<ParTboTGuildModel>.Update.Push
+                                                    (x => x.SocialsFollows.TwitchStreamers, new KeyValuePair<string, string>(FirstMatch.Id, FirstMatch.DisplayName)))
+                                                    .ConfigureAwait(false);
 
                                                 FinalEmbed
                                                     .WithTitle
-                                                        ($"{FirstMatch.DisplayName}'s {Platform} was successfully updated to the following settings:\n" +
-                                                        $"[*\\*INSERT GUILD SETTINGS HERE\\*\\*]\n" +
-                                                        $"by: {ctx.Member.Nickname}")
+                                                        ($"{FirstMatch.DisplayName}'s {Platform} was successfully added to {Channel_To_Receive_Alerts_On.Name} by {ctx.Member.DisplayName} !")
                                                     .WithDescription
                                                         ($"You are now following {User_Name_To_Follow} in the {Channel_To_Receive_Alerts_On.Name}!\n" +
                                                         $"You will get notified as soon as they go live.");
                                             }
-                                            else if (ButtonSelectedSecondStep.Result.Id == "Cancel")
-                                            {
-                                                FinalEmbed
-                                                    .WithTitle
-                                                        ($"The operation was canceled by {ctx.Interaction.User.Username}")
-                                                    .WithDescription
-                                                        ($"**If the command was canceled due to the search result not being what you wanted," +
-                                                        $"\nyou can use the streamer's link channel to get a 100% sure accurate match**");
-                                            }
                                         }
-                                        else
+                                        else // Streamer doesn't exist in database, Adding them here now
                                         {
-                                            FilterDefinition<TwitchStreamer> SecondFilter =
-                                            // Second check to see if the guild is already following the streamer in one or more channels.
-                                            // If guild does not follow the streamer at all (Does not exist in the list of the streamer's 'FollowingGuilds' list):
-                                            // ===================================================================================================================
-                                            // Add the guild to the 'FollowingGuilds' list along with the channel that was requested to add.
-                                            Builders<TwitchStreamer>.Filter.Eq(x => x._id, FirstMatch.Id);
+                                            TwitchStreamer streamer = new TwitchStreamer()
+                                            {
+                                                _id = FirstMatch.Id,
+                                                StreamerName = FirstMatch.DisplayName,
+                                                //ChannelURL = $"{TwitchChannelBaseLink}{FirstMatch.Name}",
+                                                //ChannelIconURL = FirstMatch.Logo,
+                                                FollowingGuilds = new Dictionary<string, FollowingGuild>() { { GuildIdString, GUupdate } },
+                                                DateTimeAddedToTheDatabase = DateTime.UtcNow
+                                            };
 
-                                            UpdateDefinition<TwitchStreamer> update = Builders<TwitchStreamer>.Update.Push(x => x.FollowingGuilds, new KeyValuePair<string, FollowingGuild>(GuildIdString, GUupdate));
-                                            TwitchStreamer result = await col.FindOneAndUpdateAsync(SecondFilter, update);
+                                            await Services.MongoDB.InsertOneRecordAsync<TwitchStreamer>(col, streamer).ConfigureAwait(false);
 
                                             await (await Services.MongoDB.GetCollectionAsync<ParTboTGuildModel>("Guilds").ConfigureAwait(false))
                                                 .UpdateOneAsync(Builders<ParTboTGuildModel>.Filter.Eq(x => x.Id, ctx.Guild.Id),
@@ -309,54 +351,33 @@ namespace ParTboT.Commands.SlashCommands
 
                                             FinalEmbed
                                                 .WithTitle
-                                                    ($"{FirstMatch.DisplayName}'s {Platform} was successfully added to {Channel_To_Receive_Alerts_On.Name}!" +
-                                                    $"by {ctx.Member.Nickname}")
+                                                    ($"{FirstMatch.DisplayName}'s {Platform} was successfully added to {Channel_To_Receive_Alerts_On.Name} by {ctx.Member.DisplayName} !")
                                                 .WithDescription
                                                     ($"You are now following {User_Name_To_Follow} in the {Channel_To_Receive_Alerts_On.Name}!\n" +
                                                     $"You will get notified as soon as they go live.");
                                         }
                                     }
-                                    else // Streamer doesn't exist in database, Adding them here now
+                                    else if (ButtonSelected.Result.Id == "Cancel")// Abort mission blat!!!!!!!
                                     {
-                                        TwitchStreamer streamer = new TwitchStreamer()
-                                        {
-                                            _id = FirstMatch.Id,
-                                            StreamerName = FirstMatch.DisplayName,
-                                            ChannelURL = $"{TwitchChannelBaseLink}{FirstMatch.Name}",
-                                            ChannelIconURL = FirstMatch.Logo,
-                                            FollowingGuilds = new Dictionary<string, FollowingGuild>() { { GuildIdString, GUupdate } },
-                                            DateTimeAddedToTheDatabase = DateTime.UtcNow
-                                        };
-
-                                        await Services.MongoDB.InsertOneRecordAsync<TwitchStreamer>(col, streamer).ConfigureAwait(false);
-
-                                        await (await Services.MongoDB.GetCollectionAsync<ParTboTGuildModel>("Guilds").ConfigureAwait(false))
-                                            .UpdateOneAsync(Builders<ParTboTGuildModel>.Filter.Eq(x => x.Id, ctx.Guild.Id),
-                                            Builders<ParTboTGuildModel>.Update.Push
-                                            (x => x.SocialsFollows.TwitchStreamers, new KeyValuePair<string, string>(FirstMatch.Id, FirstMatch.DisplayName)))
-                                            .ConfigureAwait(false);
 
                                         FinalEmbed
                                             .WithTitle
-                                                ($"{FirstMatch.DisplayName}'s {Platform} was successfully added to {Channel_To_Receive_Alerts_On.Name}!" +
-                                                $"by {ctx.Member.Nickname}")
+                                                ($"The operation was canceled by {ctx.Member.DisplayName}")
                                             .WithDescription
-                                                ($"You are now following {FirstMatch.DisplayName} in the {Channel_To_Receive_Alerts_On.Name}!\n" +
-                                                $"You will get notified as soon as they go live.");
+                                                ($"**If the command was canceled due to the search result not being what you wanted,\n" +
+                                                $"you can use the streamer's link channel to get a 100% sure accurate match**");
                                     }
                                 }
-                                else if (ButtonSelected.Result.Id == "Cancel")// Abort mission blat!!!!!!!
+                                else
                                 {
                                     FinalEmbed
                                         .WithTitle
-                                            ($"The operation was canceled by {ctx.Member.Nickname}")
+                                            ($"Couldn't find any results for {User_Name_To_Follow}")
                                         .WithDescription
-                                            ($"**If the command was canceled due to the search result not being what you wanted,\n" +
-                                            $"you can use the streamer's link channel to get a 100% sure accurate match**");
+                                            ($"**Note:** You can also use the streamer's channel link instead the streamers name when using this command.");
                                 }
-
-                                break;
                             }
+                            break;
 
                         case "Twitter":
                             {
@@ -725,5 +746,62 @@ namespace ParTboT.Commands.SlashCommands
         }
 
         #endregion Manage follow-ups Command
+
+
+        private async Task<InteractivityResult<ComponentInteractionCreateEventArgs>> AskIfThisChannel(InteractionContext ctx, InteractivityResult<ComponentInteractionCreateEventArgs> SelectRes, Channel channel, string UserNameToFollow, int ResultsCount)
+        {
+            DiscordWebhookBuilder wb = new();
+
+            DiscordEmbedBuilder Embed = new DiscordEmbedBuilder()
+                .WithTitle($"Found {ResultsCount} results for {UserNameToFollow}")
+                .WithUrl($"{TwitchChannelBaseLink}{channel.DisplayName}")
+                .WithDescription($"The best match was: {channel.DisplayName}")
+                .WithColor(TwitchColor) // Purple
+                .WithImageUrl(channel.ThumbnailUrl);
+
+            wb.AddEmbed(Embed);
+
+            wb.AddComponents
+                (new List<DiscordButtonComponent>()
+                    {
+                        new DiscordButtonComponent
+                        (
+                            ButtonStyle.Success,
+                            "Confirm",
+                            "Yes! this one!",
+                            false,
+                            new DiscordComponentEmoji(Yes)
+                        ),
+
+                        new DiscordButtonComponent
+                        (
+                            ButtonStyle.Primary,
+                            "ChooseAgain",
+                            "Choose another one",
+                            false,
+                            new DiscordComponentEmoji(Yes)
+                        ),
+
+                        new DiscordButtonComponent
+                        (
+                            ButtonStyle.Danger,
+                            "Cancel",
+                            "Cancel",
+                            false,
+                            new DiscordComponentEmoji(No)
+                        )
+                    }
+                );
+
+            await SelectRes.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+
+            DiscordMessage msg = await SelectRes.Result.Interaction.EditOriginalResponseAsync(wb).ConfigureAwait(false);
+
+            InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelected =
+                (await (await msg.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
+                .HandleTimeouts(msg).ConfigureAwait(false)).Value;
+
+            return ButtonSelected;
+        }
     }
 }

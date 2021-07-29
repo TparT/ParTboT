@@ -34,8 +34,14 @@ namespace ParTboT
         [JsonProperty("TwitchAPI_ClientID")]
         public string TwitchAPI_ClientID { get; private set; }
 
+        [JsonProperty("TwitchAPI_ClientSercret")]
+        public string TwitchAPI_ClientSercret { get; private set; }
+
         [JsonProperty("TwitchAPI_AccessToken")]
         public string TwitchAPI_AccessToken { get; private set; }
+
+        [JsonProperty("TwitchAPI_RefreshToken")]
+        public string TwitchAPI_RefreshToken { get; private set; }
 
         [JsonProperty("GeniusAPI_ApiKey")]
         public string GeniusAPI_ApiKey { get; private set; }

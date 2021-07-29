@@ -1,4 +1,5 @@
-﻿using NetMQ;
+﻿using Microsoft.Extensions.Logging;
+using NetMQ;
 using ParTboT.DbModels.ParTboTModels;
 using Serilog;
 using System;
@@ -11,13 +12,11 @@ namespace ParTboT.Services
     public class RemindersService
     {
         private ServicesContainer _services { get; set; }
-        private ILogger _logger { get; set; }
 
-        public RemindersService(ILogger logger, ServicesContainer services)
+        public RemindersService(ServicesContainer services)
         {
             _services = services;
-            _logger = logger;
-            logger.Information("[Reminders service] Reminders service registered!");
+            Log.Information("[Reminders service] Reminders service registered!");
         }
 
         public async Task<NetMQTimer> StartRemindersServiceAsync(TimeSpan Interval)
@@ -25,7 +24,7 @@ namespace ParTboT.Services
             NetMQTimer RemindersTimer = new(Interval);
             RemindersTimer.Elapsed += async (s, e) =>
             {
-                _logger.Information("[Reminders service] Scanning for reminders ...");
+                Log.Information("[Reminders service] Scanning for reminders ...");
 
                 List<Reminder> reminders = await _services.MongoDB.LoadAllRecordsAsync<Reminder>("Reminders").ConfigureAwait(false);
                 if (reminders.Any())
@@ -33,7 +32,7 @@ namespace ParTboT.Services
                     List<Reminder> Filtered = reminders.Where(x => (DateTime.UtcNow - x.StartTime).TotalSeconds > 2).ToList();
                     if (Filtered.Any())
                     {
-                        _logger.Information($"[Reminders service] {Filtered.Count} reminders have been triggered!");
+                        Log.Information($"[Reminders service] {Filtered.Count} reminders have been triggered!");
                         Filtered.ForEach(async x =>
                         {
                             await (await Bot.Client.GetChannelAsync(x.ChannelToSendTo).ConfigureAwait(false))
@@ -45,12 +44,12 @@ namespace ParTboT.Services
                     }
                     else
                     {
-                        _logger.Information($"[Reminders service] No reminders found! {reminders.Count} reminders are still in awaiting.");
+                        Log.Information($"[Reminders service] No reminders found! {reminders.Count} reminders are still in awaiting.");
                     }
                 }
                 else
                 {
-                    _logger.Information($"[Reminders service] No reminders were found!");
+                    Log.Information($"[Reminders service] No reminders were found!");
                 }
             };
 

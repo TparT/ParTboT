@@ -31,18 +31,6 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
 
         public async void Monitor_OnStreamOnline(object sender, OnStreamOnlineArgs e)
         {
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-            Console.WriteLine("EEEEEEEEEEEEEEEEE");
-
             try
             {
                 #region API Fetch info

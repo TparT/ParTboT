@@ -33,22 +33,15 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
                 Output.WriteLine(ConsoleColor.Blue,
                     $"\n[{DateTime.Now:T} Live monitor - Updating] Fetching streamers information and setting new channels.");
 
-                var API = _services.TwitchAPI.V5;
-
-                //List<string> Channels = new List<string>();
+                //var API = _services.TwitchAPI.V5;
 
                 var Streamers =
-                    _services.MongoDB.GetCollectionAsync<TwitchStreamer>(_services.Config.LocalMongoDB_Streamers).GetAwaiter().GetResult()
-                    .AsQueryable().Select(f => f._id).Distinct();
-
-                //foreach (var Streamer in Streamers)
-                //{
-                //    Channels.Add(Streamer);
-                //}
+                    (_services.MongoDB.GetCollectionAsync<TwitchStreamer>(_services.Config.LocalMongoDB_Streamers).GetAwaiter().GetResult())
+                    .AsQueryable().Select(f => f._id).Distinct().ToList();
 
                 try
                 {
-                    _services.LiveMonitorService.SetChannelsById(Streamers.ToList());
+                    _services.LiveMonitorService.SetChannelsById(Streamers);
                 }
                 catch (NullReferenceException NRE)
                 {

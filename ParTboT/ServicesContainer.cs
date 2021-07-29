@@ -4,11 +4,12 @@ using Genius;
 using LiteDB;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using NetMQ;
 using Newtonsoft.Json;
 using Owin;
 using ParTboT.Services;
-using Serilog;
+using RestSharp;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -28,6 +29,7 @@ namespace ParTboT
     public class ServicesContainer
     {
         public ILogger Logger { get; private set; }
+        public ILoggerFactory LoggerFactory { get; private set; }
         public ConfigJson Config { get; private set; }
 
 
@@ -38,6 +40,7 @@ namespace ParTboT
         public TwitterClient TwitterClient { get; private set; }
         public TrackerggClient TrackggClient { get; private set; }
         public HttpClient HttpClient { get; private set; }
+        public RestClient RestClient { get; private set; }
         public DiscordWebhookClient WebhooksClient { get; private set; }
 
         public SpellingCorrectingService SpellingCorrecting { get; private set; }
@@ -75,9 +78,10 @@ namespace ParTboT
         }
 
 
-        public async Task<ServicesContainer> InitializeServicesAsync()
+        public async Task<ServicesContainer> InitializeServicesAsync(ILoggerFactory loggerFactory, ILogger logger)
         {
-            Logger = Log.Logger;
+            Logger = logger;
+            LoggerFactory = loggerFactory;
 
             #region Databases and data storage
 
@@ -134,8 +138,8 @@ namespace ParTboT
             UserVerifications = new UserVerifications().InitImageCAPTCHAGeneratorService();
 
             // ========== Social media notifs ========= \\
-            TweetsService = new(Log.Logger, this); // Twitter
-            RemindersService = new RemindersService(Log.Logger, this); // Reminders
+            TweetsService = new(this); // Twitter
+            RemindersService = new RemindersService(this); // Reminders
             LiveMonitorService = new LiveStreamMonitorService(TwitchAPI, 60); // Twitch
             LiveMonitor = new TwitchLiveMonitorService(this); // Twitch
 
@@ -215,7 +219,7 @@ namespace ParTboT
         {
             NetMQPoller netMQPoller = new();
             if (TwitchMonitor)
-                await Task.Run(async () => await LiveMonitor.ConfigLiveMonitorAsync().ConfigureAwait(false));
+                await Task.Run(async () => await LiveMonitor.ConfigLiveMonitorAsync().ConfigureAwait(false)).ConfigureAwait(false);
             if (TwitterMonitor)
                 netMQPoller.Add(await TweetsService.StartTweetsService(TimeSpan.FromMinutes(1)).ConfigureAwait(false));
             if (Reminders)

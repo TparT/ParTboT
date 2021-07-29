@@ -46,11 +46,11 @@
     <PackageReference Include="ConsoleTables" Version="2.4.2" />
     <PackageReference Include="CSCore" Version="1.2.1.2" />
     <PackageReference Include="DotImaging.BitmapSourceInterop" Version="4.8.3" />
-    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00928" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00928" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00928" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.1.0-nightly-00928" />
-    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00928" />
+    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00930" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00930" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00930" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.1.0-nightly-00930" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00930" />
     <PackageReference Include="EasyConsole" Version="1.1.0" />
     <PackageReference Include="Emzi0767.Common" Version="2.6.2" />
     <PackageReference Include="Figgle" Version="0.4.0" />
@@ -61,12 +61,12 @@
     <PackageReference Include="Hangfire.Mongo" Version="0.7.22" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.34" />
     <PackageReference Include="Ical.Net" Version="4.2.0" />
-    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.7.0" />
+    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.7.1" />
     <PackageReference Include="ImgFlip4NET" Version="1.0.0" />
     <PackageReference Include="IronPython" Version="3.4.0-alpha1" />
     <PackageReference Include="logger-discord-provider" Version="2.2.0" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
-    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.18.0-beta3" />
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.18.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.0.0-2.final" />
@@ -115,6 +115,7 @@
     <PackageReference Include="TwitchLib.Api.V5" Version="3.2.4" />
     <PackageReference Include="TwitchLib.Client" Version="3.2.3" />
     <PackageReference Include="TwitchLib.PubSub" Version="3.2.3" />
+    <PackageReference Include="TwitchTokenGeneratorNET" Version="1.0.0" />
     <PackageReference Include="Universe.CpuUsage" Version="2.2.497.598" />
     <PackageReference Include="Zio" Version="0.12.0" />
     <PackageReference Include="ZXing.Net" Version="0.16.6" />
