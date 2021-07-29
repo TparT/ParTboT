@@ -29,7 +29,7 @@ namespace ParTboT.Services
                     _services.MongoDB.GetCollectionAsync<TwitchStreamer>(_services.Config.LocalMongoDB_Streamers).GetAwaiter().GetResult()
                     .AsQueryable().Select(f => f._id).Distinct().ToList();
 
-                if (!Streamers.Any())
+                if (!Streamers!.Any())
                     Streamers.Add("248431239");
 
                 _services.LiveMonitorService.SetChannelsById(Streamers);
