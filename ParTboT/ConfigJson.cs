@@ -13,6 +13,9 @@ namespace ParTboT
         [JsonProperty("uniprefix")]
         public bool UniversalPrefix { get; private set; }
 
+        [JsonProperty("SeqSkipInfoLoglevelAPIkey")]
+        public string SeqSkipInfoLoglevelAPIkey { get; private set; }
+
         [JsonProperty("pymodules")]
         public bool Pymodules { get; private set; }
 

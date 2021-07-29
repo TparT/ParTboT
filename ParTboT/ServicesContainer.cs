@@ -7,9 +7,11 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NetMQ;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Owin;
 using ParTboT.Services;
 using RestSharp;
+using Serilog;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -28,7 +30,7 @@ namespace ParTboT
 {
     public class ServicesContainer
     {
-        public ILogger Logger { get; private set; }
+        public Microsoft.Extensions.Logging.ILogger Logger { get; private set; }
         public ILoggerFactory LoggerFactory { get; private set; }
         public ConfigJson Config { get; private set; }
 
@@ -78,7 +80,7 @@ namespace ParTboT
         }
 
 
-        public async Task<ServicesContainer> InitializeServicesAsync(ILoggerFactory loggerFactory, ILogger logger)
+        public async Task<ServicesContainer> InitializeServicesAsync(ILoggerFactory loggerFactory, Microsoft.Extensions.Logging.ILogger logger)
         {
             Logger = logger;
             LoggerFactory = loggerFactory;
@@ -104,7 +106,7 @@ namespace ParTboT
             {
                 ClientId = Config.TwitchAPI_ClientID,
                 AccessToken = Config.TwitchAPI_AccessToken,
-            });
+            }, loggerFactory: new LoggerFactory().AddSeq("http://localhost:5341", apiKey: Config.SeqSkipInfoLoglevelAPIkey).AddSerilog());
 
             CurrencyConverterAPI = new(Config.CurrencyConverterAPIKey);
             GeniusAPI = new GeniusClient(Config.GeniusAPI_ApiKey);
@@ -155,7 +157,7 @@ namespace ParTboT
             //}
 
 
-
+            //TwitchAPI.V5.
 
 
 

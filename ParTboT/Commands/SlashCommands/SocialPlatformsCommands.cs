@@ -7,7 +7,6 @@ using DSharpPlus.SlashCommands;
 using EasyConsole;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using Newtonsoft.Json.Linq;
 using ParTboT.DbModels.ParTboTModels;
 using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.DbModels.SocialPlatforms.Shared;
@@ -17,8 +16,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tweetinvi.Models;
+using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Search;
-using TwitchLib.Api.V5.Models.Users;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils.Builders;
 
@@ -27,14 +26,16 @@ namespace ParTboT.Commands.SlashCommands
     [SlashCommandGroup("socials", "Plug socials or even follow them to get notified when people do stuff")]
     public class SocialPlatformsCommands : SlashCommandModule
     {
+        public ServicesContainer Services { private get; set; }
+
         public readonly DiscordColor TwitchColor = new DiscordColor(0x6d28f1);
 
         public DiscordEmoji Yes { get; set; }
+        public DiscordEmoji Back { get; set; }
         public DiscordEmoji No { get; set; }
-        public DiscordEmoji ChooseAnother { get; set; }
+
 
         public const string TwitchChannelBaseLink = "https://www.twitch.tv/";
-        public ServicesContainer Services { private get; set; }
 
 
         #region Plug Command
@@ -145,6 +146,7 @@ namespace ParTboT.Commands.SlashCommands
                     string GuildIdString = ctx.Guild.Id.ToString();
 
                     Yes = DiscordEmoji.FromName(ctx.Client, ":heavy_check_mark:");
+                    Back = DiscordEmoji.FromName(ctx.Client, ":back:");
                     No = DiscordEmoji.FromName(ctx.Client, ":heavy_multiplication_x:");
 
                     switch (Platform)
@@ -190,7 +192,7 @@ namespace ParTboT.Commands.SlashCommands
                                     Channel FirstMatch = Search.Channels.FirstOrDefault(x => x.Id == SelectResult.Result.Values.FirstOrDefault());
 
                                     InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelected =
-                                        await AskIfThisChannel(ctx, SelectResult, FirstMatch, User_Name_To_Follow, Search.Channels.Length).ConfigureAwait(false);
+                                       await AskIfThisChannel(ctx, SelectResult, FirstMatch, User_Name_To_Follow, Search.Channels.Length).ConfigureAwait(false);
                                     interaction = ButtonSelected.Result.Interaction;
 
                                     //DiscordEmbedBuilder Embed = new DiscordEmbedBuilder()
@@ -634,7 +636,7 @@ namespace ParTboT.Commands.SlashCommands
                         ChannelType.Text => throw new NotImplementedException(),
                         ChannelType.Private => throw new NotImplementedException(),
                         ChannelType.News => throw new NotImplementedException(),
-                        ChannelType.Stage => throw new NotImplementedException()
+                        ChannelType.Stage => "stage channel"
                     };
 
 
@@ -748,7 +750,14 @@ namespace ParTboT.Commands.SlashCommands
         #endregion Manage follow-ups Command
 
 
-        private async Task<InteractivityResult<ComponentInteractionCreateEventArgs>> AskIfThisChannel(InteractionContext ctx, InteractivityResult<ComponentInteractionCreateEventArgs> SelectRes, Channel channel, string UserNameToFollow, int ResultsCount)
+        private async Task<InteractivityResult<ComponentInteractionCreateEventArgs>> AskIfThisChannel
+            (
+                InteractionContext ctx,
+                InteractivityResult<ComponentInteractionCreateEventArgs> SelectRes,
+                Channel channel,
+                string UserNameToFollow,
+                int ResultsCount
+            )
         {
             DiscordWebhookBuilder wb = new();
 
@@ -777,9 +786,9 @@ namespace ParTboT.Commands.SlashCommands
                         (
                             ButtonStyle.Primary,
                             "ChooseAgain",
-                            "Choose another one",
+                            "Back",
                             false,
-                            new DiscordComponentEmoji(Yes)
+                            new DiscordComponentEmoji(Back)
                         ),
 
                         new DiscordButtonComponent
@@ -798,7 +807,7 @@ namespace ParTboT.Commands.SlashCommands
             DiscordMessage msg = await SelectRes.Result.Interaction.EditOriginalResponseAsync(wb).ConfigureAwait(false);
 
             InteractivityResult<ComponentInteractionCreateEventArgs> ButtonSelected =
-                (await (await msg.WaitForButtonAsync(ctx.User, CancellationToken.None).ConfigureAwait(false))
+                (await (await msg.WaitForButtonAsync(ctx.User, TimeSpan.FromMinutes(1)).ConfigureAwait(false))
                 .HandleTimeouts(msg).ConfigureAwait(false)).Value;
 
             return ButtonSelected;

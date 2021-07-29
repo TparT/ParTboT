@@ -3,14 +3,19 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
+using Newtonsoft.Json.Linq;
+using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using YarinGeorge.Databases.MongoDB;
+using YarinGeorge.Databases.MongoDB.Types;
+using YarinGeorge.Databases.MongoDB.Extensions;
+using YarinGeorge.Utilities.Extensions;
 
 namespace ParTboT.Commands
 {
@@ -138,6 +143,56 @@ namespace ParTboT.Commands
 
 
             await ctx.RespondAsync($"Successfully changed collection name from: {From} | to: {To}").ConfigureAwait(false);
+        }
+
+
+
+        [Command("dict")]
+        //[Aliases("n")]
+        //[Description("A new command")]
+        public async Task New(CommandContext ctx, string Key, string Key2)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            //Dictionary<string, object> dict = new Dictionary<string, object>();
+
+            //dict.Add(ctx.Guild.Id.ToString(), new FollowingGuild { GuildNameToSend = ctx.Guild.Name, GuildIDToSend = ctx.Guild.Id, DateTimeStartedFollowing = DateTime.UtcNow });
+            //dict.Add("778975635514982421", new FollowingGuild { GuildNameToSend = "The Archive", GuildIDToSend = 778975635514982421, DateTimeStartedFollowing = DateTime.UtcNow.Subtract(TimeSpan.FromDays(2)) });
+
+            IMongoCollection<TestModel> col = await Services.MongoDB.GetCollectionAsync<TestModel>("DictTest").ConfigureAwait(false);
+
+            //TestModel doc = new TestModel
+            //{
+            //    Id = ctx.Message.Id.ToString(),
+            //    Dict = dict.ToBsonDocument()
+            //};
+            //new BsonDocumentSerializer().
+            var res = await col.UpdateOneAsync(x => x.Id == Key, Builders<TestModel>.Update.Set(x => x.Dict[Key2], (object)new FollowingGuild { GuildNameToSend = ctx.Guild.Name, GuildIDToSend = ctx.Guild.Id, DateTimeStartedFollowing = DateTime.UtcNow }));
+
+            //var res =
+            //    await col.AddItemOrUpdateValueAsync
+            //    (Key,
+            //    nameof(TestModel.Dict),
+            //    new MongoDictionary<string, FollowingGuild>(),
+            //    Key,
+            //    new FollowingGuild
+            //    { GuildNameToSend = ctx.Guild.Name, GuildIDToSend = ctx.Guild.Id, DateTimeStartedFollowing = DateTime.UtcNow });
+
+            //TestModel doc = await (await col.FindAsync(x => x.Id == Key)).FirstOrDefaultAsync();
+
+            //Dictionary<string, FollowingGuild> map = doc.Dict.ToDictionary().ToDictionary<string, FollowingGuild>();
+
+            //if (map.TryGetValue(Key2, out TestModel value))
+            //    await ctx.Channel.SendMessageAsync(value.).ConfigureAwait(false);
+
+            await ctx.Channel.SendMessageAsync($"{JObject.FromObject(res)}").ConfigureAwait(false);
+        }
+
+        public record TestModel
+        {
+            [BsonId]
+            public string Id { get; set; }
+            public MongoDictionary<string, FollowingGuild> Dict { get; set; }
         }
 
         public class StreamersModule

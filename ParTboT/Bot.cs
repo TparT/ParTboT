@@ -14,7 +14,7 @@ using ParTboT.Commands;
 using ParTboT.Commands.SlashCommands;
 using ParTboT.Events.BotEvents;
 using ParTboT.Events.GuildEvents.GuildMembers;
-using Seq.App.Discord;
+using discord_web_hook_logger;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
@@ -62,11 +62,11 @@ namespace ParTboT
             #region SETUP: Console logging
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.Seq("http://localhost:5341")
+                //.WriteTo.Seq("http://localhost:5341")
                 //.WriteTo.EventLog(typeof(Bot).Assembly.FullName, typeof(Bot).Assembly.FullName, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
                 .CreateLogger();
 
-            ILoggerFactory logFactory = new LoggerFactory().AddSerilog();
+            ILoggerFactory logFactory = new LoggerFactory().AddSerilog().AddSeq();
             #endregion
 
             #region SETUP: Bot config

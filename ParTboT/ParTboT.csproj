@@ -45,6 +45,7 @@
     <PackageReference Include="ColorZXing.Net" Version="0.1.2" />
     <PackageReference Include="ConsoleTables" Version="2.4.2" />
     <PackageReference Include="CSCore" Version="1.2.1.2" />
+    <PackageReference Include="discord-web-hook-logger" Version="1.0.4" />
     <PackageReference Include="DotImaging.BitmapSourceInterop" Version="4.8.3" />
     <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00930" />
     <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00930" />
@@ -64,6 +65,7 @@
     <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.7.1" />
     <PackageReference Include="ImgFlip4NET" Version="1.0.0" />
     <PackageReference Include="IronPython" Version="3.4.0-alpha1" />
+    <PackageReference Include="Kitsu" Version="1.4.2" />
     <PackageReference Include="logger-discord-provider" Version="2.2.0" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.18.0" />
@@ -89,6 +91,7 @@
     <PackageReference Include="Renci.SshNet.Async" Version="1.4.0" />
     <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="Seq.App.Discord" Version="0.5.0" />
+    <PackageReference Include="Seq.Extensions.Logging" Version="6.1.0-dev-00091" />
     <PackageReference Include="Serilog" Version="2.10.1-dev-01343" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1-dev-00874" />
     <PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
