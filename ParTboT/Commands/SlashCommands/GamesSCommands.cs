@@ -4,6 +4,8 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using Newtonsoft.Json.Linq;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -204,6 +206,11 @@ namespace ParTboT.Commands.SlashCommands
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(Stats.data.Segments[0].Stats.WinningKills.Value.ToString())).ConfigureAwait(false);
             }
 
+            public IEnumerable<string> Parts(string text, int maxInPart)
+            {
+                return text.Chunk(maxInPart).Select(x => string.Join(string.Empty, x));
+            }
+
             [SlashCommand("CSGO", "Check steam user's Counter-String:Global-Offensive game stats.")]
             public async Task CSGOStatsCommand
             (InteractionContext ctx, [Option("Username", "The name of the user to check the game stats for.")] string Username)
@@ -211,6 +218,13 @@ namespace ParTboT.Commands.SlashCommands
                 await ctx.TriggerThinkingAsync().ConfigureAwait(false);
                 CsGoStats Stats = await Services.TrackggClient.GetPlayerCSGOStats(Username);
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(string.Join("\n", Stats.data.Segments[0].Stats.Select(x => x.Key + ": " + x.Value.DisplayValue)))).ConfigureAwait(false);
+
+                //IEnumerable<string> Json = this.Parts(JObject.FromObject(Stats).ToString(), 2000);
+
+                //await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("_ _")).ConfigureAwait(false);
+
+                //foreach (string part in Json)
+                //    await ctx.Channel.SendMessageAsync(part).ConfigureAwait(false);
             }
         }
 

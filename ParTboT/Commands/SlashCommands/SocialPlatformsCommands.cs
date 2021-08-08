@@ -337,8 +337,8 @@ namespace ParTboT.Commands.SlashCommands
                                             {
                                                 _id = FirstMatch.Id,
                                                 StreamerName = FirstMatch.DisplayName,
-                                                //ChannelURL = $"{TwitchChannelBaseLink}{FirstMatch.Name}",
-                                                //ChannelIconURL = FirstMatch.Logo,
+                                                ChannelURL = $"{TwitchChannelBaseLink}{FirstMatch.DisplayName}",
+                                                ChannelIconURL = FirstMatch.ThumbnailUrl,
                                                 FollowingGuilds = new Dictionary<string, FollowingGuild>() { { GuildIdString, GUupdate } },
                                                 DateTimeAddedToTheDatabase = DateTime.UtcNow
                                             };
@@ -707,7 +707,7 @@ namespace ParTboT.Commands.SlashCommands
             {
                 case "Twitch":
                     {
-                        foreach (var streamer in FollowedStreamers)
+                        foreach (TwitchStreamer streamer in FollowedStreamers.OrderBy(x => x.StreamerName))
                         {
                             options.Add
                                 (new DiscordSelectComponentOption
@@ -733,17 +733,20 @@ namespace ParTboT.Commands.SlashCommands
 
             FollowingGuild FollowageConfig = StreamerRecord.FollowingGuilds[GuildIdStr];
 
+            TwitchStreamer SelectedStreamer = FollowedStreamers.FirstOrDefault(x => x._id == Selection);
+
             DiscordEmbedBuilder SettingsInfoEmbed = new DiscordEmbedBuilder()
-                    .WithTitle($"__Here are the current followage settings for {FollowedStreamers.FirstOrDefault(x => x._id == Selection)}:__")
+                    .WithTitle($"__Here are the current followage settings for {Formatter.Sanitize(SelectedStreamer.StreamerName)}:__")
+                    .WithThumbnail(SelectedStreamer.ChannelIconURL)
                     .WithDescription($"**Alerts channel name:** {FollowageConfig.ChannelToSendTo.ChannelNameToSend}\n" +
                                      $"**Alerts channel ID:** {FollowageConfig.ChannelToSendTo.ChannelIDToSend}\n" +
                                      $"**Custom message:** {FollowageConfig.ChannelToSendTo.CustomMessage}\n\n" +
-                                     $"Which one of these options would you like to ?")
+                                     $"Which one of these options would you like to edit?")
                     .WithFooter($"These settings were made on {FollowageConfig.DateTimeStartedFollowing}")
                     .WithColor(new DiscordColor(0x6d28f1)); // Purple
 
             await SelectionResult.Result.Interaction.CreateResponseAsync
-                (InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(SettingsInfoEmbed))
+                (InteractionResponseType.UpdateMessage, new DiscordInteractionResponseBuilder().AddEmbed(SettingsInfoEmbed).WithContent($"Showing settings for {SelectedStreamer.StreamerName}:"))
                 .ConfigureAwait(false);
         }
 

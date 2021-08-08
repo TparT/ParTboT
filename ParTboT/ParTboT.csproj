@@ -47,11 +47,11 @@
     <PackageReference Include="CSCore" Version="1.2.1.2" />
     <PackageReference Include="discord-web-hook-logger" Version="1.0.4" />
     <PackageReference Include="DotImaging.BitmapSourceInterop" Version="4.8.3" />
-    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00930" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00930" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00930" />
-    <PackageReference Include="DSharpPlus.Lavalink" Version="4.1.0-nightly-00930" />
-    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00930" />
+    <PackageReference Include="DSharpPlus" Version="4.1.0" />
+    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0" />
+    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0" />
+    <PackageReference Include="DSharpPlus.Lavalink" Version="4.1.0" />
+    <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0" />
     <PackageReference Include="EasyConsole" Version="1.1.0" />
     <PackageReference Include="Emzi0767.Common" Version="2.6.2" />
     <PackageReference Include="Figgle" Version="0.4.0" />
@@ -62,10 +62,10 @@
     <PackageReference Include="Hangfire.Mongo" Version="0.7.22" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.34" />
     <PackageReference Include="Ical.Net" Version="4.2.0" />
-    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.7.1" />
+    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.7.5" />
     <PackageReference Include="ImgFlip4NET" Version="1.0.0" />
     <PackageReference Include="IronPython" Version="3.4.0-alpha1" />
-    <PackageReference Include="Kitsu" Version="1.4.2" />
+    <PackageReference Include="Kitsu.NET" Version="1.1.0" />
     <PackageReference Include="logger-discord-provider" Version="2.2.0" />
     <PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.18.0" />
@@ -81,26 +81,28 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-preview.6.21352.12" />
     <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="4.2.0" />
     <PackageReference Include="Microsoft.Owin.Hosting" Version="4.2.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.13.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
+    <PackageReference Include="morelinq" Version="3.3.2" />
     <PackageReference Include="NetMQ" Version="4.0.1.7-pre" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.2" />
     <PackageReference Include="NodaTime" Version="3.0.5" />
     <PackageReference Include="NTextCat" Version="0.3.65" />
-    <PackageReference Include="Quartz" Version="3.3.2" />
+    <PackageReference Include="Quartz" Version="3.3.3" />
     <PackageReference Include="Ramzes.ImageColorDefiner" Version="1.0.1" />
     <PackageReference Include="Renci.SshNet.Async" Version="1.4.0" />
     <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="Seq.App.Discord" Version="0.5.0" />
     <PackageReference Include="Seq.Extensions.Logging" Version="6.1.0-dev-00091" />
     <PackageReference Include="Serilog" Version="2.10.1-dev-01343" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1-dev-00874" />
+    <PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1-dev-00876" />
     <PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="5.0.1" />
     <PackageReference Include="Sodium.Core" Version="1.2.3" />
     <PackageReference Include="SoundTouch.Net.NAudioSupport" Version="2.3.2" />
     <PackageReference Include="SSH.NET" Version="2020.0.1" />
     <PackageReference Include="SteamKit-CSGO" Version="1.2.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.5" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0-preview.5.21301.5" />
     <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
     <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.4.0-beta-24913-02" />
@@ -109,13 +111,14 @@
     <PackageReference Include="System.IO.Ports" Version="6.0.0-preview.6.21352.12" />
     <PackageReference Include="System.Speech" Version="6.0.0-preview.6.21352.12" />
     <PackageReference Include="System.Text.Encoding.Extensions" Version="4.4.0-beta-24913-02" />
+    <PackageReference Include="Trivia4NET" Version="1.0.1" />
     <PackageReference Include="TweetinviAPI" Version="5.0.4" />
     <PackageReference Include="TweetinviAPI.AspNetPlugin" Version="5.0.4" />
     <PackageReference Include="TwitchLib" Version="3.2.0" />
-    <PackageReference Include="TwitchLib.Api" Version="3.2.4" />
-    <PackageReference Include="TwitchLib.Api.Core" Version="3.2.4" />
-    <PackageReference Include="TwitchLib.Api.Helix" Version="3.2.4" />
-    <PackageReference Include="TwitchLib.Api.V5" Version="3.2.4" />
+    <PackageReference Include="TwitchLib.Api" Version="3.2.5-preview-9a3c9a73b72f479e1c27fec4e1c7ec77dd69f125" />
+    <PackageReference Include="TwitchLib.Api.Core" Version="3.2.5-preview-9a3c9a73b72f479e1c27fec4e1c7ec77dd69f125" />
+    <PackageReference Include="TwitchLib.Api.Helix" Version="3.2.5-preview-9a3c9a73b72f479e1c27fec4e1c7ec77dd69f125" />
+    <PackageReference Include="TwitchLib.Api.V5" Version="3.2.5-preview-9a3c9a73b72f479e1c27fec4e1c7ec77dd69f125" />
     <PackageReference Include="TwitchLib.Client" Version="3.2.3" />
     <PackageReference Include="TwitchLib.PubSub" Version="3.2.3" />
     <PackageReference Include="TwitchTokenGeneratorNET" Version="1.0.0" />

@@ -2,6 +2,7 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using Figgle;
 using ImgFlip4NET;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
@@ -132,29 +134,24 @@ namespace ParTboT.Commands
                 Dictionary<string, string> Renders = RenderAllFonts(contents, 4096);
                 int page = 1;
 
-                PagedMessage Pages = new();
+                List<Page> pages = new List<Page>();
                 foreach (var Render in Renders)
                 {
-                    Pages.MessagePages.TryAdd
-                            (page,
-                            new DiscordMessageBuilder()
-                                .WithEmbed(
+                    pages.Add(
+                        new Page(null,
                                   eb.WithTitle($"**__{Render.Key}:__**")
                                     .WithDescription($"```{Render.Value.Replace("`", "'")}```")
-                                    .WithFooter($"Page {page}/{Renders.Count}")
-                                ).AddComponents
-                    (
-                    new DiscordButtonComponent
-                    (ButtonStyle.Secondary, "PG|back", "Back", emoji: new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":arrow_left:"))),
-                    new DiscordButtonComponent
-                    (ButtonStyle.Secondary, "PG|next", "Next", emoji: new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":arrow_right:")))
-                    ));
+                                    .WithFooter($"Page {page}/{Renders.Count}")));
+                    //new DiscordButtonComponent
+                    //(ButtonStyle.Secondary, "PG|back", "Back", emoji: new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":arrow_left:"))),
+                    //new DiscordButtonComponent
+                    //(ButtonStyle.Secondary, "PG|next", "Next", emoji: new DiscordComponentEmoji(DiscordEmoji.FromName(ctx.Client, ":arrow_right:")))
+                    //));
 
                     page++;
                 }
 
-                ulong MsgId = (await ctx.RespondAsync(Pages.MessagePages[1]).ConfigureAwait(false)).Id;
-                Bot.PagedMessagesPool.TryAdd(MsgId, Pages);
+                await ctx.Channel.SendPaginatedMessageAsync(ctx.User, pages, token: new CancellationTokenSource(TimeSpan.FromMinutes(10)).Token);
             }
             catch (Exception ex)
             {

@@ -28,6 +28,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities.Debugging;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
+using DSharpPlus.Interactivity.EventHandling;
 
 namespace ParTboT
 {
@@ -61,12 +62,12 @@ namespace ParTboT
 
             #region SETUP: Console logging
             Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                //.WriteTo.Seq("http://localhost:5341")
-                //.WriteTo.EventLog(typeof(Bot).Assembly.FullName, typeof(Bot).Assembly.FullName, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
+                .WriteTo.Async(c => c.Console())
+                .WriteTo.Async(s => s.Seq("http://localhost:5341"))
+                //.WriteTo.Async(e => e.EventLog(typeof(Bot).Assembly.FullName, manageEventSource: true, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information))
                 .CreateLogger();
 
-            ILoggerFactory logFactory = new LoggerFactory().AddSerilog().AddSeq();
+            ILoggerFactory logFactory = new LoggerFactory().AddSerilog(Log.Logger);
             #endregion
 
             #region SETUP: Bot config
@@ -131,13 +132,22 @@ namespace ParTboT
 
             Client.UseInteractivity(new InteractivityConfiguration
             {
-                Timeout = TimeSpan.FromSeconds(90)
+                Timeout = TimeSpan.FromSeconds(90),
+                PaginationButtons = new PaginationButtons
+                {
+                    Left = new DiscordButtonComponent(ButtonStyle.Secondary, "back", "Back", emoji: new DiscordComponentEmoji(DiscordEmoji.FromName(Client, ":arrow_left:"))),
+                    Right = new DiscordButtonComponent(ButtonStyle.Secondary, "next", "Next", emoji: new DiscordComponentEmoji(DiscordEmoji.FromName(Client, ":arrow_right:"))),
+                    SkipLeft = new DiscordButtonComponent(ButtonStyle.Secondary, "skipleft", "Skip left", emoji: new DiscordComponentEmoji(DiscordEmoji.FromName(Client, ":arrow_forward:"))),
+                    SkipRight = new DiscordButtonComponent(ButtonStyle.Secondary, "skipright", "Skip right", emoji: new DiscordComponentEmoji(DiscordEmoji.FromName(Client, ":arrow_backward:"))),
+                    Stop = new DiscordButtonComponent(ButtonStyle.Secondary, "stop", "Stop", emoji: new DiscordComponentEmoji(DiscordEmoji.FromName(Client, ":stop_button:")))
+                },
+                AckPaginationButtons = true
             });
 
             #endregion
 
-            Client.SocketErrored += (s, e) => { _ = Task.Run(async () => { Console.WriteLine(e.Exception.ToString()); }); return Task.CompletedTask;  };
-            Client.ClientErrored += (s, e) => { _ = Task.Run(async () => { Console.WriteLine(e.Exception.ToString()); }); return Task.CompletedTask;  };
+            Client.SocketErrored += (s, e) => { _ = Task.Run(async () => { Console.WriteLine(e.Exception.ToString()); }); return Task.CompletedTask; };
+            Client.ClientErrored += (s, e) => { _ = Task.Run(async () => { Console.WriteLine(e.Exception.ToString()); }); return Task.CompletedTask; };
 
             #endregion
 
@@ -256,44 +266,44 @@ namespace ParTboT
                             }
                             break;
 
-                        case "GR":
-                            {
-                                DiscordEmbedBuilder Response = new();
-                                (bool IsSuccess, DiscordMember Member) Query = await e.User.GetMemberAsync(e.Guild).ConfigureAwait(false);
-                                if (Query.IsSuccess)
-                                {
-                                    DiscordRole SelectedButtonRole = e.Guild.GetRole(ulong.Parse(ButtonArgs[1]));
-                                    if (!Query.Member.Roles.Contains(SelectedButtonRole))
-                                    {
-                                        await Query.Member.GrantRoleAsync(SelectedButtonRole, "Added using role selection menu.").ConfigureAwait(false);
-                                        Response
-                                            .WithColor(DiscordColor.Green)
-                                            .WithTitle("Success!")
-                                            .WithDescription($"You now have the '{SelectedButtonRole.Name}' role!");
-                                    }
-                                    else
-                                    {
-                                        Response
-                                            .WithColor(DiscordColor.Gold)
-                                            .WithTitle("Pay attention!")
-                                            .WithDescription($"You **__already__** have the '{SelectedButtonRole.Name}' role!");
-                                    }
-                                }
-                                else
-                                {
-                                    Response
-                                        .WithColor(DiscordColor.Red)
-                                        .WithTitle("Error!")
-                                        .WithDescription("There was an error granting this role.");
-                                }
+                        //case "GR":
+                        //    {
+                        //        DiscordEmbedBuilder Response = new();
+                        //        (bool IsSuccess, DiscordMember Member) Query = await e.User.GetMemberAsync(e.Guild).ConfigureAwait(false);
+                        //        if (Query.IsSuccess)
+                        //        {
+                        //            DiscordRole SelectedButtonRole = e.Guild.GetRole(ulong.Parse(ButtonArgs[1]));
+                        //            if (!Query.Member.Roles.Contains(SelectedButtonRole))
+                        //            {
+                        //                await Query.Member.GrantRoleAsync(SelectedButtonRole, "Added using role selection menu.").ConfigureAwait(false);
+                        //                Response
+                        //                    .WithColor(DiscordColor.Green)
+                        //                    .WithTitle("Success!")
+                        //                    .WithDescription($"You now have the '{SelectedButtonRole.Name}' role!");
+                        //            }
+                        //            else
+                        //            {
+                        //                Response
+                        //                    .WithColor(DiscordColor.Gold)
+                        //                    .WithTitle("Pay attention!")
+                        //                    .WithDescription($"You **__already__** have the '{SelectedButtonRole.Name}' role!");
+                        //            }
+                        //        }
+                        //        else
+                        //        {
+                        //            Response
+                        //                .WithColor(DiscordColor.Red)
+                        //                .WithTitle("Error!")
+                        //                .WithDescription("There was an error granting this role.");
+                        //        }
 
-                                await e.Interaction.CreateResponseAsync
-                                (InteractionResponseType.ChannelMessageWithSource,
-                                new DiscordInteractionResponseBuilder()
-                                    .AsEphemeral(true)
-                                    .AddEmbed(Response));
-                            }
-                            break;
+                        //        await e.Interaction.CreateResponseAsync
+                        //        (InteractionResponseType.ChannelMessageWithSource,
+                        //        new DiscordInteractionResponseBuilder()
+                        //            .AsEphemeral(true)
+                        //            .AddEmbed(Response));
+                        //    }
+                        //    break;
 
                         default:
                             Console.WriteLine(ButtonArgs[0]);

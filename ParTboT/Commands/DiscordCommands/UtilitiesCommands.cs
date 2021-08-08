@@ -573,7 +573,7 @@ namespace ParTboT.Commands
                 page++;
             }
 
-            await ctx.Channel.SendPaginatedMessageAsync(ctx.User, pages, timeoutoverride: TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+            await ctx.Channel.SendPaginatedMessageAsync(ctx.User, pages, null, timeoutoverride: TimeSpan.FromMinutes(5)).ConfigureAwait(false);
         }
 
         [Command("color")]

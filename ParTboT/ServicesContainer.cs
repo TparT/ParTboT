@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NetMQ;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Kitsu.NET;
 using Owin;
 using ParTboT.Services;
 using RestSharp;
@@ -17,6 +17,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Trivia4NET;
 using Tweetinvi;
 using TwitchLib.Api;
 using TwitchLib.Api.Core;
@@ -25,40 +26,55 @@ using YarinGeorge.ApiClients.CurrencyConverter;
 using YarinGeorge.ApiClients.TrackerGG;
 using YarinGeorge.Databases.MongoDB;
 using YarinGeorge.Utilities.ZXingUtils;
+using Tweetinvi.Models;
+using Kitsu.NET.Client;
 
 namespace ParTboT
 {
     public class ServicesContainer
     {
-        public Microsoft.Extensions.Logging.ILogger Logger { get; private set; }
-        public ILoggerFactory LoggerFactory { get; private set; }
         public ConfigJson Config { get; private set; }
 
+        #region Logging
+        public Microsoft.Extensions.Logging.ILogger Logger { get; private set; }
+        public ILoggerFactory LoggerFactory { get; private set; }
+        #endregion Logging
 
+        #region Databases and Cache
         public LiteDatabase LiteDB { get; private set; }
         public MongoCRUD MongoDB { get; private set; }
         public MemoryCache Cache { get; private set; }
+        #endregion Databases and Cache
 
-        public TwitterClient TwitterClient { get; private set; }
+        #region APIs
+        public TwitchAPI TwitchAPI { get; private set; }
+        public CurrencyConverterClient CurrencyConverterAPI { get; private set; }
+        public GeniusClient GeniusAPI { get; private set; }
         public TrackerggClient TrackggClient { get; private set; }
+        #endregion APIs
+
+        #region Clients
         public HttpClient HttpClient { get; private set; }
         public RestClient RestClient { get; private set; }
+        public TwitterClient TwitterClient { get; private set; }
+        public TriviaService OpenTDBClient { get; private set; }
+        public KitsuClient KitsuClient { get; private set; }
         public DiscordWebhookClient WebhooksClient { get; private set; }
+        #endregion Clients
 
+        #region Utilities
         public SpellingCorrectingService SpellingCorrecting { get; private set; }
         public CodeTextGenerator RandomTextGenerator { get; private set; }
         public BarcodeService BarcodeService { get; private set; }
         public UserVerifications UserVerifications { get; private set; }
+        #endregion Utilities
 
-        public TwitchAPI TwitchAPI { get; private set; }
-        public CurrencyConverterClient CurrencyConverterAPI { get; private set; }
-        public GeniusClient GeniusAPI { get; private set; }
-
+        #region Services
         public TwitterTweetsService TweetsService { get; private set; }
         public RemindersService RemindersService { get; private set; }
         public LiveStreamMonitorService LiveMonitorService { get; private set; }
         public TwitchLiveMonitorService LiveMonitor { get; private set; }
-
+        #endregion Services
 
         public async Task<ConfigJson> InitConfig(string ConfigPath)
         {
@@ -74,16 +90,12 @@ namespace ParTboT
         }
 
 
-        public class Startup
-        {
-
-        }
-
-
         public async Task<ServicesContainer> InitializeServicesAsync(ILoggerFactory loggerFactory, Microsoft.Extensions.Logging.ILogger logger)
         {
+            #region Logging
             Logger = logger;
             LoggerFactory = loggerFactory;
+            #endregion Logging
 
             #region Databases and data storage
 
@@ -107,30 +119,33 @@ namespace ParTboT
                 ClientId = Config.TwitchAPI_ClientID,
                 AccessToken = Config.TwitchAPI_AccessToken,
             }, loggerFactory: new LoggerFactory().AddSeq("http://localhost:5341", apiKey: Config.SeqSkipInfoLoglevelAPIkey).AddSerilog());
-
             CurrencyConverterAPI = new(Config.CurrencyConverterAPIKey);
             GeniusAPI = new GeniusClient(Config.GeniusAPI_ApiKey);
+            TrackggClient = new(Config.TrackerGG);
 
             #endregion APIs
 
             #region Services
 
             // =============== Clients ================ \\
-            TwitterClient = new TwitterClient
-                (
-                    Config.TwitterAPI_ApiKey,
-                    Config.TwitterAPI_SecretKey,
-                    Config.TwitterAPIUser_AccessToken,
-                    Config.TwitterAPIUser_AccessTokenSecret
-                );
+            HttpClient = new();
+            RestClient = new();
 
+            TwitterClient = new TwitterClient(new TwitterCredentials
+            {
+                ConsumerKey = Config.TwitterAPI_ApiKey,
+                ConsumerSecret = Config.TwitterAPI_SecretKey,
+                AccessToken = Config.TwitterAPIUser_AccessToken,
+                AccessTokenSecret = Config.TwitterAPIUser_AccessTokenSecret
+            });
             TwitterClient.Config.RateLimitTrackerMode = RateLimitTrackerMode.TrackAndAwait;
             TwitterClient.Config.HttpRequestTimeout = TimeSpan.FromMilliseconds(60 * 1000);
 
             TwitterClient.Events.OnTwitterException += (s, e) => { Console.WriteLine(e.TwitterDescription); };
 
-            TrackggClient = new(Config.TrackerGG);
-            HttpClient = new();
+            OpenTDBClient = new TriviaService();
+            KitsuClient = new KitsuClient();
+
             WebhooksClient = new DiscordWebhookClient();
 
             // ========== Bot Util Services =========== \\
@@ -192,17 +207,21 @@ namespace ParTboT
             GC.SuppressFinalize(MongoDB);
             GC.SuppressFinalize(Cache);
 
-            GC.SuppressFinalize(TwitterClient);
+            GC.SuppressFinalize(TwitchAPI);
+            GC.SuppressFinalize(CurrencyConverterAPI);
+            GC.SuppressFinalize(GeniusAPI);
+            GC.SuppressFinalize(TrackggClient);
+
             GC.SuppressFinalize(HttpClient);
+            GC.SuppressFinalize(RestClient);
+            GC.SuppressFinalize(TwitterClient);
+            GC.SuppressFinalize(OpenTDBClient);
+            GC.SuppressFinalize(WebhooksClient);
 
             GC.SuppressFinalize(SpellingCorrecting);
             GC.SuppressFinalize(RandomTextGenerator);
             GC.SuppressFinalize(BarcodeService);
             GC.SuppressFinalize(UserVerifications);
-
-            GC.SuppressFinalize(TwitchAPI);
-            GC.SuppressFinalize(CurrencyConverterAPI);
-            GC.SuppressFinalize(GeniusAPI);
 
             GC.SuppressFinalize(TweetsService);
             GC.SuppressFinalize(RemindersService);

@@ -48,32 +48,32 @@ namespace ParTboT.Commands.SlashCommands
             }
         }
 
-        [SlashCommand("rolemenu", "Testing a new way of doing role menus!")]
-        public async Task RoleMenuCommand
-        (
-            InteractionContext ctx,
-            [Option("Title", "Title of this role menu list")] string Title,
-            [Option("Role1", "First role to add to the list")] DiscordRole role1,
-            [Option("Role2", "Second role to add to the list")] DiscordRole role2 = null,
-            [Option("Role3", "Third role to add to the list")] DiscordRole role3 = null,
-            [Option("Role4", "Fourth role to add to the list")] DiscordRole role4 = null,
-            [Option("Role5", "Fifth role to add to the list")] DiscordRole role5 = null,
-            [Option("Description", "Description of this role menu list")] string Description = null
-        )
-        {
-            await ctx.TriggerThinkingAsync().ConfigureAwait(false);
+        //[SlashCommand("rolemenu", "Testing a new way of doing role menus!")]
+        //public async Task RoleMenuCommand
+        //(
+        //    InteractionContext ctx,
+        //    [Option("Title", "Title of this role menu list")] string Title,
+        //    [Option("Role1", "First role to add to the list")] DiscordRole role1,
+        //    [Option("Role2", "Second role to add to the list")] DiscordRole role2 = null,
+        //    [Option("Role3", "Third role to add to the list")] DiscordRole role3 = null,
+        //    [Option("Role4", "Fourth role to add to the list")] DiscordRole role4 = null,
+        //    [Option("Role5", "Fifth role to add to the list")] DiscordRole role5 = null,
+        //    [Option("Description", "Description of this role menu list")] string Description = null
+        //)
+        //{
+        //    await ctx.TriggerThinkingAsync().ConfigureAwait(false);
 
-            List<DiscordButtonComponent> buttons = new List<DiscordButtonComponent>();
-            foreach (KeyValuePair<ulong, DiscordRole> role in ctx.Interaction.Data.Resolved.Roles)
-                buttons.Add(new DiscordButtonComponent(ButtonStyle.Secondary, $"GR|{role.Key}", role.Value.Name));
+        //    List<DiscordButtonComponent> buttons = new List<DiscordButtonComponent>();
+        //    foreach (KeyValuePair<ulong, DiscordRole> role in ctx.Interaction.Data.Resolved.Roles)
+        //        buttons.Add(new DiscordButtonComponent(ButtonStyle.Secondary, $"GR|{role.Key}", role.Value.Name));
 
-            DiscordWebhookBuilder wb = new DiscordWebhookBuilder()
-                .WithContent($"**__{Title}__**\n\n{Description}")
-                .AddComponents(buttons);
+        //    DiscordWebhookBuilder wb = new DiscordWebhookBuilder()
+        //        .WithContent($"**__{Title}__**\n\n{Description}")
+        //        .AddComponents(buttons);
 
-            await ctx.EditResponseAsync(wb).ConfigureAwait(false);
+        //    await ctx.EditResponseAsync(wb).ConfigureAwait(false);
 
-        }
+        //}
 
         private class ButtonStyleChoice : IChoiceProvider
         {
