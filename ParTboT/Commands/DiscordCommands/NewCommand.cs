@@ -2,20 +2,25 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Lavalink;
 using DSharpPlus.VoiceNext;
-using ParTboT.Events.BotEvents;
 using MongoDB.Bson.Serialization.Attributes;
+using NAudio.Wave;
+using RubberBand.NAudio;
+using ParTboT.Events.BotEvents;
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Speech.Synthesis;
+using System.Threading;
 using System.Threading.Tasks;
-using CaptchaN;
-using CaptchaN.Factories;
-using CaptchaN.Abstractions;
+using YoutubeDLSharp;
+using YoutubeDLSharp.Metadata;
 //using CaptchaGen;
 
 namespace ParTboT.Commands
@@ -28,18 +33,24 @@ namespace ParTboT.Commands
         public IReadOnlyList<DiscordChannel> Channels { get; set; }
     }
 
-    //[Group("new")]
-    //[Description("Testing new commands.")]
+    internal record GuildMusicPlayer
+    {
+        public VoiceTransmitSink Sink { get; set; }
+        public Stream AudioStream { get; set; }
+        public WaveFormat WaveFormat { get; set; }
+    }
+
     public class NewCommand : BaseCommandModule
     {
         public ServicesContainer Services { private get; set; }
+        public YoutubeDL ytdl { private get; set; }
 
         public DiscordRole StreamersRole { get; set; }
         public static string OldName { get; set; }
         public static SpeechSynthesizer Speaker = new SpeechSynthesizer();
+        internal ConcurrentDictionary<ulong, GuildMusicPlayer> PlayedStreams { get; set; } = new ConcurrentDictionary<ulong, GuildMusicPlayer>();
 
         public ClientReceivedVoice VoiceRecievedEvent { get; set; } = new ClientReceivedVoice();
-
 
         [Command("captcha")]
         //[Aliases("n")]
@@ -56,7 +67,6 @@ namespace ParTboT.Commands
             await ImageFile.DisposeAsync();
             ImageFile.Close();
         }
-
 
         [Command("deaf")]
         public async Task Deafen(CommandContext ctx, DiscordMember member)
@@ -79,7 +89,6 @@ namespace ParTboT.Commands
             await ctx.RespondAsync(":+1:").ConfigureAwait(false);
         }
 
-
         [Command("emote")]
         [RequireGuild]
         [Description("Returns the first emote in the server's emotes list.")]
@@ -87,7 +96,6 @@ namespace ParTboT.Commands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
             var Emote = (await ctx.Guild.GetEmojisAsync().ConfigureAwait(false))[0];
-
 
             await ctx.RespondAsync
                 (
@@ -98,10 +106,8 @@ namespace ParTboT.Commands
                     $"uploaded by: {Emote.User.Username}#{Emote.User.Discriminator}\n" +
                     $"Id: {Emote.Id}"
 
-
                 ).ConfigureAwait(false);
         }
-
 
         [Command("reactions")]
         [Description("A new command")]
@@ -136,7 +142,6 @@ namespace ParTboT.Commands
 
         }
 
-
         //[Command("bots")]
         //[Description("Returns a list in the dev's console of how many bots are in the server.")]
         //public async Task Bots(CommandContext ctx)
@@ -153,7 +158,15 @@ namespace ParTboT.Commands
         public async Task Join(CommandContext ctx)
         {
             var vnext = ctx.Client.GetVoiceNext();
+            var lava = ctx.Client.GetLavalink();
 
+            if (!lava.ConnectedNodes.Any())
+            {
+                await ctx.RespondAsync("The Lavalink connection is not established");
+                return;
+            }
+
+            var node = lava.ConnectedNodes.Values.First();
             var vnc = vnext.GetConnection(ctx.Guild);
             if (vnc != null)
                 throw new InvalidOperationException("Already connected in this guild.");
@@ -163,18 +176,19 @@ namespace ParTboT.Commands
                 throw new InvalidOperationException("You need to be in a voice channel.");
 
             vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
-            OldName = vnc.TargetChannel.Name;
+            //OldName = vnc.TargetChannel.Name;
 
             vnc.VoiceReceived += VoiceRecievedEvent.VoiceReceiveHandler;
             VoiceRecievedEvent.Voices = new ConcurrentDictionary<ulong, UserRecognitionData>();
 
+            await node.ConnectAsync(chn).ConfigureAwait(false);
             await ctx.RespondAsync("👌").ConfigureAwait(false);
         }
 
-        [Command("play")]
+        [Command("say")]
         //[Aliases("n")]
         [Description("A new command")]
-        public async Task Play(CommandContext ctx, [RemainingText] string StuffToSay)
+        public async Task Say(CommandContext ctx, [RemainingText] string StuffToSay)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
@@ -218,7 +232,6 @@ namespace ParTboT.Commands
 
             //await eeee.CopyToAsync(memoryStream);
 
-
             var e = vnc.GetTransmitSink();
             await pcm.CopyToAsync(e);
             await pcm.DisposeAsync();
@@ -239,12 +252,20 @@ namespace ParTboT.Commands
         public async Task Leave(CommandContext ctx)
         {
             var vnext = ctx.Client.GetVoiceNext();
+            var lava = ctx.Client.GetLavalink();
+
+            if (!lava.ConnectedNodes.Any())
+            {
+                await ctx.RespondAsync("The Lavalink connection is not established");
+                return;
+            }
+
+            var node = lava.ConnectedNodes.Values.First();
+            var conn = node.GetGuildConnection(ctx.Guild);
 
             var vnc = vnext.GetConnection(ctx.Guild);
             if (vnc == null)
                 throw new InvalidOperationException("Not connected in this guild.");
-
-
 
             vnc.VoiceReceived -= VoiceRecievedEvent.VoiceReceiveHandler;
             foreach (var User in vnc.TargetChannel.Users)
@@ -275,9 +296,6 @@ namespace ParTboT.Commands
                     TheUsersThings.InputAudioData.Close();
                 }
 
-
-
-
                 //kvp.Value.TimeoutTimer.Enabled = false;
                 //kvp.Value.TimeoutTimer.Stop();
                 //kvp.Value.TimeoutTimer.Close();
@@ -292,10 +310,176 @@ namespace ParTboT.Commands
 
             //await vnc.TargetChannel.ModifyAsync(x => x.Name = OldName);
             vnc.Disconnect();
+            await conn.DisconnectAsync();
 
             await ctx.RespondAsync("👌").ConfigureAwait(false);
         }
 
+        [Command]
+        public async Task Volume(CommandContext ctx, double Volume)
+        {
+            var vnext = ctx.Client.GetVoiceNext();
+
+            var chn = ctx.Member?.VoiceState?.Channel;
+            if (chn == null)
+                throw new InvalidOperationException("You need to be in a voice channel.");
+
+            VoiceTransmitSink sink = PlayedStreams[ctx.Guild.Id].Sink;
+            sink.VolumeModifier = Volume / 100.00;
+
+            await ctx.RespondAsync($"Volume is now: {sink.VolumeModifier * 100}%").ConfigureAwait(false);
+        }
+
+        public class SpeedFilter
+        {
+            public double Speed { get; set; }
+            public SpeedFilter(double speed)
+                => Speed = speed;
+
+            public WaveProviderToWaveStream ChangeSpeed(Stream pcmData, WaveFormat WaveFormat)
+            {
+                //MemoryStream stream = new MemoryStream();
+                RubberBandWaveStream rb = new RubberBandWaveStream(new RawSourceWaveStream(pcmData, WaveFormat));
+                rb.Tempo = Speed;
+
+                return new WaveProviderToWaveStream(rb);
+            }
+        }
+
+        [Command]
+        public async Task Speed(CommandContext ctx, double Speed)
+        {
+            var vnext = ctx.Client.GetVoiceNext();
+
+            var chn = ctx.Member?.VoiceState?.Channel;
+            if (chn == null)
+                throw new InvalidOperationException("You need to be in a voice channel.");
+
+            GuildMusicPlayer sink = PlayedStreams[ctx.Guild.Id];
+
+            SpeedFilter speed = new SpeedFilter(Speed);
+            sink.AudioStream = speed.ChangeSpeed(sink.AudioStream, sink.WaveFormat);
+
+            await ctx.RespondAsync($"Player now has: {sink} filters installed.").ConfigureAwait(false);
+            await PlayInVC(ctx.Guild.Id);
+        }
+
+        private async Task PlayInVC(ulong GuildID, CancellationToken cancellationToken = default)
+        {
+            VoiceTransmitSink destination = PlayedStreams[GuildID].Sink;
+            var buffer = ArrayPool<byte>.Shared.Rent(destination.SampleLength);
+            try
+            {
+                int bytesRead;
+                while ((bytesRead = await PlayedStreams[GuildID].AudioStream.ReadAsync(buffer, 0, destination.SampleLength, cancellationToken).ConfigureAwait(false)) != 0)
+                {
+                    await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
+
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+
+        [Command]
+        public async Task Play(CommandContext ctx, [RemainingText] string search)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            var lava = ctx.Client.GetLavalink();
+            var node = lava.ConnectedNodes.Values.First();
+            var loadResult = await node.Rest.GetTracksAsync(search).ConfigureAwait(false);
+            var track = loadResult.Tracks.First();
+
+            var vnext = ctx.Client.GetVoiceNext();
+
+            var vnc = vnext.GetConnection(ctx.Guild);
+            //var conn = node.GetGuildConnection(ctx.Guild);
+            //throw new InvalidOperationException("Already connected in this guild.");
+
+            if (vnc == null)
+            {
+                var chn = ctx.Member?.VoiceState?.Channel;
+                if (chn == null)
+                    throw new InvalidOperationException("You need to be in a voice channel.");
+
+                vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
+            }
+
+            //var ffmpeg = Process.Start(new ProcessStartInfo
+            //{
+            //    FileName = "ffmpeg",
+            //    Arguments = $@"-hide_banner -loglevel panic -i ""{TempFile}"" -ac 2 -f s16le -ar 48000 pipe:1",
+            //    RedirectStandardOutput = true,
+            //    UseShellExecute = false
+            //});
+
+            //YouTubeAudioUrlUtil utube = new YouTubeAudioUrlUtil();
+            //var response = utube.Decipher(track.Identifier);
+
+            // set the path of the youtube-dl and FFmpeg if they're not in PATH or current directory
+
+            // optional: set a different download folder
+            //ytdl.OutputFolder = "some\\directory\\for\\video\\downloads";
+            // download a video
+            var res = await ytdl.RunVideoDataFetch(track.Uri.ToString());
+            // the path of the downloaded file
+            FormatData path = res.Data.Formats.OrderByDescending(x => x.AudioBitrate).FirstOrDefault();
+
+            MemoryStream audioStream = new MemoryStream();
+            MediaFoundationReader mediaReader = new MediaFoundationReader(path.Url);
+
+            if (mediaReader.CanRead)
+            {
+                Console.WriteLine(mediaReader.WaveFormat.SampleRate);
+                Console.WriteLine(mediaReader.WaveFormat.BitsPerSample);
+                Console.WriteLine(mediaReader.WaveFormat.Channels);
+
+                // move to the beginning of the mediaReader stream
+                mediaReader.Seek(0, SeekOrigin.Begin);
+
+                // convert the audio track to Wave data and save to audioStream
+                WaveFileWriter.WriteWavFileToStream(audioStream/*@"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net6.0\VoiceRecognitions\mojo.wav"*/, mediaReader);
+
+                audioStream.Seek(0, SeekOrigin.Begin);
+                //SoundPlayer player = new SoundPlayer(audioStream);
+                //player.Play();
+                audioStream.Seek(0, SeekOrigin.Begin);
+                var e = vnc.GetTransmitSink();
+                PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer { WaveFormat = mediaReader.WaveFormat, AudioStream = audioStream, Sink = e });
+                await PlayInVC(ctx.Guild.Id);
+
+                //ffmpeg.Dispose();
+                //ffmpeg.Close();
+                //vnc.Disconnect();
+
+                //await ctx.RespondAsync(x => x.WithFile($"{res.Data.Title}.wav", audioStream).WithContent($"{res.Data.Title}:")).ConfigureAwait(false);
+            }
+
+            //Stream pcm = ffmpeg.StandardOutput.BaseStream;
+
+            //SpeakerWAVstream.Position = 0;
+            //SpeakerWAVstream.Seek(0, SeekOrigin.Begin);
+            //var reader = new NAudio.Wave.WaveFileReader(SpeakerWAVstream);
+
+            //var pitch = new SmbPitchShiftingSampleProvider(reader.ToSampleProvider());
+            //var echo = new SoundTouchWaveProvider(reader.ToSampleProvider().ToWaveProvider(), new SoundTouchProcessor { SampleRate = 48000, TempoChange = -55, Pitch = 0.55, Channels = 2 });
+            //var eeee = new WaveProviderToWaveStream(echo);
+
+            //MemoryStream memoryStream = new();
+
+            //await eeee.CopyToAsync(memoryStream);
+
+            //File.Delete(TempFile);
+
+            //var Data = memoryStream.ToArray();
+            //await eeee.CopyToAsync(e);
+            //await e.WriteAsync(Data, 0, Data.Length);
+
+            await ctx.RespondAsync("Done").ConfigureAwait(false);
+        }
 
         [Command("link")]
         //[Aliases("n")]
@@ -309,7 +493,6 @@ namespace ParTboT.Commands
                 await ctx.RespondAsync($"The given URL ( {Arg1} ) **IS INDEED** a URL link").ConfigureAwait(false);
             else await ctx.RespondAsync($"The given URL ( {Arg1} ) **IS NOT** a URL link").ConfigureAwait(false);
         }
-
 
         [Command("tts")]
         //[Aliases("")]

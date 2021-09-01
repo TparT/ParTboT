@@ -9,7 +9,7 @@ using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 namespace ParTboT.Commands.SlashCommands
 {
     [SlashCommandGroup("recommend", "Gives you recommend you about stuff: Movies, Anime, Songs, TV shows")]
-    public class RecommendSCommands : SlashCommandModule
+    public class RecommendSCommands : ApplicationCommandModule
     {
         public ServicesContainer Services { private get; set; }
 

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace ParTboT.Commands.SlashCommands
 {
-    public class Reminders : SlashCommandModule
+    public class Reminders : ApplicationCommandModule
     {
 
 

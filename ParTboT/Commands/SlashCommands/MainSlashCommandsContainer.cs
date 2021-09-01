@@ -1,20 +1,14 @@
 ﻿using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
-using MongoDB.Driver;
-using ParTboT.DbModels.SocialPlatforms;
-using ParTboT;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TwitchLib.Api;
-using DSharpPlus.Interactivity.Extensions;
 
 namespace ParTboT.Commands.SlashCommands
 {
 
-    public class MainSlashCommandsContainer : SlashCommandModule
+    public class MainSlashCommandsContainer : ApplicationCommandModule
     {
         [SlashCommandGroup("server", "Quickly manage and perform server related operations")]
         public class ServerCommands
@@ -58,11 +52,7 @@ namespace ParTboT.Commands.SlashCommands
                 }
             }
 
-
         }
-
-        
-
 
         //[SlashCommand("hello", "Responses back with 'Hello [UserWhoExecutedTheCommand] !'.")]
         //public async Task HelloCommand(InteractionContext ctx)
@@ -88,11 +78,7 @@ namespace ParTboT.Commands.SlashCommands
             }
         }
 
-
-
-
         //await ctx.CreateResponseAsync(DiscordInteractionResponseType.DeferredChannelMessageWithSource, new DSharpPlus.SlashCommands.Entities.DiscordInteractionResponseBuilder { Content = Platform
-
 
     }
 

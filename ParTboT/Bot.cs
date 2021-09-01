@@ -3,7 +3,10 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.EventHandling;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.Lavalink;
+using DSharpPlus.Net;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
 using DSharpPlus.VoiceNext;
@@ -14,7 +17,6 @@ using ParTboT.Commands;
 using ParTboT.Commands.SlashCommands;
 using ParTboT.Events.BotEvents;
 using ParTboT.Events.GuildEvents.GuildMembers;
-using discord_web_hook_logger;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
@@ -28,7 +30,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities.Debugging;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
-using DSharpPlus.Interactivity.EventHandling;
+using YoutubeDLSharp;
 
 namespace ParTboT
 {
@@ -97,6 +99,12 @@ namespace ParTboT
             ServiceProvider services =
                 new ServiceCollection()
                     .AddSingleton(Services)
+                    .AddSingleton(new GamingHub<ulong>())
+                    .AddSingleton(new YoutubeDL
+                    {
+                        YoutubeDLPath = "Binaries\\youtube-dl.exe",
+                        FFmpegPath = "Binaries\\ffmpeg.exe"
+                    })
                     .AddSingleton<Random>()
 
                 .BuildServiceProvider();
@@ -170,7 +178,6 @@ namespace ParTboT
                         "\n WARNING! Python modules are ON! Keep in mind that some of the features are still in BETA!\nYou may disable this by setting the \"pymodules\" value to 'false', in \"config.json\" Line: 7.\n\n");
                 }
 
-
                 string RunPy = "python";
                 string FileName = "music.py";
                 string RunSimple = $"{RunPy} {FileName}";
@@ -223,6 +230,7 @@ namespace ParTboT
             Commands.RegisterCommands<CodeCommands>();
             Commands.RegisterCommands<MusicCommands>();
             Commands.RegisterCommands<ClearCommands>();
+            Commands.RegisterCommands<TestCog>();
 
             //Commands.RegisterCommands(Assembly.GetExecutingAssembly());
 
@@ -321,7 +329,6 @@ namespace ParTboT
                 {
                     //Console.WriteLine(e.Message.ToString());
 
-
                     foreach (Match item in Regex.Matches(e.Message.Content, @"(http|ftp|https):\/\/([\w\-_]+(?:(?:\.[\w\-_]+)+))([\w\-\.,@?^=%&amp;:/~\+#]*[\w\-\@?^=%&amp;/~\+#])?"))
                     {
                         Console.WriteLine(item.Value);
@@ -417,7 +424,6 @@ namespace ParTboT
             var PhoneNumberRegex = new Regex(@"\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}");
 
             var inviteRegex = new Regex(@"disc((ord)?(((app)?\.com\/invite)|(\.gg)|(\.link)|(\.io)))\/([A-z0-9-]{2,})", RegexOptions.IgnoreCase);
-
 
             //Client.MessageCreated += async (s, e) =>
             //{
@@ -545,13 +551,9 @@ namespace ParTboT
             //    }
             //};
 
-
             //Client.PresenceUpdated += Client_PresenceUpdated;
 
             //Client.InteractionCreated += Handler.Client_InteractionCreated;
-
-
-
 
             //Client.UnknownEvent += async (s, e) => { Console.WriteLine(e.Json); };
 
@@ -568,7 +570,6 @@ namespace ParTboT
 
             #endregion
 
-
             UpTime = DateTime.Now;
 
             #region Slash commands
@@ -576,28 +577,47 @@ namespace ParTboT
             slash.SlashCommandErrored += Slash_SlashCommandErrored;
 
             slash.RegisterCommands<FunSCommands>(745008583178977370);
+
             slash.RegisterCommands<GamesSCommands>(745008583178977370);
+            slash.RegisterCommands<GamesSCommands>(778975635514982421);
+
             slash.RegisterCommands<UtilsSCommands>(745008583178977370);
             slash.RegisterCommands<MusicSCommands>(745008583178977370);
             //slash.RegisterCommands<Reminders>(745008583178977370);
+
             slash.RegisterCommands<SocialPlatformsCommands>(745008583178977370);
             slash.RegisterCommands<SocialPlatformsCommands>(778975635514982421);
+
             slash.RegisterCommands<ChannelSCommands>(745008583178977370);
             slash.RegisterCommands<TestCommands>(745008583178977370);
             //slash.RegisterCommands<EditChannel>(745008583178977370);
             //slash.RegisterCommands<MainSlashCommandsContainer>(745008583178977370);
             #endregion
 
+            var endpoint = new ConnectionEndpoint
+            {
+                Hostname = "127.0.0.1", // From your server configuration.
+                Port = 2333 // From your server configuration
+            };
+
+            var lavalinkConfig = new LavalinkConfiguration
+            {
+                Password = "youshallnotpass", // From your server configuration.
+                RestEndpoint = endpoint,
+                SocketEndpoint = endpoint
+            };
+
+            var lavalink = Client.UseLavalink();
+
             DiscordActivity BootingUp = new DiscordActivity("booting up", ActivityType.Playing);
             await Client.ConnectAsync(BootingUp);
+            await lavalink.ConnectAsync(lavalinkConfig);
 
             BotsChannel = await Client.GetChannelAsync(784445037244186734).ConfigureAwait(false);
             LoggingChannel = await Client.GetChannelAsync(864128561728454666).ConfigureAwait(false);
 
-
             Task.Run(async () => StatsTrack());
-            await Services.StartServicesAsync(true, true, true);
-
+            await Services.StartServicesAsync(false, true, true);
 
             //Task.Run(async () =>
             //{
@@ -625,7 +645,6 @@ namespace ParTboT
             //{
             //    poller.Run();
             //}
-
 
             //await CreateHostBuilder(Program.Args).Build().StartAsync();
             //await BotInitialized.Invoke(this, new BotInitializedEventArgs { Bot = this });
@@ -694,7 +713,6 @@ namespace ParTboT
                     }
                 }
 
-
                 if (TempCreatedVoiceChannels.ContainsKey(e.After.Channel.Id) && !e.After.Channel.Users.Any())
                 {
                     var Channel = await Client.GetChannelAsync(e.Channel.Id).ConfigureAwait(false);
@@ -744,24 +762,22 @@ namespace ParTboT
 
         public async Task StatsTrack()
         {
-            var BotName = Client.CurrentUser.Username;
-            DateTime startTime = DateTime.Now;
-        Again:
+            string BotName = Client.CurrentUser.Username;
+            while (true)
+            {
+                TimeSpan delta = DateTime.Now - UpTime;
 
-            var delta = DateTime.Now - startTime;
-
-            var Months = $"{delta.Days / 30:0#}";
-            var Days = $"{delta.Days:0#}";
-            var Hours = $"{delta.Hours:0#}";
-            var Minutes = $"{delta.Minutes:0#}";
-            var Seconds = $"{delta.Seconds:0#}";
-            //var CpuUsage = await Task.Run(async () => await YarinGeorge.Utilities.Extra.AppPerformance.CurrentAppPerfomanceStats(Return.CPU));
-
-            //if (Timer.Hour.Equals(23) && Timer.Minute.Equals(59) && Timer.Second.Equals(59)) T.AddDays(1);
-            Console.Title =
-                $"[{BotName}] - [Uptime -> Up since: {UpTime} | Up for: {Months} months, {Days} days, {Hours} hours, {Minutes} minutes, {Seconds} seconds] [Time today (now): {DateTime.Now}]";
-            await Task.Delay(1000);
-            goto Again;
+                //var Months = $"{delta.Days / 30:0#}";
+                //var Days = $"{delta.Days:0#}";
+                //var Hours = $"{delta.Hours:0#}";
+                //var Minutes = $"{delta.Minutes:0#}";
+                //var Seconds = $"{delta.Seconds:0#}";
+                //var CpuUsage = await Task.Run(async () => await YarinGeorge.Utilities.Extra.AppPerformance.CurrentAppPerfomanceStats(Return.CPU));
+                //if (Timer.Hour.Equals(23) && Timer.Minute.Equals(59) && Timer.Second.Equals(59)) T.AddDays(1);
+                Console.Title =
+                    $"[{BotName}] - [Uptime -> Up since: {UpTime} | Up for: {delta.Days / 30:0#} months, {delta.Days:0#} days, {delta.Hours:0#} hours, {delta.Minutes:0#} minutes, {delta.Seconds:0#} seconds] [Time today (now): {DateTime.Now}]";
+                await Task.Delay(1000);
+            }
         }
     }
 }

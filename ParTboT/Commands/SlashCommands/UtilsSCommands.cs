@@ -16,7 +16,7 @@ using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 namespace ParTboT.Commands.SlashCommands
 {
     [SlashCommandGroup("Utilities", "Useful everyday-use commands.")]
-    public class UtilsSCommands : SlashCommandModule
+    public class UtilsSCommands : ApplicationCommandModule
     {
         public ServicesContainer Services { private get; set; }
 

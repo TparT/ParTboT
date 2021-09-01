@@ -5,12 +5,11 @@ using DSharpPlus.Exceptions;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using MoreLinq;
 //using OpenTriviaSharp;
 using System;
 using System.Collections.Generic;
-using MoreLinq;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Trivia4NET.Entities;
 using Trivia4NET.Payloads;
@@ -20,7 +19,7 @@ using YarinGeorge.Utilities.Extensions.DSharpPlusUtils.Builders;
 
 namespace ParTboT.Commands.SlashCommands
 {
-    public class FunSCommands : SlashCommandModule
+    public class FunSCommands : ApplicationCommandModule
     {
         public ServicesContainer Services { private get; set; }
 

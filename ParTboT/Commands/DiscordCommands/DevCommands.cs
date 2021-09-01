@@ -13,11 +13,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TwitchLib.Api.Auth;
 using TwitchLib.Api.Core.Models;
 using static ParTboT.Commands.DatabaseCommands;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 
 namespace ParTboT.Commands
 {
@@ -29,31 +34,100 @@ namespace ParTboT.Commands
     {
         public ServicesContainer Services { private get; set; }
 
-        //[Command("slashadd")]
-        ////[Description("A new command")]
-        //public async Task New(CommandContext ctx)
-        //{
-        //    await ctx.TriggerTypingAsync().ConfigureAwait(false);
+        private async Task RegisterCommands(CommandsNextExtension CNext, string CommandClassCode)
+        {
+            var number = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var typeName = $"DynamicCommands{number}";
+            Type moduleType = null;
 
+            var references = AppDomain.CurrentDomain.GetAssemblies().Where(xa => !xa.IsDynamic && !string.IsNullOrWhiteSpace(xa.Location))
+                .Select(x => MetadataReference.CreateFromFile(x.Location));
 
-        //    var UploadedCommand = await ctx.Client.CreateGuildApplicationCommandAsync
-        //        (ctx.Guild.Id,
-        //        new DiscordApplicationCommand(
-        //            "music",
-        //            "Music management - Manage the music playing on a voice channel or even search for song lyrics.",
-        //            new List<DiscordApplicationCommandOption>()
-        //            {
-        //                new DiscordApplicationCommandOption
-        //                (
-        //                    "ArtistName",
-        //                    "This helps to get more accurate results, such as in cases where there are multiple songs with the same name.",
-        //                    false
-        //                )
+            var ast = SyntaxFactory.ParseSyntaxTree(CommandClassCode, new CSharpParseOptions().WithKind(SourceCodeKind.Script).WithLanguageVersion(LanguageVersion.CSharp9));
+            var copts = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, false, null, null, typeName,
+                new[] { "System", "System.Collections.Generic", "System.Linq", "System.Text", "System.Threading.Tasks", "DSharpPlus", "DSharpPlus.Entities", "DSharpPlus.CommandsNext", "DSharpPlus.CommandsNext.Attributes", "DSharpPlus.Interactivity" },
+                OptimizationLevel.Release, false, true, null, null, default, null, Platform.AnyCpu, ReportDiagnostic.Default, 4, null, true, false, null, null, null, null, null, false);
 
-        //            }));
+            var csc = CSharpCompilation.CreateScriptCompilation($"DynamicCommands{number}", ast, references, copts, null, typeof(object), null);
 
-        //    await ctx.RespondAsync($"Uploaded with code {UploadedCommand.Id}").ConfigureAwait(false);
-        //}
+            Assembly asm = null;
+            using (var ms = new MemoryStream())
+            {
+                var er = csc.Emit(ms);
+                ms.Position = 0;
+
+                asm = Assembly.Load(ms.ToArray());
+            }
+
+            var outerType = asm.ExportedTypes.FirstOrDefault(x => x.Name == typeName);
+            moduleType = outerType.GetNestedTypes().FirstOrDefault(x => x.BaseType == typeof(BaseCommandModule));
+
+            CNext.RegisterCommands(moduleType);
+        }
+
+        [Command("add"), Aliases("register"), Description("Dynamically registers a command from given source code."), Hidden, RequireOwner]
+        public async Task AddCommandAsync(CommandContext ctx, string code)
+        {
+            var msg = ctx.Message;
+
+            var cs1 = code.IndexOf("```") + 3;
+            cs1 = code.IndexOf('\n', cs1) + 1;
+            var cs2 = code.LastIndexOf("```");
+
+            if (cs1 == -1 || cs2 == -1)
+                throw new ArgumentException("You need to wrap the code into a code block.");
+
+            var cs = code.Substring(cs1, cs2 - cs1);
+
+            // I hate this
+            cs = $"[ModuleLifespan(ModuleLifespan.Transient)]\npublic sealed class DynamicCommands : BaseCommandModule\n{{\n{cs}\n}}";
+
+            msg = await ctx.RespondAsync(new DiscordEmbedBuilder()
+                .WithColor(new DiscordColor("#FF007F"))
+                .WithDescription("Compiling...")
+                .Build()).ConfigureAwait(false);
+
+            try
+            {
+                await RegisterCommands(ctx.CommandsNext, cs);
+                await msg.ModifyAsync(embed: new DiscordEmbedBuilder { Title = "Compilation Successful", Description = "Commands were registered.", Color = new DiscordColor("#007FFF") }.Build()).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await msg.ModifyAsync(embed: new DiscordEmbedBuilder { Title = "Compilation Failure", Description = string.Concat("**", ex.GetType().ToString(), "**: ", ex.ToString()), Color = new DiscordColor("#FF0000") }.Build()).ConfigureAwait(false);
+            }
+        }
+
+        [Command("reload")]
+        //[Aliases("n")]
+        [Description("A new command")]
+        public async Task Reload(CommandContext ctx, string CogName)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            var msg = ctx.Message;
+
+            IEnumerable<Command> CogCommands = ctx.CommandsNext.RegisteredCommands.Values.Where(x => x.Module.ModuleType.Name.Equals(CogName, StringComparison.InvariantCultureIgnoreCase));
+            ctx.CommandsNext.UnregisterCommands(CogCommands.ToArray());
+
+            msg = await ctx.RespondAsync(new DiscordEmbedBuilder()
+                .WithColor(new DiscordColor("#FF007F"))
+                .WithDescription("Compiling...")
+                .Build()).ConfigureAwait(false);
+
+            string Path = @$"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\Commands\DiscordCommands\{CogName}.cs";
+            string cs = await File.ReadAllTextAsync(Path).ConfigureAwait(false);
+
+            try
+            {
+                await RegisterCommands(ctx.CommandsNext, cs);
+                await msg.ModifyAsync(embed: new DiscordEmbedBuilder { Title = "Compilation Successful", Description = "Commands were registered.", Color = new DiscordColor("#007FFF") }.Build()).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await msg.ModifyAsync(embed: new DiscordEmbedBuilder { Title = "Compilation Failure", Description = string.Concat("**", ex.GetType().ToString(), "**: ", ex.Message), Color = new DiscordColor("#FF0000") }.Build()).ConfigureAwait(false);
+            }
+        }
 
         [Command("wh")]
         public async Task Webhook(CommandContext ctx, [RemainingText] string Name)
@@ -64,7 +138,6 @@ namespace ParTboT.Commands
             DiscordWebhook wh = await ctx.Channel.CreateWebhookAsync(Name).ConfigureAwait(false);
             await ctx.RespondAsync(JsonConvert.SerializeObject(wh)/*Bot.Services.WebhooksClient.AddWebhook(wh).Id.ToString()*/).ConfigureAwait(false);
         }
-
 
         [Command("twcrefresh")]
         //[Description("A new command")]
@@ -155,8 +228,6 @@ namespace ParTboT.Commands
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -298,7 +369,6 @@ namespace ParTboT.Commands
             {
                 string mac = "44-8A-5B-7B-7C-DA";
                 await WakeOnLanService.WakeOnLan(mac);
-
 
             }
             else if (Reactionresult.Result.Emoji == TurnOff)
@@ -462,7 +532,6 @@ namespace ParTboT.Commands
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
             await ctx.RespondAsync($"{ctx.Client.CurrentUser.Username} has been alive since {Bot.UpTime:F}").ConfigureAwait(false);
         }
-
 
     }
 }

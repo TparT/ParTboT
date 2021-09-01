@@ -1,20 +1,20 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
-using DSharpPlus;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
-using MoreLinq;
 
 namespace ParTboT.Commands.SlashCommands
 {
     [SlashCommandGroup("channel", "Manage channel settings such us: Slow-Mode, Hide/UnHide channel, Lock/Unlock channel...")]
-    public class ChannelSCommands : SlashCommandModule
+    public class ChannelSCommands : ApplicationCommandModule
     {
         [SlashCommandGroup("clear", "Clears messages")]
-        public class ClearCommands : SlashCommandModule
+        public class ClearCommands : ApplicationCommandModule
         {
             ClearCommandExecuter Clear = new();
 
@@ -129,7 +129,7 @@ namespace ParTboT.Commands.SlashCommands
         #endregion Slowmode enum
 
         [SlashCommandGroup("edit", "Edit channel settings, such as: Slowmode, name")]
-        public class EditChannel : SlashCommandModule
+        public class EditChannel : ApplicationCommandModule
         {
             [SlashCommand("slowmode", "Puts the channel in slow-mode with the given interval")]
             public async Task SlowModeChannel
@@ -161,7 +161,7 @@ namespace ParTboT.Commands.SlashCommands
         }
 
         [SlashCommandGroup("misc", "Misc settings")]
-        public class Misc : SlashCommandModule
+        public class Misc : ApplicationCommandModule
         {
             [SlashCommand("lock", "Locks the channel the command is being executed at")]
             public async Task LockChannel(InteractionContext ctx, [Option("reason", "Reason for audit logs")] string Reason = null, [Option("hideChannel", "Hide the channel that is being locked? (Defaults to false)")] bool HideChannel = false)

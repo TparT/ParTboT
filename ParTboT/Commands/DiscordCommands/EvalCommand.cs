@@ -38,7 +38,6 @@ namespace ParTboT.Commands
             }
         }
 
-
         [Command("eval")]
         [Priority(0)]
         public async Task EvalCS(CommandContext ctx, [RemainingText] string code)

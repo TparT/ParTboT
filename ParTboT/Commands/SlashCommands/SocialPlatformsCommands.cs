@@ -24,7 +24,7 @@ using YarinGeorge.Utilities.Extensions.DSharpPlusUtils.Builders;
 namespace ParTboT.Commands.SlashCommands
 {
     [SlashCommandGroup("socials", "Plug socials or even follow them to get notified when people do stuff")]
-    public class SocialPlatformsCommands : SlashCommandModule
+    public class SocialPlatformsCommands : ApplicationCommandModule
     {
         public ServicesContainer Services { private get; set; }
 

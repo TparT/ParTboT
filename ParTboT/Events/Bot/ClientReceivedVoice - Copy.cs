@@ -13,13 +13,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using Zio.FileSystems;
 using System.Speech.AudioFormat;
 using System.Speech.Recognition;
-using System.Speech.Synthesis;
 using System.Threading.Tasks;
 using System.Timers;
 using Zio;
+using Zio.FileSystems;
 
 namespace ParTboT.Events.BotEvents
 {
@@ -53,7 +52,6 @@ namespace ParTboT.Events.BotEvents
 
         public List<string> CommandsList = new();
 
-
         //public string TempFile { get; private set; }
 
         public async Task VoiceReceiveHandler(VoiceNextConnection connection, VoiceReceiveEventArgs ea)
@@ -61,21 +59,19 @@ namespace ParTboT.Events.BotEvents
             connection.UserLeft += (s, e) => { RemoveUserFromDict(e.User); return Task.CompletedTask; };
 
             var buff = ea.PcmData.ToArray();
-            
+
             if (!Voices.ContainsKey(ea.User.Id) && !ea.User.IsBot)
             {
                 //var result = await recognizer.RecognizeOnceAsync();
 
                 //TempFile = @$"{Directory.GetCurrentDirectory()}\bin\Debug\net5.0\VoiceRecognitions\{ea.User.Id}.wav";
 
-
-
                 UserRecognitionData recognitionData = new()
                 {
                     VoiceChannel = connection,
                     InputAudioData = new(),
                     StartEngine = new(new CultureInfo("en-US")),
-                    VoiceFilePath = @$"{Directory.GetCurrentDirectory()}\bin\Debug\net5.0\VoiceRecognitions\{ea.User.Id}.wav",
+                    VoiceFilePath = @$"{Directory.GetCurrentDirectory()}\bin\Debug\net6.0\VoiceRecognitions\{ea.User.Id}.wav",
                     ExecutingUser = ea.User,
                     Speaker = new(),
                     StartEngineTimeoutTimer = new Timer(1 * 1000),
@@ -98,7 +94,6 @@ namespace ParTboT.Events.BotEvents
                     "hello",
                     "how are you",
 
-
                     "what time is it",
                     "whats the time",
                     "what day is it today",
@@ -118,11 +113,9 @@ namespace ParTboT.Events.BotEvents
                     (Commands)
                     { Culture = new("en-us") });
 
-
                 Voices[ea.User.Id].StartEngine.LoadGrammarAsync(TriggerGrammar);
                 //Voices[ea.User.Id].CommandsEngine.LoadGrammarAsync(CommandsGrammar);
                 //ffmpegs[ea.User.Id].CommandsEngine.LoadGrammarAsync(new DictationGrammar());
-
 
                 Voices[ea.User.Id].StartEngine.SpeechRecognized += (_, SRA) => StartEngine_SpeechRecognized(ea.User, SRA);
                 Voices[ea.User.Id].StartEngine.AudioSignalProblemOccurred += (_, SRA) => Console.WriteLine(SRA.AudioSignalProblem);
@@ -313,7 +306,6 @@ namespace ParTboT.Events.BotEvents
                 var filedata = ffmpeg.InputAudioData;
                 Console.WriteLine(filedata.Length);
 
-
                 if (filedata.Length > 0)
                 {
                     filedata.Position = 0;
@@ -339,23 +331,25 @@ namespace ParTboT.Events.BotEvents
                     var TempFile = new MemoryStream();
                     try
                     {
-                        if (ffmpeg.WaitingForCommand == false)
-                        {
+                        //if (ffmpeg.WaitingForCommand == false)
+                        //{
                             WaveFileWriter waveFile = new(TempFile, new(wave32To16Stream.WaveFormat.SampleRate, 2));
                             await wave32To16Stream.CopyToAsync(waveFile);
                             VFS.WriteAllBytes($"/{UserID}.wav", TempFile.ToArray());
 
                             waveFile.Flush();
                             waveFile.Close();
-                        }
-                        else
-                        {
-                            WaveFileWriter waveFile = new(ffmpeg.VoiceFilePath, new(wave32To16Stream.WaveFormat.SampleRate, 2));
-                            await wave32To16Stream.CopyToAsync(waveFile);
+                        //}
+                        //else
+                        //{
+                        //    MemoryStream target = new();
+                        //    WaveFileWriter waveFile = new(target, new(wave32To16Stream.WaveFormat.SampleRate, 2));
+                        //    await wave32To16Stream.CopyToAsync(waveFile);
 
-                            waveFile.Flush();
-                            waveFile.Close();
-                        }
+                        //    waveFile.Flush();
+                        //    waveFile.Close();
+
+                        //}
 
                     }
                     catch (IOException IOE)
@@ -388,12 +382,32 @@ namespace ParTboT.Events.BotEvents
                         {
                             ffmpeg.WaitingForCommand = false;
                             SpeechConfig speechConfig = SpeechConfig.FromSubscription("12e33bd2552c4eba8b0f4fe37e062160", "eastus");
-                            using var audioConfig = AudioConfig.FromWavFileInput(ffmpeg.VoiceFilePath);
+                            Stream FStream = VFS.OpenFile($"/{UserID}.wav", FileMode.Open, FileAccess.Read);
+                            var reader = new BinaryReader(FStream);
+                            using var audioInputStream = AudioInputStream.CreatePushStream(AudioStreamFormat.GetWaveFormatPCM((uint)wave32To16Stream.WaveFormat.SampleRate, (byte)wave32To16Stream.WaveFormat.BitsPerSample, 2));
+                            using var audioConfig = AudioConfig.FromStreamInput(audioInputStream);
+                            //using var recognizer = new SpeechRecognizer(speechConfig, audioConfig);
                             using var recognizer = new Microsoft.CognitiveServices.Speech.SpeechRecognizer(speechConfig, audioConfig);
+
+                            byte[] readBytes;
+                            do
+                            {
+                                readBytes = reader.ReadBytes(1024);
+                                audioInputStream.Write(readBytes, readBytes.Length);
+                            } while (readBytes.Length > 0);
+
+                            await FStream.DisposeAsync();
+                            FStream.Close();
+                            //using var audioConfig = AudioConfig.FromWavFileInput(ffmpeg.VoiceFilePath);
+                            //using var audioConfig = AudioConfig.FromStreamInput(AudioInputStream.CreatePushStream().);
                             SpeechRecognitionResult RawResult = await recognizer.RecognizeOnceAsync();
 
                             string Result = RawResult.Text.ToLower().Replace(".", "").Replace(",", "").Replace("?", "");
-
+                            Console.WriteLine(Result);
+                            Console.WriteLine(Result);
+                            Console.WriteLine(Result);
+                            Console.WriteLine(Result);
+                            Console.WriteLine(Result);
                             await ParTboT.Bot.BotsChannel.SendMessageAsync(Result).ConfigureAwait(false);
                             Command command = ParTboT.Bot.Commands.FindCommand(Result, out string args);
                             CommandContext context = ParTboT.Bot.Commands.CreateFakeContext(ffmpeg.ExecutingUser, ParTboT.Bot.BotsChannel, $"?{Result}", "?", command, args);

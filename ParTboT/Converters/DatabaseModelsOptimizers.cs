@@ -1,6 +1,5 @@
 ﻿using DSharpPlus.Entities;
 using ParTboT.DbModels.DSharpPlus;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -165,7 +164,7 @@ namespace ParTboT.Converters
 
             foreach (DiscordIntegration integration in integrations)
             {
-                DiscordMember IntegrationMember = await Guild.GetMemberAsync(integration.Account.Id).ConfigureAwait(false);
+                DiscordMember IntegrationMember = await Guild.GetMemberAsync(ulong.Parse(integration.Account.Id)).ConfigureAwait(false);
 
                 if (integration.Type.ToLower() == "Discord".ToLower() && (IntegrationMember.IsBot == true))
                 {

@@ -12,7 +12,7 @@ using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
 namespace ParTboT.Commands.SlashCommands
 {
-    public class TestCommands : SlashCommandModule
+    public class TestCommands : ApplicationCommandModule
     {
         [SlashCommand("image", "Testing image inside an embed!")]
         public async Task ListCommand(InteractionContext ctx)

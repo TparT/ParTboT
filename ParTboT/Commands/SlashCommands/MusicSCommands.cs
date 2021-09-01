@@ -14,7 +14,7 @@ using YarinGeorge.Utilities.Extensions.GeniusAPI;
 
 namespace ParTboT.Commands.SlashCommands
 {
-    public class MusicSCommands : SlashCommandModule
+    public class MusicSCommands : ApplicationCommandModule
     {
         public ServicesContainer Services { private get; set; }
 
