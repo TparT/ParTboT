@@ -301,143 +301,150 @@ namespace ParTboT.Events.BotEvents
 
         private async void TimeoutTimerElapsed(ulong UserID, ElapsedEventArgs e)
         {
-            if (Voices.TryGetValue(UserID, out var ffmpeg))
+            try
             {
-                var filedata = ffmpeg.InputAudioData;
-                Console.WriteLine(filedata.Length);
-
-                if (filedata.Length > 0)
+                if (Voices.TryGetValue(UserID, out var ffmpeg))
                 {
-                    filedata.Position = 0;
-                    filedata.Seek(0, SeekOrigin.Begin);
-                    var RawWavStream = new RawSourceWaveStream(filedata, new());
-                    MemoryStream ms = new();
-                    var WaveFile = new WaveFileWriter(ms, new());
+                    var filedata = ffmpeg.InputAudioData;
+                    Console.WriteLine(filedata.Length);
 
-                    RawWavStream.Position = 0;
-                    RawWavStream.Seek(0, SeekOrigin.Begin);
-                    WaveFile.Write(filedata.ToArray());
-                    WaveFile.Flush();
-                    ms.Position = 0;
-                    WaveFileReader fileReader = new(ms);
-                    fileReader.Position = 0;
-
-                    var echo = new SoundTouchWaveProvider(fileReader.ToSampleProvider().ToWaveProvider(), new SoundTouchProcessor { TempoChange = -55, Pitch = 0.55, Channels = 2 });
-                    echo.OptimizeForSpeech();
-                    var eeee = new WaveProviderToWaveStream(echo);
-                    var stws = new SoundTouchWaveStream(eeee);
-                    Wave32To16Stream wave32To16Stream = new(stws);
-
-                    var TempFile = new MemoryStream();
-                    try
+                    if (filedata.Length > 0)
                     {
-                        //if (ffmpeg.WaitingForCommand == false)
-                        //{
+                        filedata.Position = 0;
+                        filedata.Seek(0, SeekOrigin.Begin);
+                        var RawWavStream = new RawSourceWaveStream(filedata, new());
+                        MemoryStream ms = new();
+                        var WaveFile = new WaveFileWriter(ms, new());
+
+                        RawWavStream.Position = 0;
+                        RawWavStream.Seek(0, SeekOrigin.Begin);
+                        WaveFile.Write(filedata.ToArray());
+                        WaveFile.Flush();
+                        ms.Position = 0;
+                        WaveFileReader fileReader = new(ms);
+                        fileReader.Position = 0;
+
+                        var echo = new SoundTouchWaveProvider(fileReader.ToSampleProvider().ToWaveProvider(), new SoundTouchProcessor { TempoChange = -55, Pitch = 0.55, Channels = 2 });
+                        echo.OptimizeForSpeech();
+                        var eeee = new WaveProviderToWaveStream(echo);
+                        var stws = new SoundTouchWaveStream(eeee);
+                        Wave32To16Stream wave32To16Stream = new(stws);
+
+                        var TempFile = new MemoryStream();
+                        try
+                        {
+                            //if (ffmpeg.WaitingForCommand == false)
+                            //{
                             WaveFileWriter waveFile = new(TempFile, new(wave32To16Stream.WaveFormat.SampleRate, 2));
                             await wave32To16Stream.CopyToAsync(waveFile);
                             VFS.WriteAllBytes($"/{UserID}.wav", TempFile.ToArray());
 
                             waveFile.Flush();
                             waveFile.Close();
-                        //}
-                        //else
-                        //{
-                        //    MemoryStream target = new();
-                        //    WaveFileWriter waveFile = new(target, new(wave32To16Stream.WaveFormat.SampleRate, 2));
-                        //    await wave32To16Stream.CopyToAsync(waveFile);
+                            //}
+                            //else
+                            //{
+                            //    MemoryStream target = new();
+                            //    WaveFileWriter waveFile = new(target, new(wave32To16Stream.WaveFormat.SampleRate, 2));
+                            //    await wave32To16Stream.CopyToAsync(waveFile);
 
-                        //    waveFile.Flush();
-                        //    waveFile.Close();
+                            //    waveFile.Flush();
+                            //    waveFile.Close();
 
-                        //}
+                            //}
 
-                    }
-                    catch (IOException IOE)
-                    {
-                        //Console.WriteLine(IOE.ToString());
+                        }
+                        catch (IOException IOE)
+                        {
+                            //Console.WriteLine(IOE.ToString());
+                        }
+                        try
+                        {
+                            //FileStream FStream = File.OpenRead(ffmpeg.VoiceFilePath);
+                            //MemoryStream FStream = TempFile;
+                            if (ffmpeg.WaitingForCommand == false)
+                            {
+                                Stream FStream = VFS.OpenFile($"/{UserID}.wav", FileMode.Open, FileAccess.Read);
+                                ffmpeg.StartEngine.SetInputToAudioStream(FStream, new SpeechAudioFormatInfo(44100, AudioBitsPerSample.Sixteen, AudioChannel.Stereo));
+                                ffmpeg.StartEngine.RecognizeAsync(RecognizeMode.Single);
+                                ffmpeg.StartEngine.RecognizeCompleted += async (_, SRA) =>
+                                {
+                                    if (SRA.Error is null)
+                                    {
+                                        await FStream.DisposeAsync();
+                                        FStream.Close();
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine(SRA.Error.Message);
+                                    }
+                                };
+                            }
+                            else
+                            {
+                                ffmpeg.WaitingForCommand = false;
+                                SpeechConfig speechConfig = SpeechConfig.FromSubscription("12e33bd2552c4eba8b0f4fe37e062160", "eastus");
+                                Stream FStream = VFS.OpenFile($"/{UserID}.wav", FileMode.Open, FileAccess.Read);
+                                var reader = new BinaryReader(FStream);
+                                using var audioInputStream = AudioInputStream.CreatePushStream(AudioStreamFormat.GetWaveFormatPCM((uint)wave32To16Stream.WaveFormat.SampleRate, (byte)wave32To16Stream.WaveFormat.BitsPerSample, 2));
+                                using var audioConfig = AudioConfig.FromStreamInput(audioInputStream);
+                                //using var recognizer = new SpeechRecognizer(speechConfig, audioConfig);
+                                using var recognizer = new Microsoft.CognitiveServices.Speech.SpeechRecognizer(speechConfig, audioConfig);
+
+                                byte[] readBytes;
+                                do
+                                {
+                                    readBytes = reader.ReadBytes(1024);
+                                    audioInputStream.Write(readBytes, readBytes.Length);
+                                } while (readBytes.Length > 0);
+
+                                await FStream.DisposeAsync();
+                                FStream.Close();
+                                //using var audioConfig = AudioConfig.FromWavFileInput(ffmpeg.VoiceFilePath);
+                                //using var audioConfig = AudioConfig.FromStreamInput(AudioInputStream.CreatePushStream().);
+                                SpeechRecognitionResult RawResult = await recognizer.RecognizeOnceAsync();
+
+                                string Result = RawResult.Text.ToLower().Replace(".", "").Replace(",", "").Replace("?", "");
+                                Console.WriteLine(Result);
+                                Console.WriteLine(Result);
+                                Console.WriteLine(Result);
+                                Console.WriteLine(Result);
+                                Console.WriteLine(Result);
+                                await ParTboT.Bot.BotsChannel.SendMessageAsync(Result).ConfigureAwait(false);
+                                Command command = ParTboT.Bot.Commands.FindCommand(Result, out string args);
+                                CommandContext context = ParTboT.Bot.Commands.CreateFakeContext(ffmpeg.ExecutingUser, ParTboT.Bot.BotsChannel, $"?{Result}", "?", command, args);
+                                await ParTboT.Bot.Commands.ExecuteCommandAsync(context);
+                                await recognizer.StopContinuousRecognitionAsync();
+
+                            }
+                        }
+                        catch (Exception exc)
+                        {
+                            Console.WriteLine(exc.ToString());
+                        }
+
+                        var Device = new WaveOutEvent();
+
+                        Device.Init(stws);
+                        Console.WriteLine($"Proccessed WAV stream length: {stws.Length}");
                     }
                     try
                     {
-                        //FileStream FStream = File.OpenRead(ffmpeg.VoiceFilePath);
-                        //MemoryStream FStream = TempFile;
-                        if (ffmpeg.WaitingForCommand == false)
-                        {
-                            Stream FStream = VFS.OpenFile($"/{UserID}.wav", FileMode.Open, FileAccess.Read);
-                            ffmpeg.StartEngine.SetInputToAudioStream(FStream, new SpeechAudioFormatInfo(44100, AudioBitsPerSample.Sixteen, AudioChannel.Stereo));
-                            ffmpeg.StartEngine.RecognizeAsync(RecognizeMode.Single);
-                            ffmpeg.StartEngine.RecognizeCompleted += async (_, SRA) =>
-                            {
-                                if (SRA.Error is null)
-                                {
-                                    await FStream.DisposeAsync();
-                                    FStream.Close();
-                                }
-                                else
-                                {
-                                    Console.WriteLine(SRA.Error.Message);
-                                }
-                            };
-                        }
-                        else
-                        {
-                            ffmpeg.WaitingForCommand = false;
-                            SpeechConfig speechConfig = SpeechConfig.FromSubscription("12e33bd2552c4eba8b0f4fe37e062160", "eastus");
-                            Stream FStream = VFS.OpenFile($"/{UserID}.wav", FileMode.Open, FileAccess.Read);
-                            var reader = new BinaryReader(FStream);
-                            using var audioInputStream = AudioInputStream.CreatePushStream(AudioStreamFormat.GetWaveFormatPCM((uint)wave32To16Stream.WaveFormat.SampleRate, (byte)wave32To16Stream.WaveFormat.BitsPerSample, 2));
-                            using var audioConfig = AudioConfig.FromStreamInput(audioInputStream);
-                            //using var recognizer = new SpeechRecognizer(speechConfig, audioConfig);
-                            using var recognizer = new Microsoft.CognitiveServices.Speech.SpeechRecognizer(speechConfig, audioConfig);
-
-                            byte[] readBytes;
-                            do
-                            {
-                                readBytes = reader.ReadBytes(1024);
-                                audioInputStream.Write(readBytes, readBytes.Length);
-                            } while (readBytes.Length > 0);
-
-                            await FStream.DisposeAsync();
-                            FStream.Close();
-                            //using var audioConfig = AudioConfig.FromWavFileInput(ffmpeg.VoiceFilePath);
-                            //using var audioConfig = AudioConfig.FromStreamInput(AudioInputStream.CreatePushStream().);
-                            SpeechRecognitionResult RawResult = await recognizer.RecognizeOnceAsync();
-
-                            string Result = RawResult.Text.ToLower().Replace(".", "").Replace(",", "").Replace("?", "");
-                            Console.WriteLine(Result);
-                            Console.WriteLine(Result);
-                            Console.WriteLine(Result);
-                            Console.WriteLine(Result);
-                            Console.WriteLine(Result);
-                            await ParTboT.Bot.BotsChannel.SendMessageAsync(Result).ConfigureAwait(false);
-                            Command command = ParTboT.Bot.Commands.FindCommand(Result, out string args);
-                            CommandContext context = ParTboT.Bot.Commands.CreateFakeContext(ffmpeg.ExecutingUser, ParTboT.Bot.BotsChannel, $"?{Result}", "?", command, args);
-                            await ParTboT.Bot.Commands.ExecuteCommandAsync(context);
-                            await recognizer.StopContinuousRecognitionAsync();
-
-                        }
+                        filedata.SetLength(0);
                     }
                     catch (Exception exc)
                     {
                         Console.WriteLine(exc.ToString());
                     }
-
-                    var Device = new WaveOutEvent();
-
-                    Device.Init(stws);
-                    Console.WriteLine($"Proccessed WAV stream length: {stws.Length}");
                 }
-                try
+                else
                 {
-                    filedata.SetLength(0);
-                }
-                catch (Exception exc)
-                {
-                    Console.WriteLine(exc.ToString());
+                    Console.WriteLine("still going");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("still going");
+                Console.WriteLine(ex.ToString());
             }
         }
     }

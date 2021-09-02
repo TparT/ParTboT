@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using YarinGeorge.ApiClients.TrackerGG;
 using YarinGeorge.ApiClients.TrackerGG.StatsModels;
 using YarinGeorge.Games;
-using YarinGeorge.Games.GamesHub;
+//using YarinGeorge.Games.GamesHub;
 using YarinGeorge.Games.TicTacToe;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
@@ -32,58 +32,58 @@ namespace ParTboT.Commands.SlashCommands
 
                 if (Opponent == null)
                 {
-                    Random rnd = new();
-                    if (GamesHub.TryFindMatch(GameType.TicTacToe, out GameMatch<TicTacToePlayer<ulong>> PlayerMatch))
-                    {
-                        DiscordInteraction Interaction = PlayerMatch.FoundOpponent.AdditionalData[nameof(DiscordInteraction)] as DiscordInteraction;
+                    //Random rnd = new();
+                    //if (GamesHub.TryFindMatch(GameType.TicTacToe, out GameMatch<TicTacToePlayer<ulong>> PlayerMatch))
+                    //{
+                    //    DiscordInteraction Interaction = PlayerMatch.FoundOpponent.AdditionalData[nameof(DiscordInteraction)] as DiscordInteraction;
 
-                        TicTacToePlayer<ulong> Player2 = new TicTacToePlayer<ulong>()
-                        {
-                            Id = ctx.User.Id,
-                            Name = ctx.User.Username,
-                            Side = PlayerMatch.FoundOpponent.Side == TicTacToeSide.O ? TicTacToeSide.X : TicTacToeSide.O,
-                            AdditionalData = new Dictionary<string, object>
-                            {
-                                { nameof(DiscordInteraction), ctx.Interaction },
-                                { nameof(DiscordMessage), await ctx.GetOriginalResponseAsync().ConfigureAwait(false) },
-                            }
-                        };
+                    //    TicTacToePlayer<ulong> Player2 = new TicTacToePlayer<ulong>()
+                    //    {
+                    //        Id = ctx.User.Id,
+                    //        Name = ctx.User.Username,
+                    //        Side = PlayerMatch.FoundOpponent.Side == TicTacToeSide.O ? TicTacToeSide.X : TicTacToeSide.O,
+                    //        AdditionalData = new Dictionary<string, object>
+                    //        {
+                    //            { nameof(DiscordInteraction), ctx.Interaction },
+                    //            { nameof(DiscordMessage), await ctx.GetOriginalResponseAsync().ConfigureAwait(false) },
+                    //        }
+                    //    };
 
-                        await ctx.EditResponseAsync(new() { Content = $"You will be matched against {ctx.User.Username}#{Interaction.User.Discriminator}" }).ConfigureAwait(false);
-                        await HandleMultiserverTicTacToeGameAsync(rnd, ctx.Client, PlayerMatch.FoundOpponent, Player2, ctx.User).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        TicTacToePlayer<ulong> player = new TicTacToePlayer<ulong>()
-                        {
-                            Id = ctx.User.Id,
-                            Name = ctx.User.Username,
-                            Side = rnd.Next(1, 3) == 1 ? TicTacToeSide.X : TicTacToeSide.O,
-                            AdditionalData = new Dictionary<string, object>
-                            {
-                                { nameof(DiscordInteraction), ctx.Interaction },
-                                { nameof(DiscordMessage), await ctx.GetOriginalResponseAsync().ConfigureAwait(false) },
-                            }
-                        };
+                    //    await ctx.EditResponseAsync(new() { Content = $"You will be matched against {ctx.User.Username}#{Interaction.User.Discriminator}" }).ConfigureAwait(false);
+                    //    await HandleMultiserverTicTacToeGameAsync(rnd, ctx.Client, PlayerMatch.FoundOpponent, Player2, ctx.User).ConfigureAwait(false);
+                    //}
+                    //else
+                    //{
+                    //    TicTacToePlayer<ulong> player = new TicTacToePlayer<ulong>()
+                    //    {
+                    //        Id = ctx.User.Id,
+                    //        Name = ctx.User.Username,
+                    //        Side = rnd.Next(1, 3) == 1 ? TicTacToeSide.X : TicTacToeSide.O,
+                    //        AdditionalData = new Dictionary<string, object>
+                    //        {
+                    //            { nameof(DiscordInteraction), ctx.Interaction },
+                    //            { nameof(DiscordMessage), await ctx.GetOriginalResponseAsync().ConfigureAwait(false) },
+                    //        }
+                    //    };
 
-                        GamesHub.PutInSearchingQueue(GameType.TicTacToe, player);
+                    //    GamesHub.PutInSearchingQueue(GameType.TicTacToe, player);
 
                         await ctx.EditResponseAsync(new() { Content = $"You are in queue!" }).ConfigureAwait(false);
                     }
-                }
-                else
-                {
-                    await HandleTicTacToeGameAsync(ctx, Opponent).ConfigureAwait(false);
-                }
+                //}
+                //else
+                //{
+                //    await HandleTicTacToeGameAsync(ctx, Opponent).ConfigureAwait(false);
+                //}
             }
 
             private async Task HandleMultiserverTicTacToeGameAsync(Random rnd, DiscordClient client, TicTacToePlayer<ulong> Player1, TicTacToePlayer<ulong> Player2, DiscordUser Opponent)
             {
-                DiscordInteraction first = Player1.AdditionalData[nameof(DiscordInteraction)] as DiscordInteraction;
-                DiscordInteraction second = Player2.AdditionalData[nameof(DiscordInteraction)] as DiscordInteraction;
+                //DiscordInteraction first = Player1.AdditionalData[nameof(DiscordInteraction)] as DiscordInteraction;
+                //DiscordInteraction second = Player2.AdditionalData[nameof(DiscordInteraction)] as DiscordInteraction;
 
-                DiscordMessage FirstMsg = Player1.AdditionalData[nameof(DiscordMessage)] as DiscordMessage;
-                DiscordMessage SecondMsg = Player2.AdditionalData[nameof(DiscordMessage)] as DiscordMessage;
+                //DiscordMessage FirstMsg = Player1.AdditionalData[nameof(DiscordMessage)] as DiscordMessage;
+                //DiscordMessage SecondMsg = Player2.AdditionalData[nameof(DiscordMessage)] as DiscordMessage;
 
                 DiscordMessageBuilder MsgBuilder = default;
 
@@ -92,22 +92,22 @@ namespace ParTboT.Commands.SlashCommands
                 DiscordEmoji O = DiscordEmoji.FromName(client, ":o:");
                 DiscordEmoji BLANK = DiscordEmoji.FromGuildEmote(client, 861324430326890506);
 
-                MsgBuilder = new DiscordMessageBuilder()
-                        .WithContent($"You are about to start a new Tic-Tac-Toe game against {first.User.Mention} in the current channel.\n" +
-                                     "To make sure that you and your opponent are both present and ready to play,\n" +
-                                     "please click on the buttons to verify and choose your side."
-                                    )
+                //MsgBuilder = new DiscordMessageBuilder()
+                //        .WithContent($"You are about to start a new Tic-Tac-Toe game against {first.User.Mention} in the current channel.\n" +
+                //                     "To make sure that you and your opponent are both present and ready to play,\n" +
+                //                     "please click on the buttons to verify and choose your side."
+                //                    )
 
-                        .AddComponents
-                        (new DiscordComponent[]
-                        {
-                                new DiscordButtonComponent(ButtonStyle.Danger, "Player1", "", false, new DiscordComponentEmoji(CheckBox)),
-                                new DiscordButtonComponent(ButtonStyle.Danger, "Player2", "", false, new DiscordComponentEmoji(CheckBox))
-                        });
+                        //.AddComponents
+                        //(new DiscordComponent[]
+                        //{
+                        //        new DiscordButtonComponent(ButtonStyle.Danger, "Player1", "", false, new DiscordComponentEmoji(CheckBox)),
+                        //        new DiscordButtonComponent(ButtonStyle.Danger, "Player2", "", false, new DiscordComponentEmoji(CheckBox))
+                        //});
 
-                DiscordMessage StartMessage = await first.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
+                //DiscordMessage StartMessage = await first.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
 
-                InteractivityResult<ComponentInteractionCreateEventArgs> FirstSideDecision = (await (await (await StartMessage.WaitForButtonAsync(timeoutOverride: TimeSpan.FromSeconds(40))).HandleTimeouts(first, MsgBuilder)).Value.HandleTimeouts(second, MsgBuilder).ConfigureAwait(false)).Value;
+                //InteractivityResult<ComponentInteractionCreateEventArgs> FirstSideDecision = (await (await (await StartMessage.WaitForButtonAsync(timeoutOverride: TimeSpan.FromSeconds(40))).HandleTimeouts(first, MsgBuilder)).Value.HandleTimeouts(second, MsgBuilder).ConfigureAwait(false)).Value;
 
                 MsgBuilder = new DiscordMessageBuilder()
                         .WithContent($"You are about to start a new Tic-Tac-Toe game against {Opponent.Mention} in the current channel.\n" +
@@ -118,24 +118,24 @@ namespace ParTboT.Commands.SlashCommands
                         .AddComponents
                         (new DiscordComponent[]
                         {
-                                new DiscordButtonComponent(FirstSideDecision.Result.Id == "Player1" ? ButtonStyle.Success : ButtonStyle.Danger, "Player1", "", FirstSideDecision.Result.Id == "Player1", new DiscordComponentEmoji(CheckBox)),
-                                new DiscordButtonComponent(FirstSideDecision.Result.Id == "Player2" ? ButtonStyle.Success : ButtonStyle.Danger, "Player2", "", FirstSideDecision.Result.Id == "Player2", new DiscordComponentEmoji(CheckBox))
+                                //new DiscordButtonComponent(FirstSideDecision.Result.Id == "Player1" ? ButtonStyle.Success : ButtonStyle.Danger, "Player1", "", FirstSideDecision.Result.Id == "Player1", new DiscordComponentEmoji(CheckBox)),
+                                //new DiscordButtonComponent(FirstSideDecision.Result.Id == "Player2" ? ButtonStyle.Success : ButtonStyle.Danger, "Player2", "", FirstSideDecision.Result.Id == "Player2", new DiscordComponentEmoji(CheckBox))
                         });
 
-                await FirstSideDecision.Result.Interaction.CreateResponseAsync
-                    (InteractionResponseType.UpdateMessage, MsgBuilder.ToResponseBuilder()).ConfigureAwait(false);
-                DiscordMessage SecondUserMsg = await second.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder());
+                //await FirstSideDecision.Result.Interaction.CreateResponseAsync
+                //    (InteractionResponseType.UpdateMessage, MsgBuilder.ToResponseBuilder()).ConfigureAwait(false);
+                //DiscordMessage SecondUserMsg = await second.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder());
 
                 //DiscordUser SecondUser = FirstSideDecision.Result.User.Id == Opponent.Id ? Opponent : second.User;
-                InteractivityResult<ComponentInteractionCreateEventArgs> SecondSideDecision = (await (await (await SecondUserMsg.WaitForButtonAsync(timeoutOverride: TimeSpan.FromSeconds(30))).HandleTimeouts(first, MsgBuilder)).Value.HandleTimeouts(second, MsgBuilder).ConfigureAwait(false)).Value;
+                //InteractivityResult<ComponentInteractionCreateEventArgs> SecondSideDecision = (await (await (await SecondUserMsg.WaitForButtonAsync(timeoutOverride: TimeSpan.FromSeconds(30))).HandleTimeouts(first, MsgBuilder)).Value.HandleTimeouts(second, MsgBuilder).ConfigureAwait(false)).Value;
 
                 TicTacToe<ulong> TicTacToe = new TicTacToe<ulong>(Player1, Player2);
                 //DiscordUser UserWithTurn = null;
 
                 DiscordUser UserWithTurn = rnd.Next(1, 3) switch
                 {
-                    1 => FirstSideDecision.Result.User,
-                    2 => SecondSideDecision.Result.User,
+                    //1 => FirstSideDecision.Result.User,
+                    //2 => SecondSideDecision.Result.User,
                     _ => throw new NotImplementedException()
                 };
 
@@ -180,49 +180,49 @@ namespace ParTboT.Commands.SlashCommands
                           $"This game __ENDED!__\n" +
                           $"To start a new game use the command '/game tic-tac-toe' to play.");
 
-                    if (i < 1)
-                    {
-                        await SecondSideDecision.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+                    //if (i < 1)
+                    //{
+                    //    await SecondSideDecision.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
 
-                        SecondMsg = await second.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
-                        FirstMsg = await first.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        SecondMsg = await SecondSideDecision.Result.Interaction.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
-                        FirstMsg = await first.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
-                    }
+                    //    SecondMsg = await second.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
+                    //    FirstMsg = await first.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
+                    //}
+                    //else
+                    //{
+                    //    SecondMsg = await SecondSideDecision.Result.Interaction.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
+                    //    FirstMsg = await first.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
+                    //}
 
                     if (Ended == true)
                         break;
 
-                    InteractivityResult<ComponentInteractionCreateEventArgs> ButtonPressed = (await (await (await (UserWithTurn.Id == first.User.Id ? FirstMsg : SecondMsg).WaitForButtonAsync(UserWithTurn, timeoutOverride: TimeSpan.FromSeconds(15))).HandleTimeouts(first, MsgBuilder)).Value.HandleTimeouts(second, MsgBuilder).ConfigureAwait(false)).Value;
-                    UserWithTurn = ButtonPressed.Result.User.Id == first.User.Id ? second.User : first.User;
+                    //InteractivityResult<ComponentInteractionCreateEventArgs> ButtonPressed = (await (await (await (UserWithTurn.Id == first.User.Id ? FirstMsg : SecondMsg).WaitForButtonAsync(UserWithTurn, timeoutOverride: TimeSpan.FromSeconds(15))).HandleTimeouts(first, MsgBuilder)).Value.HandleTimeouts(second, MsgBuilder).ConfigureAwait(false)).Value;
+                    //UserWithTurn = ButtonPressed.Result.User.Id == first.User.Id ? second.User : first.User;
 
-                    TicTacToeGameResponse GameAct = TicTacToe.Play(first.User.Id == Player1.Id ? Player1 : Player2, int.Parse(ButtonPressed.Result.Id));
+                    //TicTacToeGameResponse GameAct = TicTacToe.Play(first.User.Id == Player1.Id ? Player1 : Player2, int.Parse(ButtonPressed.Result.Id));
 
-                    switch (GameAct)
-                    {
-                        case TicTacToeGameResponse.Player_X_Won:
-                            await ButtonPressed.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{(Player1.Side == TicTacToeSide.X ? Player1.Name : Player2.Name)} won the game!")).ConfigureAwait(false); Ended = true;
-                            break;
+                    //switch (GameAct)
+                    //{
+                    //    case TicTacToeGameResponse.Player_X_Won:
+                    //        await ButtonPressed.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{(Player1.Side == TicTacToeSide.X ? Player1.Name : Player2.Name)} won the game!")).ConfigureAwait(false); Ended = true;
+                    //        break;
 
-                        case TicTacToeGameResponse.Player_O_Won:
-                            await ButtonPressed.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{(Player1.Side == TicTacToeSide.O ? Player1.Name : Player2.Name)} won the game!")).ConfigureAwait(false); Ended = true;
-                            break;
+                    //    case TicTacToeGameResponse.Player_O_Won:
+                    //        await ButtonPressed.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{(Player1.Side == TicTacToeSide.O ? Player1.Name : Player2.Name)} won the game!")).ConfigureAwait(false); Ended = true;
+                    //        break;
 
-                        case TicTacToeGameResponse.Tie:
-                            await ButtonPressed.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"The game ended with a **TIE** !")).ConfigureAwait(false); Ended = true;
-                            break;
+                    //    case TicTacToeGameResponse.Tie:
+                    //        await ButtonPressed.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"The game ended with a **TIE** !")).ConfigureAwait(false); Ended = true;
+                    //        break;
 
-                        case TicTacToeGameResponse.NothingSpecial:
-                            await ButtonPressed.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
-                            break;
-                        case TicTacToeGameResponse.PlaceTaken:
-                            break;
-                        default:
-                            break;
-                    }
+                    //    case TicTacToeGameResponse.NothingSpecial:
+                    //        await ButtonPressed.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
+                    //        break;
+                    //    case TicTacToeGameResponse.PlaceTaken:
+                    //        break;
+                    //    default:
+                    //        break;
+                    //}
                 }
 
                 TicTacToe.Dispose();
@@ -263,7 +263,7 @@ namespace ParTboT.Commands.SlashCommands
                 Id = FirstSideDecision.Result.User.Id,
                 Name = FirstSideDecision.Result.User.Username,
                 Side = FirstChosenSide,
-                AdditionalData = new Dictionary<string, object>() { { "DiscordUser", FirstSideDecision.Result.User } }
+                //AdditionalData = new Dictionary<string, object>() { { "DiscordUser", FirstSideDecision.Result.User } }
             };
 
             MsgBuilder = new DiscordMessageBuilder()
@@ -292,7 +292,7 @@ namespace ParTboT.Commands.SlashCommands
                 Id = SecondUser.Id,
                 Name = SecondUser.Username,
                 Side = SecondChosenSide,
-                AdditionalData = new Dictionary<string, object>() { { "DiscordUser", SecondUser } }
+                //AdditionalData = new Dictionary<string, object>() { { "DiscordUser", SecondUser } }
             };
 
             TicTacToe<ulong> TicTacToe = new TicTacToe<ulong>(Player1, Player2);

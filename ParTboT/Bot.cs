@@ -99,7 +99,7 @@ namespace ParTboT
             ServiceProvider services =
                 new ServiceCollection()
                     .AddSingleton(Services)
-                    .AddSingleton(new GamingHub<ulong>())
+                    //.AddSingleton(new GamingHub<ulong>())
                     .AddSingleton(new YoutubeDL
                     {
                         YoutubeDLPath = "Binaries\\youtube-dl.exe",

@@ -448,7 +448,9 @@ namespace ParTboT.Commands
                 //player.Play();
                 audioStream.Seek(0, SeekOrigin.Begin);
                 var e = vnc.GetTransmitSink();
-                PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer { WaveFormat = mediaReader.WaveFormat, AudioStream = audioStream, Sink = e });
+                if (PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer { WaveFormat = mediaReader.WaveFormat, AudioStream = audioStream, Sink = e }))
+                    vnc.UserLeft += async (s, e) => { PlayedStreams.Remove(ctx.Guild.Id, out var _); };
+
                 await PlayInVC(ctx.Guild.Id);
 
                 //ffmpeg.Dispose();
@@ -478,7 +480,7 @@ namespace ParTboT.Commands
             //await eeee.CopyToAsync(e);
             //await e.WriteAsync(Data, 0, Data.Length);
 
-            await ctx.RespondAsync("Done").ConfigureAwait(false);
+            //await ctx.RespondAsync("Done").ConfigureAwait(false);
         }
 
         [Command("link")]
