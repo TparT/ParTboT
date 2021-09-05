@@ -166,6 +166,9 @@
     <Reference Include="YarinGeorge.Utilities">
       <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities\bin\Debug\netstandard2.1\YarinGeorge.Utilities.dll</HintPath>
     </Reference>
+    <Reference Include="YarinGeorge.Utilities.Audio">
+      <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Audio\bin\Debug\netstandard2.1\YarinGeorge.Utilities.Audio.dll</HintPath>
+    </Reference>
     <Reference Include="YarinGeorge.Utilities.Debugging">
       <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Debugging\bin\Debug\netstandard2.1\YarinGeorge.Utilities.Debugging.dll</HintPath>
     </Reference>

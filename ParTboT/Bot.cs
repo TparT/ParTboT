@@ -1,4 +1,5 @@
-﻿using DSharpPlus;
+﻿using AsyncProcess;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -86,7 +87,7 @@ namespace ParTboT
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 MinimumLogLevel = LogLevel.Warning,
-                Intents = DiscordIntents.All
+                Intents = DiscordIntents.AllUnprivileged
             };
 
             Client = new DiscordClient(config);
@@ -573,23 +574,24 @@ namespace ParTboT
             UpTime = DateTime.Now;
 
             #region Slash commands
-            var slash = Client.UseSlashCommands(new SlashCommandsConfiguration() { Services = services });
-            slash.SlashCommandErrored += Slash_SlashCommandErrored;
+            //var slash = Client.UseSlashCommands(new SlashCommandsConfiguration() { Services = services });
+            //slash.SlashCommandErrored += Slash_SlashCommandErrored;
 
-            slash.RegisterCommands<FunSCommands>(745008583178977370);
+            //slash.RegisterCommands<FunSCommands>(745008583178977370);
 
-            slash.RegisterCommands<GamesSCommands>(745008583178977370);
-            slash.RegisterCommands<GamesSCommands>(778975635514982421);
+            //slash.RegisterCommands<GamesSCommands>(745008583178977370);
+            //slash.RegisterCommands<GamesSCommands>(778975635514982421);
 
-            slash.RegisterCommands<UtilsSCommands>(745008583178977370);
-            slash.RegisterCommands<MusicSCommands>(745008583178977370);
-            //slash.RegisterCommands<Reminders>(745008583178977370);
+            //slash.RegisterCommands<UtilsSCommands>(745008583178977370);
+            //slash.RegisterCommands<MusicSCommands>(745008583178977370);
+            ////slash.RegisterCommands<Reminders>(745008583178977370);
 
-            slash.RegisterCommands<SocialPlatformsCommands>(745008583178977370);
-            slash.RegisterCommands<SocialPlatformsCommands>(778975635514982421);
+            //slash.RegisterCommands<SocialPlatformsCommands>(745008583178977370);
+            //slash.RegisterCommands<SocialPlatformsCommands>(778975635514982421);
 
-            slash.RegisterCommands<ChannelSCommands>(745008583178977370);
-            slash.RegisterCommands<TestCommands>(745008583178977370);
+            //slash.RegisterCommands<ChannelSCommands>(745008583178977370);
+            //slash.RegisterCommands<TestCommands>(745008583178977370);
+
             //slash.RegisterCommands<EditChannel>(745008583178977370);
             //slash.RegisterCommands<MainSlashCommandsContainer>(745008583178977370);
             #endregion

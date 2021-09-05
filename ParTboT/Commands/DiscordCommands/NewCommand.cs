@@ -21,6 +21,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using YoutubeDLSharp;
 using YoutubeDLSharp.Metadata;
+using ParTboT.Services;
+using YarinGeorge.Utilities.Audio.Streams;
+using YarinGeorge.Utilities.Extensions;
+using System.Speech.AudioFormat;
 //using CaptchaGen;
 
 namespace ParTboT.Commands
@@ -33,13 +37,6 @@ namespace ParTboT.Commands
         public IReadOnlyList<DiscordChannel> Channels { get; set; }
     }
 
-    internal record GuildMusicPlayer
-    {
-        public VoiceTransmitSink Sink { get; set; }
-        public Stream AudioStream { get; set; }
-        public WaveFormat WaveFormat { get; set; }
-    }
-
     public class NewCommand : BaseCommandModule
     {
         public ServicesContainer Services { private get; set; }
@@ -48,7 +45,6 @@ namespace ParTboT.Commands
         public DiscordRole StreamersRole { get; set; }
         public static string OldName { get; set; }
         public static SpeechSynthesizer Speaker = new SpeechSynthesizer();
-        internal ConcurrentDictionary<ulong, GuildMusicPlayer> PlayedStreams { get; set; } = new ConcurrentDictionary<ulong, GuildMusicPlayer>();
 
         public ClientReceivedVoice VoiceRecievedEvent { get; set; } = new ClientReceivedVoice();
 
@@ -324,10 +320,26 @@ namespace ParTboT.Commands
             if (chn == null)
                 throw new InvalidOperationException("You need to be in a voice channel.");
 
-            VoiceTransmitSink sink = PlayedStreams[ctx.Guild.Id].Sink;
+            VoiceTransmitSink sink = vnext.GetConnection(ctx.Guild).GetTransmitSink();
             sink.VolumeModifier = Volume / 100.00;
 
             await ctx.RespondAsync($"Volume is now: {sink.VolumeModifier * 100}%").ConfigureAwait(false);
+        }
+
+        [Command]
+        public async Task Vol(CommandContext ctx, string channel, float Volume)
+        {
+            //var vnext = ctx.Client.GetVoiceNext();
+
+            var chn = ctx.Member?.VoiceState?.Channel;
+            if (chn == null)
+                throw new InvalidOperationException("You need to be in a voice channel.");
+
+            //VoiceTransmitSink sink = vnext.GetConnection(ctx.Guild).GetTransmitSink();
+
+            var VolumeChange = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.AdjustChannelVolume(Enum.Parse<MixerChannelInput>(channel), Volume / 100);
+
+            await ctx.RespondAsync($"Volume is now: {VolumeChange.Volume * 100}%").ConfigureAwait(false);
         }
 
         public class SpeedFilter
@@ -336,42 +348,47 @@ namespace ParTboT.Commands
             public SpeedFilter(double speed)
                 => Speed = speed;
 
-            public WaveProviderToWaveStream ChangeSpeed(Stream pcmData, WaveFormat WaveFormat)
+            public WaveMixerStream32 ChangeSpeed(Stream pcmData, WaveFormat WaveFormat)
             {
                 //MemoryStream stream = new MemoryStream();
                 RubberBandWaveStream rb = new RubberBandWaveStream(new RawSourceWaveStream(pcmData, WaveFormat));
                 rb.Tempo = Speed;
 
-                return new WaveProviderToWaveStream(rb);
+                return new WaveMixerStream32(new[] { new WaveProviderToWaveStream(rb) }, true);
             }
         }
 
-        [Command]
-        public async Task Speed(CommandContext ctx, double Speed)
-        {
-            var vnext = ctx.Client.GetVoiceNext();
+        //[Command]
+        //public async Task Speed(CommandContext ctx, double Speed)
+        //{
+        //    var vnext = ctx.Client.GetVoiceNext();
 
-            var chn = ctx.Member?.VoiceState?.Channel;
-            if (chn == null)
-                throw new InvalidOperationException("You need to be in a voice channel.");
+        //    var chn = ctx.Member?.VoiceState?.Channel;
+        //    if (chn == null)
+        //        throw new InvalidOperationException("You need to be in a voice channel.");
 
-            GuildMusicPlayer sink = PlayedStreams[ctx.Guild.Id];
+        //    GuildMusicPlayer sink = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id];
 
-            SpeedFilter speed = new SpeedFilter(Speed);
-            sink.AudioStream = speed.ChangeSpeed(sink.AudioStream, sink.WaveFormat);
+        //    SpeedFilter speed = new SpeedFilter(Speed);
+        //    sink.AudioStream = speed.ChangeSpeed(sink.AudioStream., sink.WaveFormat);
 
-            await ctx.RespondAsync($"Player now has: {sink} filters installed.").ConfigureAwait(false);
-            await PlayInVC(ctx.Guild.Id);
-        }
+        //    await ctx.RespondAsync($"Player now has: {sink} filters installed.").ConfigureAwait(false);
+        //    await PlayInVC(ctx.Guild.Id);
+        //}
 
         private async Task PlayInVC(ulong GuildID, CancellationToken cancellationToken = default)
         {
-            VoiceTransmitSink destination = PlayedStreams[GuildID].Sink;
+            VoiceTransmitSink destination = GuildMusicPlayerService.PlayedStreams[GuildID].Sink;
             var buffer = ArrayPool<byte>.Shared.Rent(destination.SampleLength);
             try
             {
+                WaveStream stream = new WaveProviderToWaveStream(GuildMusicPlayerService.PlayedStreams[GuildID].Mixer.ToWaveProvider());
+
+                //if (stream.WaveFormat.SampleRate != 48000)
+                //    stream = new WaveFormatConversionStream(new WaveFormat(48000, 2), stream);
+
                 int bytesRead;
-                while ((bytesRead = await PlayedStreams[GuildID].AudioStream.ReadAsync(buffer, 0, destination.SampleLength, cancellationToken).ConfigureAwait(false)) != 0)
+                while ((bytesRead = await new Wave32To16Stream(stream).ReadAsync(buffer.AsMemory(0, destination.SampleLength), cancellationToken).ConfigureAwait(false)) != 0)
                 {
                     await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
 
@@ -381,6 +398,72 @@ namespace ParTboT.Commands
             {
                 ArrayPool<byte>.Shared.Return(buffer);
             }
+        }
+
+        [Command]
+        public async Task Mix(CommandContext ctx, [RemainingText] string text)
+        {
+            var vnext = ctx.Client.GetVoiceNext();
+
+            var vnc = vnext.GetConnection(ctx.Guild);
+            //var conn = node.GetGuildConnection(ctx.Guild);
+            //throw new InvalidOperationException("Already connected in this guild.");
+
+            if (vnc == null)
+            {
+                var chn = ctx.Member?.VoiceState?.Channel;
+                if (chn == null)
+                    throw new InvalidOperationException("You need to be in a voice channel.");
+
+                vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
+            }
+
+            #region Mix From File
+            //string Path = @"C:\Users\yarin\Music\Speech2TextWAV\Kevin LaSean - MOJO.wav";
+            //WaveFileReader reader = new WaveFileReader(Path);
+
+            //var format = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].WaveFormat;
+            //Console.WriteLine("Format of file:");
+            //Console.WriteLine(reader.WaveFormat.SampleRate);
+            //Console.WriteLine(reader.WaveFormat.BitsPerSample);
+            //Console.WriteLine(reader.WaveFormat.Channels);
+
+            //Console.WriteLine("Format needed:");
+            //Console.WriteLine(format.SampleRate);
+            //Console.WriteLine(format.BitsPerSample);
+            //Console.WriteLine(format.Channels);
+
+            //reader.Seek(0, SeekOrigin.Begin);
+            #endregion Mix From File
+
+            var TempFile = $"{Path.GetTempPath()}\\{Guid.NewGuid()}.wav";
+            MemoryStream ms = new MemoryStream();
+            Speaker.SetOutputToWaveFile(TempFile, new SpeechAudioFormatInfo(48000, AudioBitsPerSample.Sixteen, AudioChannel.Stereo));
+            Speaker.Speak(text);
+            Speaker.SetOutputToNull();
+
+            var reader = new Wave16ToFloatProvider(new WaveFileReader(TempFile));
+            if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out GuildMusicPlayer player))
+            {
+                player.Mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
+            }
+            else
+            {
+                MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(reader.WaveFormat);
+                mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
+
+                GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer { WaveFormat = reader.WaveFormat, Mixer = mixer, Sink = vnc.GetTransmitSink() });
+            }
+
+            if (GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer))
+                GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.AdjustChannelVolume(MixerChannelInput.MusicPlayer, 20F / 100F);
+
+            //await PlayInVC(ctx.Guild.Id);
+            await ctx.RespondAsync("Successfully added to the mix! :)");
+            await Task.Delay(5 * 1000);
+
+            GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.ResetChannelVolume(MixerChannelInput.MusicPlayer);
+            await PlayInVC(ctx.Guild.Id);
         }
 
         [Command]
@@ -428,8 +511,8 @@ namespace ParTboT.Commands
             // the path of the downloaded file
             FormatData path = res.Data.Formats.OrderByDescending(x => x.AudioBitrate).FirstOrDefault();
 
-            MemoryStream audioStream = new MemoryStream();
-            MediaFoundationReader mediaReader = new MediaFoundationReader(path.Url);
+            //MemoryStream audioStream = new MemoryStream();
+            WaveStream mediaReader = new MediaFoundationReader(path.Url);
 
             if (mediaReader.CanRead)
             {
@@ -441,15 +524,32 @@ namespace ParTboT.Commands
                 mediaReader.Seek(0, SeekOrigin.Begin);
 
                 // convert the audio track to Wave data and save to audioStream
-                WaveFileWriter.WriteWavFileToStream(audioStream/*@"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net6.0\VoiceRecognitions\mojo.wav"*/, mediaReader);
+                //WaveFileWriter.WriteWavFileToStream(audioStream/*@"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net6.0\VoiceRecognitions\mojo.wav"*/, mediaReader);
 
-                audioStream.Seek(0, SeekOrigin.Begin);
+                //audioStream.Seek(0, SeekOrigin.Begin);
                 //SoundPlayer player = new SoundPlayer(audioStream);
                 //player.Play();
-                audioStream.Seek(0, SeekOrigin.Begin);
+                //audioStream.Seek(0, SeekOrigin.Begin);
                 var e = vnc.GetTransmitSink();
-                if (PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer { WaveFormat = mediaReader.WaveFormat, AudioStream = audioStream, Sink = e }))
-                    vnc.UserLeft += async (s, e) => { PlayedStreams.Remove(ctx.Guild.Id, out var _); };
+
+                mediaReader.Seek(0, SeekOrigin.Begin);
+
+                if (mediaReader.WaveFormat.SampleRate != 48000)
+                    mediaReader = new WaveFormatConversionStream(new WaveFormat(48000, 2), mediaReader);
+
+                IWaveProvider wave32 = new Wave16ToFloatProvider(mediaReader);
+
+                if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out GuildMusicPlayer player))
+                {
+                    player.Mixer.AddMixerInput(MixerChannelInput.MusicPlayer, new MixerChannel(wave32));
+                }
+                else
+                {
+                    MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(wave32.WaveFormat);
+                    mixer.AddMixerInput(MixerChannelInput.MusicPlayer, new MixerChannel(wave32));
+
+                    GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer { WaveFormat = wave32.WaveFormat, Mixer = mixer, Sink = e });
+                }
 
                 await PlayInVC(ctx.Guild.Id);
 

@@ -9,6 +9,7 @@ using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,6 +43,18 @@ namespace ParTboT
 
             try
             {
+                var lava = new AsyncProcess.ProcessTask(new ProcessStartInfo
+                {
+                    FileName = @"java",
+                    Arguments = $@"-jar C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net6.0\Lavalink\Lavalink.jar",
+                    UseShellExecute = false,
+                    RedirectStandardInput = false,
+                    RedirectStandardOutput = false,
+                    WorkingDirectory = @"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net6.0\Lavalink",
+                    CreateNoWindow = true
+                }, default).RunAsync();
+
+                //await Task.Delay(5 * 1000);
                 var bot = new Bot();
                 bot.RunAsync().GetAwaiter().GetResult();
             }
