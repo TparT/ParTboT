@@ -87,7 +87,7 @@ namespace ParTboT
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 MinimumLogLevel = LogLevel.Warning,
-                Intents = DiscordIntents.AllUnprivileged
+                Intents = DiscordIntents.All
             };
 
             Client = new DiscordClient(config);

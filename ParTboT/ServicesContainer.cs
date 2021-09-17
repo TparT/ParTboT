@@ -7,7 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NetMQ;
 using Newtonsoft.Json;
-using Kitsu.NET;
+//using Kitsu.NET;
 using Owin;
 using ParTboT.Services;
 using RestSharp;
@@ -58,7 +58,7 @@ namespace ParTboT
         public RestClient RestClient { get; private set; }
         public TwitterClient TwitterClient { get; private set; }
         public TriviaService OpenTDBClient { get; private set; }
-        public KitsuClient KitsuClient { get; private set; }
+        //public KitsuClient KitsuClient { get; private set; }
         public DiscordWebhookClient WebhooksClient { get; private set; }
         #endregion Clients
 
@@ -88,7 +88,6 @@ namespace ParTboT
 
             return Config;
         }
-
 
         public async Task<ServicesContainer> InitializeServicesAsync(ILoggerFactory loggerFactory, Microsoft.Extensions.Logging.ILogger logger)
         {
@@ -144,7 +143,7 @@ namespace ParTboT
             TwitterClient.Events.OnTwitterException += (s, e) => { Console.WriteLine(e.TwitterDescription); };
 
             OpenTDBClient = new TriviaService();
-            KitsuClient = new KitsuClient();
+            //KitsuClient = new KitsuClient();
 
             WebhooksClient = new DiscordWebhookClient();
 
@@ -162,7 +161,6 @@ namespace ParTboT
 
             #endregion Services
 
-
             #region Run Services
 
             //using (WebApp.Start<Startup>("localhost:5000"))
@@ -171,10 +169,7 @@ namespace ParTboT
             //    Console.WriteLine("Hangfire on");
             //}
 
-
             //TwitchAPI.V5.
-
-
 
             //using (var poller = new NetMQPoller { timer })
             //{
@@ -196,7 +191,6 @@ namespace ParTboT
 
             //await Task.Run(async () => Host.StartAsync());
             #endregion Run Services
-
 
             #region Surpress Garbage Collector
 
@@ -227,7 +221,6 @@ namespace ParTboT
             GC.SuppressFinalize(RemindersService);
             GC.SuppressFinalize(LiveMonitorService);
             GC.SuppressFinalize(LiveMonitor);
-
 
             GC.SuppressFinalize(this);
 

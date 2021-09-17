@@ -6,26 +6,20 @@ using DSharpPlus.Lavalink;
 using DSharpPlus.VoiceNext;
 using MongoDB.Bson.Serialization.Attributes;
 using NAudio.Wave;
-using RubberBand.NAudio;
 using ParTboT.Events.BotEvents;
+using ParTboT.Services;
 using System;
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Speech.Synthesis;
-using System.Threading;
-using System.Threading.Tasks;
-using YoutubeDLSharp;
-using YoutubeDLSharp.Metadata;
-using ParTboT.Services;
-using YarinGeorge.Utilities.Audio.Streams;
-using YarinGeorge.Utilities.Extensions;
 using System.Speech.AudioFormat;
-//using CaptchaGen;
+using System.Speech.Synthesis;
+using System.Threading.Tasks;
+using YarinGeorge.Utilities.Audio.Streams;
+using YoutubeDLSharp;
 
 namespace ParTboT.Commands
 {
@@ -154,15 +148,15 @@ namespace ParTboT.Commands
         public async Task Join(CommandContext ctx)
         {
             var vnext = ctx.Client.GetVoiceNext();
-            var lava = ctx.Client.GetLavalink();
+            //var lava = ctx.Client.GetLavalink();
 
-            if (!lava.ConnectedNodes.Any())
-            {
-                await ctx.RespondAsync("The Lavalink connection is not established");
-                return;
-            }
+            //if (!lava.ConnectedNodes.Any())
+            //{
+            //    await ctx.RespondAsync("The Lavalink connection is not established");
+            //    return;
+            //}
 
-            var node = lava.ConnectedNodes.Values.First();
+            //var node = lava.ConnectedNodes.Values.First();
             var vnc = vnext.GetConnection(ctx.Guild);
             if (vnc != null)
                 throw new InvalidOperationException("Already connected in this guild.");
@@ -172,12 +166,21 @@ namespace ParTboT.Commands
                 throw new InvalidOperationException("You need to be in a voice channel.");
 
             vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
-            //OldName = vnc.TargetChannel.Name;
 
-            vnc.VoiceReceived += VoiceRecievedEvent.VoiceReceiveHandler;
+            //if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out GuildMusicPlayer player))
+            //{
+            //    player.Mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
+            //}
+            //else
+            //{
+            MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(waveFormat: WaveFormat.CreateIeeeFloatWaveFormat(48000, 2));
+            GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer(mixer) { WaveFormat = mixer.WaveFormat, Mixer = mixer, Connection = vnc });
+            //}
+
             VoiceRecievedEvent.Voices = new ConcurrentDictionary<ulong, UserRecognitionData>();
+            vnc.VoiceReceived += VoiceRecievedEvent.VoiceReceiveHandler;
 
-            await node.ConnectAsync(chn).ConfigureAwait(false);
+            //await node.ConnectAsync(chn).ConfigureAwait(false);
             await ctx.RespondAsync("👌").ConfigureAwait(false);
         }
 
@@ -312,95 +315,6 @@ namespace ParTboT.Commands
         }
 
         [Command]
-        public async Task Volume(CommandContext ctx, double Volume)
-        {
-            var vnext = ctx.Client.GetVoiceNext();
-
-            var chn = ctx.Member?.VoiceState?.Channel;
-            if (chn == null)
-                throw new InvalidOperationException("You need to be in a voice channel.");
-
-            VoiceTransmitSink sink = vnext.GetConnection(ctx.Guild).GetTransmitSink();
-            sink.VolumeModifier = Volume / 100.00;
-
-            await ctx.RespondAsync($"Volume is now: {sink.VolumeModifier * 100}%").ConfigureAwait(false);
-        }
-
-        [Command]
-        public async Task Vol(CommandContext ctx, string channel, float Volume)
-        {
-            //var vnext = ctx.Client.GetVoiceNext();
-
-            var chn = ctx.Member?.VoiceState?.Channel;
-            if (chn == null)
-                throw new InvalidOperationException("You need to be in a voice channel.");
-
-            //VoiceTransmitSink sink = vnext.GetConnection(ctx.Guild).GetTransmitSink();
-
-            var VolumeChange = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.AdjustChannelVolume(Enum.Parse<MixerChannelInput>(channel), Volume / 100);
-
-            await ctx.RespondAsync($"Volume is now: {VolumeChange.Volume * 100}%").ConfigureAwait(false);
-        }
-
-        public class SpeedFilter
-        {
-            public double Speed { get; set; }
-            public SpeedFilter(double speed)
-                => Speed = speed;
-
-            public WaveMixerStream32 ChangeSpeed(Stream pcmData, WaveFormat WaveFormat)
-            {
-                //MemoryStream stream = new MemoryStream();
-                RubberBandWaveStream rb = new RubberBandWaveStream(new RawSourceWaveStream(pcmData, WaveFormat));
-                rb.Tempo = Speed;
-
-                return new WaveMixerStream32(new[] { new WaveProviderToWaveStream(rb) }, true);
-            }
-        }
-
-        //[Command]
-        //public async Task Speed(CommandContext ctx, double Speed)
-        //{
-        //    var vnext = ctx.Client.GetVoiceNext();
-
-        //    var chn = ctx.Member?.VoiceState?.Channel;
-        //    if (chn == null)
-        //        throw new InvalidOperationException("You need to be in a voice channel.");
-
-        //    GuildMusicPlayer sink = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id];
-
-        //    SpeedFilter speed = new SpeedFilter(Speed);
-        //    sink.AudioStream = speed.ChangeSpeed(sink.AudioStream., sink.WaveFormat);
-
-        //    await ctx.RespondAsync($"Player now has: {sink} filters installed.").ConfigureAwait(false);
-        //    await PlayInVC(ctx.Guild.Id);
-        //}
-
-        private async Task PlayInVC(ulong GuildID, CancellationToken cancellationToken = default)
-        {
-            VoiceTransmitSink destination = GuildMusicPlayerService.PlayedStreams[GuildID].Sink;
-            var buffer = ArrayPool<byte>.Shared.Rent(destination.SampleLength);
-            try
-            {
-                WaveStream stream = new WaveProviderToWaveStream(GuildMusicPlayerService.PlayedStreams[GuildID].Mixer.ToWaveProvider());
-
-                //if (stream.WaveFormat.SampleRate != 48000)
-                //    stream = new WaveFormatConversionStream(new WaveFormat(48000, 2), stream);
-
-                int bytesRead;
-                while ((bytesRead = await new Wave32To16Stream(stream).ReadAsync(buffer.AsMemory(0, destination.SampleLength), cancellationToken).ConfigureAwait(false)) != 0)
-                {
-                    await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken).ConfigureAwait(false);
-
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
-        }
-
-        [Command]
         public async Task Mix(CommandContext ctx, [RemainingText] string text)
         {
             var vnext = ctx.Client.GetVoiceNext();
@@ -436,151 +350,43 @@ namespace ParTboT.Commands
             //reader.Seek(0, SeekOrigin.Begin);
             #endregion Mix From File
 
-            var TempFile = $"{Path.GetTempPath()}\\{Guid.NewGuid()}.wav";
             MemoryStream ms = new MemoryStream();
-            Speaker.SetOutputToWaveFile(TempFile, new SpeechAudioFormatInfo(48000, AudioBitsPerSample.Sixteen, AudioChannel.Stereo));
-            Speaker.Speak(text);
+            Speaker.SetOutputToAudioStream(ms, new SpeechAudioFormatInfo(48000, AudioBitsPerSample.Sixteen, AudioChannel.Stereo));
+            await Task.Run(() => Speaker.Speak(text));
             Speaker.SetOutputToNull();
 
-            var reader = new Wave16ToFloatProvider(new WaveFileReader(TempFile));
+            ms.Seek(0, SeekOrigin.Begin);
+
+            RawSourceWaveStream rawStream = new RawSourceWaveStream(ms, new WaveFormat(48000, 16, 2));
+            var reader = new Wave16ToFloatProvider(rawStream);
+
             if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out GuildMusicPlayer player))
             {
                 player.Mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
             }
             else
             {
-                MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(reader.WaveFormat);
+                MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(reader.WaveFormat, false);
                 mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
 
-                GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer { WaveFormat = reader.WaveFormat, Mixer = mixer, Sink = vnc.GetTransmitSink() });
+                GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer(mixer) { WaveFormat = reader.WaveFormat, Mixer = mixer, Connection = vnc });
             }
 
-            if (GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer))
-                GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.AdjustChannelVolume(MixerChannelInput.MusicPlayer, 20F / 100F);
+            bool AutoGain = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer);
 
-            //await PlayInVC(ctx.Guild.Id);
+            if (AutoGain)
+                GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.AdjustChannelVolume(MixerChannelInput.MusicPlayer, 25F / 100F);
+
             await ctx.RespondAsync("Successfully added to the mix! :)");
-            await Task.Delay(5 * 1000);
 
-            GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.ResetChannelVolume(MixerChannelInput.MusicPlayer);
-            await PlayInVC(ctx.Guild.Id);
-        }
-
-        [Command]
-        public async Task Play(CommandContext ctx, [RemainingText] string search)
-        {
-            await ctx.TriggerTypingAsync().ConfigureAwait(false);
-
-            var lava = ctx.Client.GetLavalink();
-            var node = lava.ConnectedNodes.Values.First();
-            var loadResult = await node.Rest.GetTracksAsync(search).ConfigureAwait(false);
-            var track = loadResult.Tracks.First();
-
-            var vnext = ctx.Client.GetVoiceNext();
-
-            var vnc = vnext.GetConnection(ctx.Guild);
-            //var conn = node.GetGuildConnection(ctx.Guild);
-            //throw new InvalidOperationException("Already connected in this guild.");
-
-            if (vnc == null)
+            if (AutoGain)
             {
-                var chn = ctx.Member?.VoiceState?.Channel;
-                if (chn == null)
-                    throw new InvalidOperationException("You need to be in a voice channel.");
-
-                vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
+                await Task.Delay(rawStream.TotalTime.Add(TimeSpan.FromSeconds(0.5)));
+                GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.ResetChannelVolume(MixerChannelInput.MusicPlayer);
             }
 
-            //var ffmpeg = Process.Start(new ProcessStartInfo
-            //{
-            //    FileName = "ffmpeg",
-            //    Arguments = $@"-hide_banner -loglevel panic -i ""{TempFile}"" -ac 2 -f s16le -ar 48000 pipe:1",
-            //    RedirectStandardOutput = true,
-            //    UseShellExecute = false
-            //});
-
-            //YouTubeAudioUrlUtil utube = new YouTubeAudioUrlUtil();
-            //var response = utube.Decipher(track.Identifier);
-
-            // set the path of the youtube-dl and FFmpeg if they're not in PATH or current directory
-
-            // optional: set a different download folder
-            //ytdl.OutputFolder = "some\\directory\\for\\video\\downloads";
-            // download a video
-            var res = await ytdl.RunVideoDataFetch(track.Uri.ToString());
-            // the path of the downloaded file
-            FormatData path = res.Data.Formats.OrderByDescending(x => x.AudioBitrate).FirstOrDefault();
-
-            //MemoryStream audioStream = new MemoryStream();
-            WaveStream mediaReader = new MediaFoundationReader(path.Url);
-
-            if (mediaReader.CanRead)
-            {
-                Console.WriteLine(mediaReader.WaveFormat.SampleRate);
-                Console.WriteLine(mediaReader.WaveFormat.BitsPerSample);
-                Console.WriteLine(mediaReader.WaveFormat.Channels);
-
-                // move to the beginning of the mediaReader stream
-                mediaReader.Seek(0, SeekOrigin.Begin);
-
-                // convert the audio track to Wave data and save to audioStream
-                //WaveFileWriter.WriteWavFileToStream(audioStream/*@"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net6.0\VoiceRecognitions\mojo.wav"*/, mediaReader);
-
-                //audioStream.Seek(0, SeekOrigin.Begin);
-                //SoundPlayer player = new SoundPlayer(audioStream);
-                //player.Play();
-                //audioStream.Seek(0, SeekOrigin.Begin);
-                var e = vnc.GetTransmitSink();
-
-                mediaReader.Seek(0, SeekOrigin.Begin);
-
-                if (mediaReader.WaveFormat.SampleRate != 48000)
-                    mediaReader = new WaveFormatConversionStream(new WaveFormat(48000, 2), mediaReader);
-
-                IWaveProvider wave32 = new Wave16ToFloatProvider(mediaReader);
-
-                if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out GuildMusicPlayer player))
-                {
-                    player.Mixer.AddMixerInput(MixerChannelInput.MusicPlayer, new MixerChannel(wave32));
-                }
-                else
-                {
-                    MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(wave32.WaveFormat);
-                    mixer.AddMixerInput(MixerChannelInput.MusicPlayer, new MixerChannel(wave32));
-
-                    GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer { WaveFormat = wave32.WaveFormat, Mixer = mixer, Sink = e });
-                }
-
-                await PlayInVC(ctx.Guild.Id);
-
-                //ffmpeg.Dispose();
-                //ffmpeg.Close();
-                //vnc.Disconnect();
-
-                //await ctx.RespondAsync(x => x.WithFile($"{res.Data.Title}.wav", audioStream).WithContent($"{res.Data.Title}:")).ConfigureAwait(false);
-            }
-
-            //Stream pcm = ffmpeg.StandardOutput.BaseStream;
-
-            //SpeakerWAVstream.Position = 0;
-            //SpeakerWAVstream.Seek(0, SeekOrigin.Begin);
-            //var reader = new NAudio.Wave.WaveFileReader(SpeakerWAVstream);
-
-            //var pitch = new SmbPitchShiftingSampleProvider(reader.ToSampleProvider());
-            //var echo = new SoundTouchWaveProvider(reader.ToSampleProvider().ToWaveProvider(), new SoundTouchProcessor { SampleRate = 48000, TempoChange = -55, Pitch = 0.55, Channels = 2 });
-            //var eeee = new WaveProviderToWaveStream(echo);
-
-            //MemoryStream memoryStream = new();
-
-            //await eeee.CopyToAsync(memoryStream);
-
-            //File.Delete(TempFile);
-
-            //var Data = memoryStream.ToArray();
-            //await eeee.CopyToAsync(e);
-            //await e.WriteAsync(Data, 0, Data.Length);
-
-            //await ctx.RespondAsync("Done").ConfigureAwait(false);
+            await rawStream.DisposeAsync();
+            rawStream.Close();
         }
 
         [Command("link")]
@@ -659,29 +465,5 @@ namespace ParTboT.Commands
 
             //var url = member.Presence.Activity.StreamUrl;
         }
-
-        /*[Command("py")]
-        public async Task py(CommandContext ctx)
-        {
-            string messagecontents = "The testbot built using discord.py (Python) should now be running.";
-            await ctx.RespondAsync($"{messagecontents}").ConfigureAwait(false);
-
-            string simple_FilePath = @"C:\Users\yarin\Documents\Visual studio projects\Visual Studio Code\IronPython\TEST\1\simple.py";
-            string RunPy = "python ";
-            string RunSimple = RunPy + '"' + simple_FilePath + '"';
-
-            ProcessStartInfo p = new ProcessStartInfo();
-            p.FileName = "cmd.exe"; //cmd process
-            p.Arguments = @"/c " + RunSimple; //args is path to .py file and any cmd line args
-            p.UseShellExecute = false;
-            p.RedirectStandardOutput = true;
-            using (Process process = Process.Start(p))
-            {
-                using (StreamReader reader = process.StandardOutput)
-                {
-                    string result = reader.ReadToEnd();
-                    Console.Write(result);
-                }
-            }*/
     }
 }

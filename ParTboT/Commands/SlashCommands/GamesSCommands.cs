@@ -394,10 +394,10 @@ namespace ParTboT.Commands.SlashCommands
                 await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent(Stats.data.Segments[0].Stats.WinningKills.Value.ToString())).ConfigureAwait(false);
             }
 
-            public IEnumerable<string> Parts(string text, int maxInPart)
-            {
-                return text.Chunk(maxInPart).Select(x => string.Join(string.Empty, x));
-            }
+            //public IEnumerable<string> Parts(string text, int maxInPart)
+            //{
+            //    return text.Chunk(maxInPart).Select(x => string.Join(string.Empty, x));
+            //}
 
             [SlashCommand("CSGO", "Check steam user's Counter-String:Global-Offensive game stats.")]
             public async Task CSGOStatsCommand

@@ -40,7 +40,7 @@ namespace ParTboT
             //        serializer = dictionaryRepresentationSerializer.WithDictionaryRepresentation(DictionaryRepresentation.Document);
             //    memberMap.SetSerializer(serializer);
             //});
-
+            Console.WriteLine("jhhfgirihgbrejkbreh");
             try
             {
                 var lava = new AsyncProcess.ProcessTask(new ProcessStartInfo

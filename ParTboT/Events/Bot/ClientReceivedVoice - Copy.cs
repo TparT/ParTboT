@@ -153,7 +153,7 @@ namespace ParTboT.Events.BotEvents
                     else
                     {
                         Console.WriteLine("\nRecognition SKIPPED:");
-                        if (e.Result.Text.ToLower() == "hey jarvis" && e.Result.Confidence <= RequiredTriggerConfidence)
+                        if (e.Result.Text.ToLower() == "hey party bot" && e.Result.Confidence <= RequiredTriggerConfidence)
                         {
                             Console.WriteLine($"Reason: Confidence was {e.Result.Confidence} while needed {RequiredTriggerConfidence}");
                         }
@@ -420,9 +420,9 @@ namespace ParTboT.Events.BotEvents
                             Console.WriteLine(exc.ToString());
                         }
 
-                        var Device = new WaveOutEvent();
+                        //var Device = new WaveOutEvent();
 
-                        Device.Init(stws);
+                        //Device.Init(stws);
                         Console.WriteLine($"Proccessed WAV stream length: {stws.Length}");
                     }
                     try
@@ -450,25 +450,46 @@ namespace ParTboT.Events.BotEvents
     {
         public static async Task SpeakToVC(this System.Speech.Synthesis.SpeechSynthesizer Speaker, VoiceNextConnection connection, string StuffToSay)
         {
-            var TempFile = $"{Path.GetTempPath()}\\{Guid.NewGuid()}.wav";
-            Speaker.SetOutputToWaveFile(TempFile);
-            Speaker.SpeakAsync(StuffToSay);
+            Console.WriteLine(connection.TargetChannel.GuildId.Value);
 
-            var ffmpeg = Process.Start(new ProcessStartInfo
+            MemoryStream ms = new MemoryStream();
+            Speaker.SetOutputToAudioStream(ms, new SpeechAudioFormatInfo(48000, AudioBitsPerSample.Sixteen, AudioChannel.Stereo));
+            await Task.Run(() => Speaker.Speak(StuffToSay));
+            Speaker.SetOutputToNull();
+
+            ms.Seek(0, SeekOrigin.Begin);
+
+            RawSourceWaveStream rawStream = new RawSourceWaveStream(ms, new WaveFormat(48000, 16, 2));
+            rawStream.Seek(0, SeekOrigin.Begin);
+            Wave16ToFloatProvider reader = new Wave16ToFloatProvider(rawStream);
+
+            if (GuildMusicPlayerService.PlayedStreams.TryGetValue(connection.TargetChannel.GuildId.Value, out GuildMusicPlayer player))
             {
-                FileName = "ffmpeg",
-                Arguments = $@"-hide_banner -loglevel panic -i ""{TempFile}"" -ac 2 -f s16le -ar 48000 pipe:1",
-                RedirectStandardOutput = true,
-                UseShellExecute = false
-            });
+                player.Mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
+            }
+            else
+            {
+                MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(reader.WaveFormat);
+                mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
 
-            Stream pcm = ffmpeg.StandardOutput.BaseStream;
+                GuildMusicPlayerService.PlayedStreams.TryAdd(connection.TargetChannel.GuildId.Value, new GuildMusicPlayer(mixer) { WaveFormat = reader.WaveFormat, Mixer = mixer, Connection = connection });
+            }
 
-            await pcm.CopyToAsync(connection.GetTransmitSink());
-            await pcm.DisposeAsync();
-            pcm.Close();
-            ffmpeg.Dispose();
-            ffmpeg.Close();
+            bool AutoGain = GuildMusicPlayerService.PlayedStreams[connection.TargetChannel.GuildId.Value].Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer);
+
+            if (AutoGain)
+                GuildMusicPlayerService.PlayedStreams[connection.TargetChannel.GuildId.Value].Mixer.AdjustChannelVolume(MixerChannelInput.MusicPlayer, 25F / 100F);
+
+            if (AutoGain)
+            {
+                await Task.Delay(rawStream.TotalTime.Add(TimeSpan.FromSeconds(0.5)));
+                GuildMusicPlayerService.PlayedStreams[connection.TargetChannel.GuildId.Value].Mixer.ResetChannelVolume(MixerChannelInput.MusicPlayer);
+            }
+
+            await rawStream.DisposeAsync();
+            rawStream.Close();
+
+            //await connection.PlayInVC();
         }
     }
 
