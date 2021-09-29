@@ -88,7 +88,7 @@ namespace ParTboT.Events.GuildEvents.GuildMembers
             if (e.Member.IsBot == false)
             {
                 DiscordChannel DMChannel = await e.Member.CreateDmChannelAsync().ConfigureAwait(false);
-                ParTboTGuildModel DbGuildConfig = await Bot.Commands.Services.Get<MongoCRUD>().LoadOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", e.Guild.Id);
+                ParTboTGuildModel DbGuildConfig = await ParTboT.Bot.Commands.Services.Get<MongoCRUD>().LoadOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", e.Guild.Id);
 
                 await DMChannel.TriggerTypingAsync().ConfigureAwait(false);
 

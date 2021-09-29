@@ -1,4 +1,7 @@
 ﻿using DSharpPlus.CommandsNext.Exceptions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Owin.Hosting;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -7,9 +10,11 @@ using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization.Serializers;
 using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.DbModels.SocialPlatforms.Shared;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,36 +22,14 @@ namespace ParTboT
 {
     public class Program
     {
-        public static string[] Args { get; set; }
         public static async Task Main(string[] args)
         {
-            Args = args;
-            Console.ResetColor();
-            Console.BackgroundColor = ConsoleColor.Black;
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.Clear();
-
-            //ConventionRegistry.Register(
-            //    "DictionaryRepresentationConvention",
-            //    new ConventionPack { new DictionaryRepresentationConvention(DictionaryRepresentation.ArrayOfArrays) },
-            //    _ => true);
-
-            //BsonClassMap.RegisterClassMap<TwitchStreamer>(cm =>
-            //{
-            //    cm.AutoMap();
-            //    var memberMap = cm.GetMemberMap(x => x.FollowingGuilds);
-            //    var serializer = memberMap.GetSerializer();
-            //    if (serializer is IDictionaryRepresentationConfigurable dictionaryRepresentationSerializer)
-            //        serializer = dictionaryRepresentationSerializer.WithDictionaryRepresentation(DictionaryRepresentation.Document);
-            //    memberMap.SetSerializer(serializer);
-            //});
-            Console.WriteLine("jhhfgirihgbrejkbreh");
             try
             {
                 var lava = new AsyncProcess.ProcessTask(new ProcessStartInfo
                 {
                     FileName = @"java",
-                    Arguments = $@"-jar C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net6.0\Lavalink\Lavalink.jar",
+                    Arguments = $@"-jar Lavalink.jar",
                     UseShellExecute = false,
                     RedirectStandardInput = false,
                     RedirectStandardOutput = false,
@@ -54,9 +37,12 @@ namespace ParTboT
                     CreateNoWindow = true
                 }, default).RunAsync();
 
-                //await Task.Delay(5 * 1000);
-                var bot = new Bot();
-                bot.RunAsync().GetAwaiter().GetResult();
+                IHostBuilder builder = CreateBuilder();
+                ConfigureServices(builder);
+                IHost builtBuilder = builder.UseConsoleLifetime().Build();
+
+                await builtBuilder.RunAsync().ConfigureAwait(false);
+
             }
             catch (DuplicateCommandException DCE)
             {
@@ -67,6 +53,29 @@ namespace ParTboT
             {
                 Console.WriteLine(e.ToString());
             }
+        }
+
+        private static IHostBuilder ConfigureServices(IHostBuilder builder, bool addServices = true)
+        {
+            return builder
+                .UseSerilog()
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddHostedService<Bot>();
+                });
+        }
+
+        private static IHostBuilder CreateBuilder()
+        {
+            IHostBuilder? builder = Host.CreateDefaultBuilder();
+
+            builder.ConfigureAppConfiguration((_, configuration) =>
+            {
+                configuration.SetBasePath(Directory.GetCurrentDirectory());
+                configuration.AddJsonFile("appSettings.json", true, false);
+                configuration.AddUserSecrets<Bot>(true, false);
+            });
+            return builder;
         }
     }
 }

@@ -19,7 +19,7 @@ namespace ParTboT.Events.BotEvents
             await client.UpdateStatusAsync(Ready, UserStatus.Online, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(1)));
             try
             {
-                (await Bot.Commands.Services.Get<MongoCRUD>().LoadManyByFieldsValuesAndFieldsAsync<ParTboTGuildModel>("Guilds", "_id", client.Guilds.Keys)).ToList().ForEach
+                (await ParTboT.Bot.Commands.Services.Get<MongoCRUD>().LoadManyByFieldsValuesAndFieldsAsync<ParTboTGuildModel>("Guilds", "_id", client.Guilds.Keys)).ToList().ForEach
                     (Guild =>
                     {
                         Console.WriteLine($"Guild {Guild.Name} has {Guild.GuildBackups.Values.Count} backups");

@@ -18,7 +18,9 @@ namespace ParTboT.Services
 
     internal record QueuedSong
     {
-        public FormatData SongData { get; set; }
+        public string Url { get; set; }
+        public string Name { get; set; }
+        public int Position { get; set; }
         //public ISampleProvider MyProperty { get; set; }
     }
 
@@ -42,7 +44,7 @@ namespace ParTboT.Services
                 if (QueuedSongs.TryDequeue(out QueuedSong song))
                 {
                     //MemoryStream audioStream = new MemoryStream();
-                    WaveStream mediaReader = new MediaFoundationReader(song.SongData.Url);
+                    WaveStream mediaReader = new MediaFoundationReader(song.Url);
 
                     if (mediaReader.CanRead)
                     {

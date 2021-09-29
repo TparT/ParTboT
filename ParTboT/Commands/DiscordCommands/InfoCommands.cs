@@ -119,9 +119,9 @@ namespace ParTboT.Commands
             await ctx.RespondAsync($"```{sb}```").ConfigureAwait(false);
         }
 
-        [Command("test")]
+        [Command("alive")]
         [Description("Checks if the bot is alive")]
-        public async Task Test(CommandContext ctx)
+        public async Task Alive(CommandContext ctx)
         {
             string MemberName = (ctx.Member.Mention).ToString();
             await ctx.RespondAsync($"YEAH YEAH  {MemberName}  IM ALIVE!!! DAMN JUST LEAVE ME ALONE! ")

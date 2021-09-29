@@ -31,7 +31,7 @@ namespace ParTboT.Events.BotEvents
                 Id = e.Guild.Id,
                 Name = e.Guild.Name,
                 MemberCount = e.Guild.MemberCount,
-                Prefixes = Bot.DefaultPrefixes,
+                Prefixes = new[] { Services.Config.Prefix },
                 SocialsFollows = new() { Facebook = new(), FloatPlane = new(), Instagram = new(), LinkedIn = new(), TwitchStreamers = new(), Twitter = new(), YouTubers = new() }
             };
             if (sender.Guilds.ContainsKey(e.Guild.Id))

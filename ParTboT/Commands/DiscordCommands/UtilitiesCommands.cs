@@ -203,7 +203,6 @@ namespace ParTboT.Commands
 
 
                 await Services.MongoDB.UpsertAsync<GuildBackup>("Guilds", ctx.Guild.Id, GB).ConfigureAwait(false);
-                //await ctx.RespondAsync(":+1:").ConfigureAwait(false);
 
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -250,9 +249,7 @@ namespace ParTboT.Commands
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
             List<ulong> ExcludedChannels = new List<ulong>() { 792649902211072002 };
-
-            await ctx.Guild.LockDownGuildAsync(ctx.Client, ExcludedChannels).ConfigureAwait(false);
-            //await ctx.RespondAsync(AdminRoles).ConfigureAwait(false);
+            await ctx.Guild.LockDownGuildAsync(ExcludedChannels).ConfigureAwait(false);
         }
 
         [Command("unlock")]
@@ -270,211 +267,40 @@ namespace ParTboT.Commands
 
         [Command("roles")]
         [Description("Shows the roles of a member. If member not specified, the result will be the roles of the command executer.")]
-        public async Task Roles(CommandContext ctx, [RemainingText] DiscordMember RemainingTextAttribute)
+        public async Task Roles(CommandContext ctx, DiscordMember member = null)
         {
-            await ctx.TriggerTypingAsync();
-
-            if (RemainingTextAttribute == null)
-            {
-                var AllRoles = ctx.Member.Roles;
-                string newResponse = "Your roles are:\n";
-                foreach (DiscordRole r in AllRoles)
-                {
-                    newResponse += "\n- " + r.Name;
-                }
-                await ctx.RespondAsync(newResponse).ConfigureAwait(false);
-            }
-            else
-            {
-                var AllRoles = RemainingTextAttribute.Roles;
-                string MemberName = RemainingTextAttribute.DisplayName;
-                string newResponse = $"{MemberName}'s roles are:\n";
-                foreach (DiscordRole r in AllRoles)
-                {
-                    newResponse += "\n- " + r.Name;
-                }
-                await ctx.RespondAsync(newResponse).ConfigureAwait(false);
-            }
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+            member ??= ctx.Member;
+            await ctx.RespondAsync($"{(member.Id == ctx.Member.Id ? "Your" : $"{member.DisplayName}'s")} roles are: {string.Join(" **|** ", member.Roles.Select(r => r.Mention))}").ConfigureAwait(false);
         }
 
         [Command("whois")]
         [Description("Gives information about a given discord member. If member not specified, the result will be information of the command executer.")]
-        public async Task Whois(CommandContext ctx, [Description("The member to get the information about.")][RemainingText] DiscordMember member)
+        public async Task Whois(CommandContext ctx, [Description("The member to get the information about.")] DiscordMember member = null)
         {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            //if (MemberStatustype == UserStatus.DoNotDisturb)
+            member ??= ctx.Member;
 
-            await ctx.TriggerTypingAsync();
+            string StatusEmoji = member.Presence.Status switch { UserStatus.Offline => ":black_circle:", UserStatus.Online => ":green_circle:", UserStatus.Idle => ":crescent_moon:", UserStatus.DoNotDisturb => ":no_entry:", UserStatus.Invisible => ":black_circle:", _ => "" };
 
-            var LookinEmoji = DiscordEmoji.FromName(ctx.Client, ":face_with_monocle:");
+            DiscordEmbedBuilder embed = new DiscordEmbedBuilder()
+                .WithTitle($":face_with_monocle: Here is what is known about **{member.DisplayName}:**")
+                .WithDescription
+                    (
+                        $"**Is bot? :robot: :** {(member.IsBot ? @"NO! \*Beep Boop\*. I mean.. Yes.." : "No")}\n" +
+                        $"**Username:** {member.Username}\n" +
+                        $"**Status:** {member.Presence.Status} - {StatusEmoji}\n" +
+                        $"**Nickname on this server:** {member.Nickname}\n" +
+                        $"**Joined this server on:** {member.JoinedAt.DateTime}\n" +
+                        $"**Joined discord on:** {member.CreationTimestamp}\n" +
+                        $"**Discord ID:** {ctx.Member.Id}\n\n" +
+                        $"**Roles:** {string.Join(" **|** ", member.Roles.Select(r => r.Mention))}"
+                    )
+                .WithThumbnail(member.AvatarUrl)
+                .WithColor(DiscordColor.Orange);
 
-            var OnlineStatusEmoji = DiscordEmoji.FromName(ctx.Client, ":green_circle:");
-            var IdelingStatusEmoji = DiscordEmoji.FromName(ctx.Client, ":crescent_moon:");
-            var DoNotDisturbStatusEmoji = DiscordEmoji.FromName(ctx.Client, ":no_entry:");
-            var InvisibleStatusEmoji = DiscordEmoji.FromName(ctx.Client, ":black_circle:");
-            var OfflineStatusEmoji = DiscordEmoji.FromName(ctx.Client, ":black_circle:");
-
-            string StatusNameOnline = "Online";
-            string StatusNameIdle = "Idle";
-            string StatusNameDND = "Do Not Disturb";
-            string StatusNameInvisible = "Invisible";
-            string StatusNameOffline = "Offline";
-
-            string MemberType = "";
-            var StatusType = "";
-            var StatusTypeEmoji = "";
-
-            if (member == null)
-            {
-                if (ctx.Member.IsBot == true)
-                {
-                    MemberType = @"NO! \*Beep Boop\*. I mean.. Yes..";
-                }
-                else if (ctx.Member.IsBot == false)
-                {
-                    MemberType = "No";
-                }
-
-                var MemberStatustype = ctx.User.Presence.Status;
-
-                if (MemberStatustype == UserStatus.Online)
-                {
-                    StatusType = StatusNameOnline;
-                    StatusTypeEmoji = OnlineStatusEmoji;
-                }
-                else if (MemberStatustype == UserStatus.Idle)
-                {
-                    StatusType = StatusNameIdle;
-                    StatusTypeEmoji = IdelingStatusEmoji;
-                }
-                else if (MemberStatustype == UserStatus.DoNotDisturb)
-                {
-                    StatusType = StatusNameDND;
-                    StatusTypeEmoji = DoNotDisturbStatusEmoji;
-                }
-                else if (MemberStatustype == UserStatus.Invisible)
-                {
-                    StatusType = StatusNameInvisible;
-                    StatusTypeEmoji = InvisibleStatusEmoji;
-                }
-                else if (MemberStatustype == UserStatus.Offline)
-                {
-                    StatusType = StatusNameOffline;
-                    StatusTypeEmoji = OfflineStatusEmoji;
-                }
-
-                string MemberUsrName = ctx.Member.Username;
-                string MemberProfilePicURL = ctx.Member.AvatarUrl;
-                string MemberServerJoinTime = ctx.Member.JoinedAt.DateTime.ToString();
-                string MemberDiscordJoinTime = ctx.Member.CreationTimestamp.DateTime.ToString();
-
-                string MemberNickName = ctx.Member.DisplayName;
-
-                var AllRoles = ctx.Member.Roles;
-
-                string Roles = "";
-                foreach (DiscordRole r in AllRoles)
-                {
-                    Roles += $" **|** {r.Mention}";
-                }
-
-                string DiscordID = ctx.Member.Id.ToString();
-
-                await ctx.RespondAsync(embed: new DiscordEmbedBuilder
-                {
-                    Title = $"{LookinEmoji} Here is what is know about **{MemberNickName}:**",
-                    Description =
-                    $"**Is bot? :robot: :** {MemberType}\n" +
-                    $"**Username:** {MemberUsrName}\n" +
-                    $"**Status:** {StatusType} - {StatusTypeEmoji}\n" +
-                    $"**Nickname on this server:** {MemberNickName}\n" +
-                    $"**Joined this server on:** {MemberServerJoinTime}\n" +
-                    $"**Joined discord on:** {MemberDiscordJoinTime}\n" +
-                    $"**Discord ID:** {DiscordID}\n" +
-                    $"\n" +
-                    $"**Roles:** {Roles}",
-
-                    Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail { Url = MemberProfilePicURL },
-                    Color = DiscordColor.Orange
-                }.Build()).ConfigureAwait(false);
-            }
-            else
-            {
-                if (member.IsBot == true)
-                {
-                    MemberType = @"NO! \*Beep Boop\*. I mean.. Yes..";
-                }
-                else if (member.IsBot == false)
-                {
-                    MemberType = "No";
-                }
-
-                var MemberStatustype = member.Presence.Status;
-
-                if (MemberStatustype == UserStatus.Online)
-                {
-                    StatusType = StatusNameOnline;
-                    StatusTypeEmoji = OnlineStatusEmoji;
-                }
-                else if (MemberStatustype == UserStatus.Idle)
-                {
-                    StatusType = StatusNameIdle;
-                    StatusTypeEmoji = IdelingStatusEmoji;
-                }
-                else if (MemberStatustype == UserStatus.DoNotDisturb)
-                {
-                    StatusType = StatusNameDND;
-                    StatusTypeEmoji = DoNotDisturbStatusEmoji;
-                }
-                else if (MemberStatustype == UserStatus.Invisible)
-                {
-                    StatusType = StatusNameInvisible;
-                    StatusTypeEmoji = InvisibleStatusEmoji;
-                }
-                else if (MemberStatustype == UserStatus.Offline)
-                {
-                    StatusType = StatusNameOffline;
-                    StatusTypeEmoji = OfflineStatusEmoji;
-                }
-
-                string MemberUsrName = member.Username;
-                string MemberProfilePicURL = member.AvatarUrl;
-                string MemberServerJoinTime = member.JoinedAt.DateTime.ToString();
-                string MemberDiscordJoinTime = member.CreationTimestamp.DateTime.ToString();
-
-                string MemberNickName = member.DisplayName;
-
-                var AllRoles = member.Roles;
-                string Roles = "";
-                foreach (DiscordRole r in AllRoles)
-                {
-                    Roles += $" **|** {r.Mention}";
-                }
-
-                string DiscordID = member.Id.ToString();
-
-
-                await ctx.RespondAsync(embed: new DiscordEmbedBuilder
-                {
-                    Title = $"{LookinEmoji} Here is what is know about **{MemberNickName}:**",
-
-                    Description =
-                    $"\n**Is bot? :robot: :** {MemberType}\n" +
-                    $"\n**Username:** {MemberUsrName}\n" +
-                    $"\n**Status:** {StatusType} - {StatusTypeEmoji}\n" +
-                    $"\n**Nickname on this server:** {MemberNickName}\n" +
-                    $"\n**Joined this server on:** {MemberServerJoinTime}\n" +
-                    $"\n**Joined discord on:** {MemberDiscordJoinTime}\n" +
-                    $"\n**Discord ID:** {DiscordID}\n" +
-                    $"\n" +
-                    $"**Roles:** {Roles}",
-
-                    Thumbnail = new DiscordEmbedBuilder.EmbedThumbnail { Url = MemberProfilePicURL },
-
-                    Color = DiscordColor.Orange
-
-                }.Build()).ConfigureAwait(false);
-            }
+            await ctx.RespondAsync(embed).ConfigureAwait(false);
         }
 
         [Command("bttv")]
@@ -573,7 +399,7 @@ namespace ParTboT.Commands
                 page++;
             }
 
-            await ctx.Channel.SendPaginatedMessageAsync(ctx.User, pages, null, timeoutoverride: TimeSpan.FromMinutes(5)).ConfigureAwait(false);
+            await ctx.Channel.SendPaginatedMessageAsync(ctx.User, pages, null, null, timeoutoverride: TimeSpan.FromMinutes(5)).ConfigureAwait(false);
         }
 
         [Command("color")]

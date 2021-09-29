@@ -59,7 +59,7 @@ namespace ParTboT.Commands.SlashCommands
             {
                 DiscordMessageBuilder mb = new();
 
-                IReadOnlyList<TriviaCategory> Catagories = (await Services.OpenTDBClient.GetCategoriesAsync()).Categories;
+                IOrderedEnumerable<TriviaCategory> Catagories = (await Services.OpenTDBClient.GetCategoriesAsync()).Categories.OrderBy(c => c.Name[0]);
 
                 string SelectID = Guid.NewGuid().ToString();
                 DiscordSelectComponentBuilder Select = new DiscordSelectComponentBuilder();
@@ -106,7 +106,7 @@ namespace ParTboT.Commands.SlashCommands
 
                     Option = new();
                     foreach (string Answer in Answers.Shuffle())
-                        Select.AddOption(Option.WithLabel(Answer).WithValue(Answer == question.Answer ? bool.TrueString : Guid.NewGuid().ToString()));
+                        Select.AddOption(Option.WithLabel(Answer).WithValue(Answer.Replace(' ', '-')));
 
                     mb.ClearComponents();
                     await SelectResult.Value.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate).ConfigureAwait(false);
@@ -116,12 +116,14 @@ namespace ParTboT.Commands.SlashCommands
                         await (await SelectMsg.WaitForSelectAsync(SelectID, TimeSpan.FromSeconds(45)).ConfigureAwait(false))
                         .HandleTimeouts(ctx, mb);
 
+                    string SelectedAnswer = AnswerSelectResult.Value.Result.Values.FirstOrDefault().Replace('-', ' ');
+
                     if (AnswerSelectResult.HasValue)
                     {
-                        if (AnswerSelectResult.Value.Result.Values.FirstOrDefault() == bool.TrueString)
-                            await AnswerSelectResult.Value.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, mb.LockAllComponents().WithContent($"__{question.Content}__\n\n:white_check_mark: Correct! The answer is: {question.Answer}").ToResponseBuilder()).ConfigureAwait(false);
+                        if (SelectedAnswer == question.Answer)
+                            await AnswerSelectResult.Value.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, mb.EditSelectComponent(SelectID, Select.WithPlaceholder(SelectedAnswer).IsDisabled(true)).WithContent($"__{question.Content}__\n\n:white_check_mark: Correct! The answer is: {question.Answer}").ToResponseBuilder()).ConfigureAwait(false);
                         else
-                            await AnswerSelectResult.Value.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, mb.LockAllComponents().WithContent($"__{question.Content}__\n\n:x: Wrong answer!  The answer is: {question.Answer}").ToResponseBuilder()).ConfigureAwait(false);
+                            await AnswerSelectResult.Value.Result.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage, mb.EditSelectComponent(SelectID, Select.WithPlaceholder(SelectedAnswer).IsDisabled(true)).WithContent($"__{question.Content}__\n\n:x: Wrong answer!  The answer is: {question.Answer}").ToResponseBuilder()).ConfigureAwait(false);
                     }
 
                 }

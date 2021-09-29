@@ -2,9 +2,14 @@
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Lavalink;
 using DSharpPlus.VoiceNext;
 using MongoDB.Bson.Serialization.Attributes;
+//using MoreLinq;
 using NAudio.Wave;
 using ParTboT.Events.BotEvents;
 using ParTboT.Services;
@@ -15,11 +20,21 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
 using System.Speech.AudioFormat;
 using System.Speech.Synthesis;
+using System.Threading;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities.Audio.Streams;
+using YarinGeorge.Utilities.Extensions;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils.Builders;
 using YoutubeDLSharp;
+using YoutubeExplode;
+using YoutubeExplode.Channels;
+using YoutubeExplode.Common;
+using YoutubeExplode.Playlists;
+using YoutubeExplode.Search;
 
 namespace ParTboT.Commands
 {
@@ -34,13 +49,83 @@ namespace ParTboT.Commands
     public class NewCommand : BaseCommandModule
     {
         public ServicesContainer Services { private get; set; }
-        public YoutubeDL ytdl { private get; set; }
+        public YoutubeClient YouTube { private get; set; }
 
         public DiscordRole StreamersRole { get; set; }
         public static string OldName { get; set; }
         public static SpeechSynthesizer Speaker = new SpeechSynthesizer();
 
         public ClientReceivedVoice VoiceRecievedEvent { get; set; } = new ClientReceivedVoice();
+
+
+        [Command("uploads")]
+        //[Aliases("n")]
+        [Description("A new command")]
+        public async Task Uploads(CommandContext ctx, string userName)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            #region Reflection stuff
+            //MethodInfo ChannelSearchMethod =
+            //    typeof(YoutubeClient).Assembly
+            //    .GetType("YoutubeExplode.Bridge.YoutubeController")
+            //    .GetMethod("GetChannelPageAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            //ChannelSearchMethod = ChannelSearchMethod.MakeGenericMethod(ChannelSearchMethod.ReturnType);
+
+            //var res = await Task.Run(() => ChannelSearchMethod.Invoke
+            //    (Activator.CreateInstance(ChannelSearchMethod.DeclaringType, Services.HttpClient),
+            //    new object[] { $"c/{userName}", CancellationToken.None }));
+
+            //var resType = res.GetType();
+            //var resInst = Activator.CreateInstance(resType);
+
+            //string? channelId = (string?)resType.GetMethod("TryGetChannelId", BindingFlags.Public | BindingFlags.Instance).Invoke(resInst, null);
+            //string? title = (string?)resType.GetMethod("TryGetChannelTitle", BindingFlags.Public | BindingFlags.Instance).Invoke(resInst, null);
+            //string? logoUrl = (string?)resType.GetMethod("TryGetChannelLogoUrl", BindingFlags.Public | BindingFlags.Instance).Invoke(resInst, null);
+            //IReadOnlyList<Thumbnail> thumbnails = (IReadOnlyList<Thumbnail>)resType.GetMethod("CreateThumbnails", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(resInst, new object[] { logoUrl });
+
+            //Channel dchannel = new Channel(channelId, title, thumbnails);
+
+            //dchannel.Dump(); 
+            #endregion Reflection stuff
+
+            DiscordSelectComponentBuilder sb = new DiscordSelectComponentBuilder()
+                .WithPlaceholder("Choose a channel.")
+                .WithCustomID(ctx.Message.Id.ToString());
+
+            IEnumerable<ChannelSearchResult> search = (await YouTube.Search.GetChannelsAsync(userName)).DistinctBy(x => x.Id).Take(20);
+
+            foreach (ChannelSearchResult item in search)
+                sb.AddOption(new DiscordSelectComponentOptionBuilder().WithLabel(item.Title).WithValue(item.Id.Value));
+
+            DiscordMessage msg = await ctx.RespondAsync(x => x.WithContent("**__Search results:__**").AddComponents(sb)).ConfigureAwait(false);
+
+            InteractivityResult<ComponentInteractionCreateEventArgs> selection =
+                await msg.WaitForSelectAsync(ctx.User, sb.CustomID, TimeSpan.FromSeconds(40)).ConfigureAwait(false);
+
+            ChannelSearchResult channel = search.FirstOrDefault(x => x.Id == selection.Result.Values[0]);
+            string ChannelLogo = channel.Thumbnails.GetWithHighestResolution().Url;
+
+            channel.Thumbnails.Dump();
+            List<Page> pages = new List<Page>();
+            foreach (PlaylistVideo video in await YouTube.Channels.GetUploadsAsync(channel.Id))
+            {
+                Console.WriteLine(video.Thumbnails.GetWithHighestResolution().Url);
+
+                pages.Add(new Page("", new DiscordEmbedBuilder()
+                    .WithColor(DiscordColor.Red)
+                    .WithImageUrl(video.Thumbnails.GetWithHighestResolution().Url)
+                    .WithAuthor(video.Author.Title, channel.Url, (Uri.IsWellFormedUriString(ChannelLogo, UriKind.Absolute) ? ChannelLogo : null))
+                    .WithTitle(video.Title)
+                    .WithUrl(video.Url)
+                    .AddField(nameof(video.Duration), video.Duration.ToString())));
+            }
+
+            await ctx.Channel.SendPaginatedMessageAsync
+                (ctx.User, pages, PaginationBehaviour.WrapAround, ButtonPaginationBehavior.Disable)
+                .ConfigureAwait(false);
+        }
 
         [Command("captcha")]
         //[Aliases("n")]
@@ -102,7 +187,7 @@ namespace ParTboT.Commands
         [Command("reactions")]
         [Description("A new command")]
         [RequireOwner]
-        public async Task New(CommandContext ctx)
+        public async Task Reactions(CommandContext ctx)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 

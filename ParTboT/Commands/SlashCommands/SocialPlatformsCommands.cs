@@ -127,7 +127,7 @@ namespace ParTboT.Commands.SlashCommands
                 [Option("user_name_to_follow", "Name of the person/channel/anything you want to follow")]
                 string User_Name_To_Follow,
 
-                [Option("channel_to_receive_alerts_on", "The channel to send the alerts to")]
+                [Option("channel_to_receive_alerts_on", "The channel to send the alerts to"), ChannelTypes(ChannelType.Text)]
                 DiscordChannel Channel_To_Receive_Alerts_On,
 
                 [Option("custom_message", "Add a custom message alongside the alert's embed")]

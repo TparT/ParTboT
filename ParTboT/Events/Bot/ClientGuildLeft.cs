@@ -20,7 +20,7 @@ namespace ParTboT.Events.BotEvents
                     $" - Left a Guild! [ Guild name: {e.Guild.Name} | Members count: {e.Guild.MemberCount} | Guild owner: {e.Guild.Owner} ]\n"
                 );
 
-            var DeletedGuild = await Bot.Commands.Services.Get<MongoCRUD>().DeleteOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", e.Guild.Id);
+            var DeletedGuild = await ParTboT.Bot.Commands.Services.Get<MongoCRUD>().DeleteOneRecByFieldAndValueAsync<ParTboTGuildModel>("Guilds", "_id", e.Guild.Id);
             Console.WriteLine(DeletedGuild.Name + " Was deleted from the database");
 
             //var client = ParTboT.Bot.Client;

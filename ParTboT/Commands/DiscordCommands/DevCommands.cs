@@ -5,24 +5,27 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.Lavalink;
 using EasyConsole;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Newtonsoft.Json;
 using ParTboT.Services;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TwitchLib.Api.Auth;
-using TwitchLib.Api.Core.Models;
-using static ParTboT.Commands.DatabaseCommands;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis;
+using YoutubeDLSharp;
+using YoutubeDLSharp.Metadata;
+using YoutubeExplode;
+using YoutubeExplode.Search;
+using YoutubeExplode.Videos.Streams;
 
 namespace ParTboT.Commands
 {
@@ -33,6 +36,8 @@ namespace ParTboT.Commands
     public class DevCommands : BaseCommandModule
     {
         public ServicesContainer Services { private get; set; }
+        public YoutubeClient YouTube { private get; set; }
+        public YoutubeDL ytdl { private get; set; }
 
         private async Task RegisterCommands(CommandsNextExtension CNext, string CommandClassCode)
         {
@@ -129,6 +134,63 @@ namespace ParTboT.Commands
             }
         }
 
+
+        [Command("test")]
+        //[Aliases("n")]
+        [Description("A new command")]
+        public async Task Test(CommandContext ctx, [RemainingText] string search)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            Stopwatch sw = new Stopwatch();
+
+            sw.Start();
+            LavalinkExtension lava = ctx.Client.GetLavalink();
+            LavalinkNodeConnection node = lava.ConnectedNodes.Values.First();
+            LavalinkLoadResult loadResult = await node.Rest.GetTracksAsync(search).ConfigureAwait(false);
+            LavalinkTrack LavaTrack = loadResult.Tracks.First();
+            TimeSpan LavaSearchTime = sw.Elapsed;
+
+            sw.Restart();
+            ConfiguredCancelableAsyncEnumerable<VideoSearchResult>.Enumerator SearchResults =
+                (YouTube.Search.GetVideosAsync(search).ConfigureAwait(false)).GetAsyncEnumerator();
+            await SearchResults.MoveNextAsync();
+            VideoSearchResult track = SearchResults.Current;
+            TimeSpan YtExplSearchTime = sw.Elapsed;
+
+            await ctx.RespondAsync
+                (x => x.AddEmbed(new DiscordEmbedBuilder()
+                    .WithTitle($"Started benchmark for: {track.Title}")
+                    .AddField($"__Lavalink search time:__", LavaSearchTime.ToString(), true)
+                    .AddField($"__YouTubeExpload search time:__", YtExplSearchTime.ToString(), true))
+                ).ConfigureAwait(false);
+
+
+            sw.Restart();
+
+            //RunResult<VideoData> ytdlRes = await ytdl.RunVideoDataFetch(track.Url).ConfigureAwait(false);
+            //TimeSpan ytdlFetchTime = sw.Elapsed;
+            //FormatData ytdlSortRes = ytdlRes.Data.Formats.OrderByDescending(x => x.AudioBitrate).FirstOrDefault();
+            //TimeSpan ytdlSortTime = sw.Elapsed;
+
+            //sw.Restart();
+
+            StreamManifest YtExplstreamManifestRes = await YouTube.Videos.Streams.GetManifestAsync(track.Id).ConfigureAwait(false);
+            TimeSpan YtExplFetchTime = sw.Elapsed;
+            IStreamInfo YtExplSortedRes = YtExplstreamManifestRes.GetAudioOnlyStreams().GetWithHighestBitrate();
+            TimeSpan YtExplSortTime = sw.Elapsed;
+
+            sw.Stop();
+
+            DiscordEmbedBuilder BMResEmbed = new DiscordEmbedBuilder()
+                .WithTitle("**__Benchmark results are:__**")
+                .WithUrl(track.Url)
+                //.AddField($"__YoutubeDL Fetch time:__", ytdlFetchTime.ToString(), true).AddField($"__YoutubeDL Sort time:__", ytdlSortTime.ToString(), true)
+                .AddField($"__YoutubeExplode Fetch time:__", YtExplFetchTime.ToString(), false).AddField($"__YoutubeExplode Sort time:__", YtExplSortTime.ToString(), true);
+
+            await ctx.Channel.SendMessageAsync(BMResEmbed).ConfigureAwait(false);
+        }
+
         [Command("wh")]
         public async Task Webhook(CommandContext ctx, [RemainingText] string Name)
         {
@@ -141,7 +203,7 @@ namespace ParTboT.Commands
 
         [Command("twcrefresh")]
         //[Description("A new command")]
-        public async Task New(CommandContext ctx)
+        public async Task TwcRefresh(CommandContext ctx)
         {
             //await ctx.Message.DeleteAsync().ConfigureAwait(false);
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
@@ -201,7 +263,7 @@ namespace ParTboT.Commands
         [Command("unicode")]
         [Aliases("uni")]
         [Description("A new command")]
-        public async Task New(CommandContext ctx, string Unicode)
+        public async Task Unicode(CommandContext ctx, string Unicode)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 

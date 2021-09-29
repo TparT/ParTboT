@@ -72,7 +72,7 @@ namespace ParTboT.Commands
                 foreach (var page in ss.SplitToParagraphs(4000, true))
                     pages.Add(new Page(null, new DiscordEmbedBuilder().WithTitle($"Showing results for: \"{SearchWords}\"").WithUrl(PageWikiUrl).WithDescription(page)));
 
-                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, null, timeoutoverride: TimeSpan.FromMinutes(5));
+                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, null, null, timeoutoverride: TimeSpan.FromMinutes(5));
 
                 //await ctx.RespondAsync.SendPaginatedMessageAsync($"\nHere is some information about {search}:\n\n```{result}``").ConfigureAwait(false);
                 //Console.ReadKey();
@@ -132,7 +132,7 @@ namespace ParTboT.Commands
 
                 var wiki_pages = interactivity.GeneratePagesInEmbed(str.ToString(), SplitType.Line);
 
-                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, wiki_pages, null, timeoutoverride: TimeSpan.FromMinutes(5));
+                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, wiki_pages, null, null, timeoutoverride: TimeSpan.FromMinutes(5));
 
                 //await ctx.RespondAsync($"**__Results:__**\n{str}").ConfigureAwait(false);
             }

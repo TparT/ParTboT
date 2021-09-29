@@ -19,16 +19,19 @@ using YarinGeorge.Utilities.Audio.Streams;
 using YarinGeorge.Utilities.Extensions;
 using YarinGeorge.Utilities.Extensions.GeniusAPI;
 using YoutubeDLSharp;
-using YoutubeDLSharp.Metadata;
+using YoutubeExplode;
+using YoutubeExplode.Videos.Streams;
 
 namespace ParTboT.Commands
 {
     public class MusicCommands : BaseCommandModule
     {
         public ServicesContainer Services { private get; set; }
+        public YoutubeClient YouTube { private get; set; }
         public YoutubeDL ytdl { private get; set; }
 
-        [Command]
+
+        [Command, Aliases("p")]
         public async Task Play(CommandContext ctx, [RemainingText] string search)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
@@ -53,19 +56,21 @@ namespace ParTboT.Commands
                 vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
             }
 
-            var res = await ytdl.RunVideoDataFetch(track.Uri.ToString());
-            FormatData path = res.Data.Formats.OrderByDescending(x => x.AudioBitrate).FirstOrDefault();
+            var streamManifest = await YouTube.Videos.Streams.GetManifestAsync(track.Identifier);
+            var res = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+            //var res = await ytdl.RunVideoDataFetch(track.Identifier);
+            //FormatData path = res.Data.Formats.OrderByDescending(x => x.AudioBitrate).FirstOrDefault();
 
             if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out var Gplayer))
             {
                 if (Gplayer.Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer))
                 {
-                    Gplayer.QueuedSongs.Enqueue(new QueuedSong { SongData = path });
+                    Gplayer.QueuedSongs.Enqueue(new QueuedSong { Url = res.Url, Name = track.Title, Position = Gplayer.QueuedSongs.Count + 1 });
                     return;
                 }
             }
 
-            WaveStream mediaReader = new MediaFoundationReader(path.Url);
+            WaveStream mediaReader = new MediaFoundationReader(res.Url);
 
             if (mediaReader.CanRead)
             {
@@ -180,6 +185,20 @@ namespace ParTboT.Commands
             await ctx.RespondAsync($"Volume is now: {VolumeChange.Volume * 100}%").ConfigureAwait(false);
         }
 
+        [Command("bass")]
+        [Description("A new command")]
+        public async Task Bass(CommandContext ctx, float Gain = 0)
+        {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
+            MixerChannel channel = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer];
+
+            channel.Effects.Bass = Gain;
+            channel.ApplyEqEffects();
+
+            await ctx.RespondAsync($"Bass is now {channel.Effects.Bass} gain.").ConfigureAwait(false);
+        }
+
         [Command("lava")]
         //[Aliases("n")]
         [Description("A new command")]
@@ -231,19 +250,18 @@ namespace ParTboT.Commands
             var loadResult = await node.Rest.GetTracksAsync(url).ConfigureAwait(false);
             var track = loadResult.Tracks.First();
 
-            var res = await ytdl.RunVideoDataFetch(track.Uri.ToString());
-
-            FormatData path = res.Data.Formats.OrderByDescending(x => x.AudioBitrate).FirstOrDefault();
+            var streamManifest = await YouTube.Videos.Streams.GetManifestAsync(track.Identifier);
+            var res = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
             using MemoryStream audioStream = new MemoryStream();
-            using MediaFoundationReader mediaReader = new MediaFoundationReader(path.Url);
+            using MediaFoundationReader mediaReader = new MediaFoundationReader(res.Url);
             if (mediaReader.CanRead)
             {
                 mediaReader.Seek(0, SeekOrigin.Begin);
                 WaveFileWriter.WriteWavFileToStream(audioStream, mediaReader);
                 audioStream.Seek(0, SeekOrigin.Begin);
 
-                await ctx.RespondAsync(x => x.WithFile($"{res.Data.Title}.wav", audioStream).WithContent($"{res.Data.Title}:")).ConfigureAwait(false);
+                await ctx.RespondAsync(x => x.WithFile($"{track.Title}.wav", audioStream).WithContent($"{track.Title}:")).ConfigureAwait(false);
             }
         }
 

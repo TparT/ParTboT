@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.Entities;
 using IronPython;
-using IronPython.Hosting;
 using System.IO;
 using System.Diagnostics;
 using EasyConsole;
@@ -31,11 +30,9 @@ namespace ParTboT.Commands
 
             try
             {
-                var py = Python.CreateEngine();
-
                 try
                 {
-                    py.Execute("print ('From IronPython => hello world!')"); //Nzg4MzM2OTYzMzQ2MTA0MzMw.X9iCAg.BYoTfiz6WKOuVWs1ZU38IRYwAbQ
+                    //py.Execute("print ('From IronPython => hello world!')"); //Nzg4MzM2OTYzMzQ2MTA0MzMw.X9iCAg.BYoTfiz6WKOuVWs1ZU38IRYwAbQ
                 }
                 catch (Exception ex)
                 {
