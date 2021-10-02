@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BlazorThemeSwitcher" Version="2.0.0" />
+    <PackageReference Include="EasyConsole" Version="1.1.0" />
+    <PackageReference Include="Figgle" Version="0.4.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.13.1" />
+    <PackageReference Include="Serilog" Version="2.11.0-dev-01371" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1-dev-00876" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ParTboT.DbModels\ParTboT.DbModels.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="YarinGeorge.Databases.MongoDB">
+      <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Databases.MongoDB\obj\Debug\netstandard2.1\YarinGeorge.Databases.MongoDB.dll</HintPath>
+    </Reference>
+    <Reference Include="YarinGeorge.Utilities.Debugging">
+      <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Debugging\obj\Debug\netstandard2.1\YarinGeorge.Utilities.Debugging.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

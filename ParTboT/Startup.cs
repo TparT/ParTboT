@@ -1,37 +1,67 @@
-﻿using Hangfire;
-using Hangfire.Mongo;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MongoDB.Driver;
-using Owin;
-using System;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
+using DSharpPlus;
 
 namespace ParTboT
 {
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services)
+        public Startup(IConfiguration configuration)
         {
-            Console.WriteLine("hello");
+            Configuration = configuration;
         }
 
-        public void Configuration(IAppBuilder app)
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public async void ConfigureServices(IServiceCollection services)
         {
-            app.Run(context =>
+            Bot bot = new Bot();
+            services.AddSingleton(bot);
+            services.AddHostedService(s => s.GetRequiredService<Bot>());
+
+
+
+            services.AddControllers();
+            services.AddHttpClient();
+            services.AddSwaggerGen(c =>
             {
-                string t = DateTime.Now.Millisecond.ToString();
-                return context.Response.WriteAsync(t + " Test OWIN App");
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ParTboT.API", Version = "v1" });
             });
+
+            while (!bot.BotReady)
+                await Task.Delay(100);
+
+            services.AddSingleton(typeof(DiscordClient), bot.BotClient());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IRecurringJobManager recurringJobManager, MongoClient client)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            Console.WriteLine("hello");
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ParTboT.API v1"));
+            }
 
-            GlobalConfiguration.Configuration.UseMongoStorage(client, "Hangfire", new MongoStorageOptions() { CheckConnection = true }); ;
-            app.UseHangfireDashboard();
-            app.UseHangfireServer();
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+
+            app.UseAuthentication();
+            //app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

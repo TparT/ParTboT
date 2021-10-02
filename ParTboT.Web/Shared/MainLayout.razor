@@ -1,0 +1,20 @@
+﻿@inherits LayoutComponentBase
+@inject ThemeManager tm
+
+<PageTitle>ParTboT.Web</PageTitle>
+
+<div class="page @tm.GetCurrentTheme()">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="@tm.GetCurrentTheme() top-row px-4">
+            <ThemeToggle OnDarkModeToggled="(() => tm.SwitchTheme())" />
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>

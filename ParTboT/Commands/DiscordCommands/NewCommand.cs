@@ -501,14 +501,11 @@ namespace ParTboT.Commands
         [Command("streamers")]
         public async Task Streamers(CommandContext ctx)
         {
-            var client = Bot.Client;
-            var guild = client.GetGuildAsync(ctx.Guild.Id).Result;
-            var guildMembers = guild.GetAllMembersAsync().Result;
-            var guildRoles = guild.Roles.Values;
+            var guild = await ctx.Client.GetGuildAsync(ctx.Guild.Id);
             int Number = 0;
             try
             {
-                foreach (var member in guildMembers)
+                foreach (var member in await guild.GetAllMembersAsync())
                 {
                     if (member.Presence.Activity.ActivityType == ActivityType.Streaming)
                     {
@@ -516,7 +513,7 @@ namespace ParTboT.Commands
                             .ConfigureAwait(false);
                         Number++;
 
-                        foreach (DiscordRole Role in guildRoles)
+                        foreach (DiscordRole Role in guild.Roles.Values)
                         {
                             if (Role.Name == "Currently Streaming!")
                             {

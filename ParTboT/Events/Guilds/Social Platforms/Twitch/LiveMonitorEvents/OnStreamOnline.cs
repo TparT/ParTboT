@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using EasyConsole;
 using Figgle;
 using MongoDB.Bson;
@@ -19,10 +20,12 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
     public class OnStreamOnline
     {
         private ServicesContainer _services { get; set; }
+        private DiscordClient Discord;
 
-        public OnStreamOnline(ServicesContainer services)
+        public OnStreamOnline(ServicesContainer services, DiscordClient client)
         {
             _services = services;
+            Discord = client;
         }
 
         //#region EVENT: On streamer goes LIVE
@@ -46,8 +49,6 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
                 string avatar = channel.ProfileImageUrl;
                 string viewers = stream.ViewerCount.ToString();
                 string preview = $"https://static-cdn.jtvnw.net/previews-ttv/live_user_{name.ToLower()}-1920x1080.png";
-
-                var client = ParTboT.Bot.Client;
                 #endregion
 
                 #region Send to Guild channel
@@ -76,7 +77,7 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
                     try
                     {
                         DiscordChannel GuildAlertChannel =
-                            await client.GetChannelAsync(FollowingGuild.ChannelToSendTo.ChannelIDToSend).ConfigureAwait(false);
+                            await Discord.GetChannelAsync(FollowingGuild.ChannelToSendTo.ChannelIDToSend).ConfigureAwait(false);
 
                         //if (FollowingGuild.EmbedColor != 0)
                         //    embed.Color = new DiscordColor(FollowingGuild.EmbedColor);

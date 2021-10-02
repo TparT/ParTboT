@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace YarinGeorge.API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/v1/[controller]")]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
@@ -27,6 +27,7 @@ namespace YarinGeorge.API.Controllers
         public IEnumerable<WeatherForecast> Get()
         {
             var rng = new Random();
+            Console.WriteLine("");
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),

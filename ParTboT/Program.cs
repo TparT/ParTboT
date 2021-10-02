@@ -1,22 +1,17 @@
 ﻿using DSharpPlus.CommandsNext.Exceptions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Owin.Hosting;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Bson.Serialization.Options;
-using MongoDB.Bson.Serialization.Serializers;
-using ParTboT.DbModels.SocialPlatforms;
-using ParTboT.DbModels.SocialPlatforms.Shared;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+
 
 namespace ParTboT
 {
@@ -26,7 +21,7 @@ namespace ParTboT
         {
             try
             {
-                var lava = new AsyncProcess.ProcessTask(new ProcessStartInfo
+                Task<int> lava = new AsyncProcess.ProcessTask(new ProcessStartInfo
                 {
                     FileName = @"java",
                     Arguments = $@"-jar Lavalink.jar",
@@ -37,12 +32,7 @@ namespace ParTboT
                     CreateNoWindow = true
                 }, default).RunAsync();
 
-                IHostBuilder builder = CreateBuilder();
-                ConfigureServices(builder);
-                IHost builtBuilder = builder.UseConsoleLifetime().Build();
-
-                await builtBuilder.RunAsync().ConfigureAwait(false);
-
+                await CreateHostBuilder(args).Build().RunAsync().ConfigureAwait(false);
             }
             catch (DuplicateCommandException DCE)
             {
@@ -55,27 +45,15 @@ namespace ParTboT
             }
         }
 
-        private static IHostBuilder ConfigureServices(IHostBuilder builder, bool addServices = true)
-        {
-            return builder
-                .UseSerilog()
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                })
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<Bot>();
                 });
-        }
-
-        private static IHostBuilder CreateBuilder()
-        {
-            IHostBuilder? builder = Host.CreateDefaultBuilder();
-
-            builder.ConfigureAppConfiguration((_, configuration) =>
-            {
-                configuration.SetBasePath(Directory.GetCurrentDirectory());
-                configuration.AddJsonFile("appSettings.json", true, false);
-                configuration.AddUserSecrets<Bot>(true, false);
-            });
-            return builder;
-        }
     }
 }

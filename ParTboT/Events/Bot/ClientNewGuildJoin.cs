@@ -19,11 +19,9 @@ namespace ParTboT.Events.BotEvents
                     $" Joined a new Guild! [ Guild name: {e.Guild.Name} | Members count: {e.Guild.MemberCount} | Guild owner: {e.Guild.Owner} ]\n"
                 );
 
-            var client = ParTboT.Bot.Client;
-
-            var BotName = client.CurrentUser.Username;
-            var NumberOfGuilds = client.Guilds.Count;
-            var Guilds = client.Guilds;
+            var BotName = sender.CurrentUser.Username;
+            var NumberOfGuilds = sender.Guilds.Count;
+            var Guilds = sender.Guilds;
 
             var TotalMembersInAllGuilds = 0;
 

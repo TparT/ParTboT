@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DSharpPlus;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using ParTboT.DbModels.SocialPlatforms;
 using ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents;
@@ -21,7 +22,7 @@ namespace ParTboT.Services
             Log.Information("[Twitch service] Livemonitor service registered!");
         }
 
-        public async Task ConfigLiveMonitorAsync()
+        public async Task ConfigLiveMonitorAsync(DiscordClient client)
         {
             try
             {
@@ -34,7 +35,7 @@ namespace ParTboT.Services
 
                 _services.LiveMonitorService.SetChannelsById(Streamers);
 
-                OnStreamOnline onStreamOnline = new OnStreamOnline(_services);
+                OnStreamOnline onStreamOnline = new OnStreamOnline(_services, client);
                 OnStreamOffline onStreamOffline = new OnStreamOffline(_services);
                 OnMonitorServiceStarted onServiceStarted = new OnMonitorServiceStarted(_services);
                 OnMonitorUpdate onMonitorUpdate = new OnMonitorUpdate(_services);

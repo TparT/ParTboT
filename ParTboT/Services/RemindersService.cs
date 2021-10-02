@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DSharpPlus;
 using NetMQ;
 using ParTboT.DbModels.ParTboTModels;
 using Serilog;
@@ -19,7 +19,7 @@ namespace ParTboT.Services
             Log.Information("[Reminders service] Reminders service registered!");
         }
 
-        public async Task<NetMQTimer> StartRemindersServiceAsync(TimeSpan Interval)
+        public async Task<NetMQTimer> StartRemindersServiceAsync(TimeSpan Interval, DiscordClient client)
         {
             NetMQTimer RemindersTimer = new(Interval);
             RemindersTimer.Elapsed += async (s, e) =>
@@ -35,7 +35,7 @@ namespace ParTboT.Services
                         Log.Information($"[Reminders service] {Filtered.Count} reminders have been triggered!");
                         Filtered.ForEach(async x =>
                         {
-                            await (await Bot.Client.GetChannelAsync(x.ChannelToSendTo).ConfigureAwait(false))
+                            await (await client.GetChannelAsync(x.ChannelToSendTo).ConfigureAwait(false))
                             .SendMessageAsync($"Hey there {x.MemberToRemindTo.MentionString}! On the {x.RequestedAt} , you wanted me to remind you about the following:\n\n{x.Description}")
                             .ConfigureAwait(false);
                         });

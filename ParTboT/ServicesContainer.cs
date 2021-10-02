@@ -229,15 +229,15 @@ namespace ParTboT
             return this;
         }
 
-        public async Task StartServicesAsync(bool TwitchMonitor = true, bool TwitterMonitor = true, bool Reminders = true)
+        public async Task StartServicesAsync(DiscordClient client, bool TwitchMonitor = true, bool TwitterMonitor = true, bool Reminders = true)
         {
             NetMQPoller netMQPoller = new();
             if (TwitchMonitor)
-                await Task.Run(async () => await LiveMonitor.ConfigLiveMonitorAsync().ConfigureAwait(false)).ConfigureAwait(false);
+                await Task.Run(async () => await LiveMonitor.ConfigLiveMonitorAsync(client).ConfigureAwait(false)).ConfigureAwait(false);
             if (TwitterMonitor)
-                netMQPoller.Add(await TweetsService.StartTweetsService(TimeSpan.FromMinutes(1)).ConfigureAwait(false));
+                netMQPoller.Add(await TweetsService.StartTweetsService(TimeSpan.FromMinutes(1), client).ConfigureAwait(false));
             if (Reminders)
-                netMQPoller.Add(await RemindersService.StartRemindersServiceAsync(TimeSpan.FromMinutes(1)).ConfigureAwait(false));
+                netMQPoller.Add(await RemindersService.StartRemindersServiceAsync(TimeSpan.FromMinutes(1), client).ConfigureAwait(false));
 
             netMQPoller.Run();
         }

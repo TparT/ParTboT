@@ -13,6 +13,9 @@ namespace ParTboT.DbModels.SocialPlatforms.Shared
         public ChannelToSendTo ChannelToSendTo { get; set; } // with the new update?
         public DateTime DateTimeStartedFollowing { get; set; }
         public CustomFollowageMessage MessageCustomizationsSettings { get; set; }
+
+        [BsonIgnore]
+        public bool IsEditing { get; set; }
         //public int EmbedColor { get; set; } = 0;
     }
 }

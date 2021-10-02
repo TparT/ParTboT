@@ -1,4 +1,5 @@
-﻿using DSharpPlus.Entities;
+﻿using DSharpPlus;
+using DSharpPlus.Entities;
 using EasyConsole;
 using NetMQ;
 using ParTboT.DbModels.SocialPlatforms;
@@ -26,7 +27,7 @@ namespace ParTboT.Services
             Log.Information("[Tweets service] Tweets service registered!");
         }
 
-        public async Task<NetMQTimer> StartTweetsService(TimeSpan Interval)
+        public async Task<NetMQTimer> StartTweetsService(TimeSpan Interval, DiscordClient client)
         {
             TwitterClient Client = _services.TwitterClient;
 
@@ -42,7 +43,7 @@ namespace ParTboT.Services
 
             try
             {
-                TweetsStream.MatchingTweetReceived += HandleNewTweetEvent;
+                TweetsStream.MatchingTweetReceived += (s, e) => HandleNewTweetEvent(s, e, client);
                 TweetsStream.StartMatchingAllConditionsAsync();
                 //Console.WriteLine("reached");
             }
@@ -56,7 +57,7 @@ namespace ParTboT.Services
             return UpdateTimer;
         }
 
-        private async void HandleNewTweetEvent(object sender, MatchedTweetReceivedEventArgs e)
+        private async void HandleNewTweetEvent(object sender, MatchedTweetReceivedEventArgs e, DiscordClient client)
         {
             //if (e.Tweet.CreatedBy == e.Tweet.)
             //Output.WriteLine(ConsoleColor.Cyan, $"\nNew tweet was posted by {e.Tweet.CreatedBy.ScreenName}!\n\nTweet text was:\n{e.Tweet.Text}");
@@ -80,7 +81,7 @@ namespace ParTboT.Services
 
                 foreach (FollowingGuild Guild in tweeter.FollowingGuilds.Values)
                 {
-                    await (await Bot.Client.GetChannelAsync(Guild.ChannelToSendTo.ChannelIDToSend).ConfigureAwait(false))
+                    await (await client.GetChannelAsync(Guild.ChannelToSendTo.ChannelIDToSend).ConfigureAwait(false))
                         .SendMessageAsync(Guild.ChannelToSendTo.CustomMessage, TweetEmbed).ConfigureAwait(false);
                 }
             }

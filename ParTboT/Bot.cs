@@ -1,5 +1,4 @@
-﻿using AsyncProcess;
-using DSharpPlus;
+﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -12,10 +11,13 @@ using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
 using DSharpPlus.VoiceNext;
 using EasyConsole;
+using Emzi0767.Utilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ParTboT.Commands;
 using ParTboT.Commands.SlashCommands;
+using ParTboT.Events.Bot;
 using ParTboT.Events.BotEvents;
 using ParTboT.Events.GuildEvents.GuildMembers;
 using Serilog;
@@ -25,30 +27,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using YarinGeorge.Utilities.Debugging;
-using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
-using YoutubeExplode;
-using YoutubeDLSharp;
-using ParTboT.Events.Bot;
-using Microsoft.Extensions.Hosting;
 using System.Threading;
+using System.Threading.Tasks;
+using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
+using YoutubeDLSharp;
+using YoutubeExplode;
 
 namespace ParTboT
 {
-    public class Bot : IHostedService
+    public class Bot : BackgroundService
     {
         #region GET-SET
 
         public const string LogFormat = "[{Timestamp:h:mm:ss ff tt}] [{Level:u3}] [{SourceContext}] {Message:lj} {Exception:j}{NewLine}";
 
         public ServicesContainer Services { get; private set; }
+        public bool BotReady { get; private set; }
         public static ConcurrentDictionary<ulong, PagedMessage> PagedMessagesPool { get; set; } = new();
         public static DateTime UpTime { get; private set; }
-        public static DiscordClient Client { get; private set; }
+        public DiscordClient Client { get; private set; }
         public static CommandsNextExtension Commands { get; private set; }
         public static string[] DefaultPrefixes { get; private set; }
         public VoiceNextExtension Voice { get; private set; }
@@ -61,7 +58,7 @@ namespace ParTboT
 
         #region BOT SETUP
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             #region BOT SETUP AND CONFIG
 
@@ -255,26 +252,30 @@ namespace ParTboT
             UpTime = DateTime.Now;
 
             #region Slash commands
-            var slash = Client.UseSlashCommands(new SlashCommandsConfiguration() { Services = services });
-            slash.SlashCommandErrored += Slash_SlashCommandErrored;
+            if (true)
+            {
+                var slash = Client.UseSlashCommands(new SlashCommandsConfiguration() { Services = services });
+                slash.SlashCommandErrored += Slash_SlashCommandErrored;
 
-            slash.RegisterCommands<FunSCommands>(745008583178977370);
+                slash.RegisterCommands<FunSCommands>(745008583178977370);
 
-            slash.RegisterCommands<GamesSCommands>(745008583178977370);
-            slash.RegisterCommands<GamesSCommands>(778975635514982421);
+                slash.RegisterCommands<GamesSCommands>(745008583178977370);
+                slash.RegisterCommands<GamesSCommands>(778975635514982421);
 
-            slash.RegisterCommands<UtilsSCommands>(745008583178977370);
-            slash.RegisterCommands<MusicSCommands>(745008583178977370);
-            //slash.RegisterCommands<Reminders>(745008583178977370);
+                slash.RegisterCommands<UtilsSCommands>(745008583178977370);
+                slash.RegisterCommands<MusicSCommands>(745008583178977370);
+                //slash.RegisterCommands<Reminders>(745008583178977370);
 
-            slash.RegisterCommands<SocialPlatformsCommands>(745008583178977370);
-            slash.RegisterCommands<SocialPlatformsCommands>(778975635514982421);
+                slash.RegisterCommands<SocialPlatformsCommands>(745008583178977370);
+                slash.RegisterCommands<SocialPlatformsCommands>(778975635514982421);
 
-            slash.RegisterCommands<ChannelSCommands>(745008583178977370);
-            slash.RegisterCommands<TestCommands>(745008583178977370);
+                slash.RegisterCommands<ChannelSCommands>(745008583178977370);
+                slash.RegisterCommands<TestCommands>(745008583178977370);
 
-            //slash.RegisterCommands<EditChannel>(745008583178977370);
-            slash.RegisterCommands<MainSlashCommandsContainer>(745008583178977370);
+                //slash.RegisterCommands<EditChannel>(745008583178977370);
+                slash.RegisterCommands<MainSlashCommandsContainer>(745008583178977370);
+            }
+
             #endregion
 
             #region Lavalink
@@ -302,10 +303,13 @@ namespace ParTboT
             LoggingChannel = await Client.GetChannelAsync(864128561728454666).ConfigureAwait(false);
 
             await Task.Run(async () => StatsTrack());
-            await Services.StartServicesAsync(true, true, true);
+            await Services.StartServicesAsync(Client, false, true, true);
 
-            await Task.Delay(-1);
+            BotReady = true;
+            //await Task.Delay(-1);
         }
+
+        public DiscordClient BotClient() => Client;
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {

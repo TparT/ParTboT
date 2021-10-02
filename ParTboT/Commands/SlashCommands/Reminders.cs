@@ -17,7 +17,7 @@ namespace ParTboT.Commands.SlashCommands
             public async Task Execute(IJobExecutionContext context)
             {
                 //throw new NotImplementedException();
-                await (await ParTboT.Bot.Client.GetChannelAsync(ulong.Parse(context.JobDetail.JobDataMap.GetString("ChannelID"))).ConfigureAwait(false)).SendMessageAsync(context.JobDetail.Description).ConfigureAwait(false);
+                //await (await ParTboT.Bot.Client.GetChannelAsync(ulong.Parse(context.JobDetail.JobDataMap.GetString("ChannelID"))).ConfigureAwait(false)).SendMessageAsync(context.JobDetail.Description).ConfigureAwait(false);
             }
         }
     }
