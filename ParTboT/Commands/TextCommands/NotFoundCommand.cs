@@ -1,8 +1,7 @@
 ﻿using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Exceptions;
 using System.Threading.Tasks;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     public class CommandErrorEventArgs : CommandEventArgs
     {

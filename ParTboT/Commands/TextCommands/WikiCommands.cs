@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using YarinGeorge.Utilities.Extensions;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("wiki")]
     [Description("search for information around on some of the wikimedia websites")]

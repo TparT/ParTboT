@@ -19,11 +19,10 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities;
-using YarinGeorge.Utilities.Extensions;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 using YarinGeorge.Utilities.Twitch.BttvFzz;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     public class UtilitiesCommands : BaseCommandModule
     {

@@ -20,23 +20,18 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Net.Http;
-using System.Reflection;
 using System.Speech.AudioFormat;
 using System.Speech.Synthesis;
-using System.Threading;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities.Audio.Streams;
 using YarinGeorge.Utilities.Extensions;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils.Builders;
-using YoutubeDLSharp;
 using YoutubeExplode;
-using YoutubeExplode.Channels;
 using YoutubeExplode.Common;
 using YoutubeExplode.Playlists;
 using YoutubeExplode.Search;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     public class DBGuild
     {

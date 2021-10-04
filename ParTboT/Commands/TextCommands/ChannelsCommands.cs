@@ -3,7 +3,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System.Threading.Tasks;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("channel")]
     public class ChannelsCommands : BaseCommandModule

@@ -10,8 +10,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using YarinGeorge.ApiClients.TrackerGG;
 using YarinGeorge.ApiClients.TrackerGG.StatsModels;
-using YarinGeorge.Games;
-//using YarinGeorge.Games.GamesHub;
 using YarinGeorge.Games.TicTacToe;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 

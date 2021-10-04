@@ -1,11 +1,9 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using System.IO.Ports;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("led")]
     [Description("Controls the ON/OFF state of the arduino LED.")]

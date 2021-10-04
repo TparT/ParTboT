@@ -6,7 +6,6 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using MoreLinq;
-//using OpenTriviaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;

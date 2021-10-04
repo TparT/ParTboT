@@ -5,12 +5,12 @@ using DSharpPlus.Entities;
 using DSharpPlus.VoiceNext;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using NodaTime;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using NodaTime;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     // THIS COMMAND WAS RIPPED FROM VelvetThePanda which ripped it from Emzi0767#1837.
     public class EvalCommand : BaseCommandModule

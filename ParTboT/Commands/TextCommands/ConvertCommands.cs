@@ -1,14 +1,12 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using MarkGwilliam.com.Framework.Convert;
-using Newtonsoft.Json;
 using System;
-using System.Net;
 using System.Threading.Tasks;
 using YarinGeorge.ApiClients.CurrencyConverter.Enums;
 
 #pragma warning disable CS3016 // Arrays as attribute arguments is not CLS-compliant
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("convert")]
     [Aliases("conv")]

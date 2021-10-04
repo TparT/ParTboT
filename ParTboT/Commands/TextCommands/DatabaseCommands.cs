@@ -1,24 +1,17 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
-using Newtonsoft.Json.Linq;
+using ParTboT.DbModels.SocialPlatforms.CustomMessages;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YarinGeorge.Databases.MongoDB.Types;
-using YarinGeorge.Databases.MongoDB.Extensions;
-using YarinGeorge.Utilities.Extensions;
-using ParTboT.DbModels.SocialPlatforms.CustomMessages;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("database")]
     [Aliases("db")]

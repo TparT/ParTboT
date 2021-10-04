@@ -1,5 +1,4 @@
-﻿using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
@@ -15,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     public class FunCommands : BaseCommandModule
     {

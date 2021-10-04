@@ -1,10 +1,9 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using System;
-using System.Threading.Tasks;
 using org.mariuszgromada.math.mxparser;
+using System.Threading.Tasks;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("math")]
     public class MathCommands : BaseCommandModule

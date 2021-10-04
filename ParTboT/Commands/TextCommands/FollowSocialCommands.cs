@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using TwitchLib.Api.V5.Models.Users;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("follow")]
     public class FollowSocialCommands : BaseCommandModule

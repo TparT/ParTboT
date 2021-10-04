@@ -2,7 +2,7 @@
 using DSharpPlus.CommandsNext.Attributes;
 using System.Threading.Tasks;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     public class TestCog : BaseCommandModule
     {

@@ -22,7 +22,7 @@ using YoutubeDLSharp;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     public class MusicCommands : BaseCommandModule
     {

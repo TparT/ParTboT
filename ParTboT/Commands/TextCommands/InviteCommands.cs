@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("invite")]
     [Description("Invite people to this server using these commands!")]

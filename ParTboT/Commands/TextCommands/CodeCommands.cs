@@ -1,17 +1,13 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using System.IO.Ports;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using DSharpPlus.Entities;
-using IronPython;
-using System.IO;
-using System.Diagnostics;
 using EasyConsole;
 using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("code")]
     public class CodeCommands : BaseCommandModule
@@ -61,7 +57,7 @@ namespace ParTboT.Commands
                         //Output.WriteLine
                         //    (cmd.StandardOutput.ReadToEnd());
 
-                        
+
                     }
                 }
 
@@ -77,13 +73,13 @@ namespace ParTboT.Commands
 
                     ).ConfigureAwait(false);*/
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 //Output = LocalEncoding.GetString(errors.ToArray());
 
                 await ctx.RespondAsync
                     (
-                        
+
                         $"**__ERRORS:__**" +
                         $"\n```py\n" +
                         $"{ex.ToString()}" +

@@ -1,24 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using DSharpPlus;
-using DSharpPlus.CommandsNext;
+﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.CommandsNext.Exceptions;
-using DSharpPlus.Entities;
 using EasyConsole;
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
 using Renci.SshNet;
-using Serilog.Core;
-using SshNet;
+using System;
+using System.Threading.Tasks;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("ssh"), Aliases("")]
     [Description("Commands for controlling linux machines using the SSH protocol.")]

@@ -1,13 +1,13 @@
 ﻿using DSharpPlus.CommandsNext;
-using DSharpPlus.Exceptions;
 using DSharpPlus.CommandsNext.Attributes;
-using System.Threading.Tasks;
 using DSharpPlus.Entities;
+using DSharpPlus.Exceptions;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     [Group("clear")]
     [RequirePermissions(DSharpPlus.Permissions.ManageMessages)]

@@ -3,7 +3,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using ParTboT.Services;
 using System.Threading.Tasks;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
     public class FixCommand : BaseCommandModule
     {

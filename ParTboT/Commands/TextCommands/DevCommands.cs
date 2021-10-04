@@ -22,12 +22,11 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using TwitchLib.Api.Auth;
 using YoutubeDLSharp;
-using YoutubeDLSharp.Metadata;
 using YoutubeExplode;
 using YoutubeExplode.Search;
 using YoutubeExplode.Videos.Streams;
 
-namespace ParTboT.Commands
+namespace ParTboT.Commands.TextCommands
 {
 
     [Description("Private developer commands.")]
