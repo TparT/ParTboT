@@ -9,7 +9,10 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using ParTboT.DbModels.ParTboTModels;
 using ParTboT.DbModels.PartialModels;
+using ParTboT.DbModels.Shared;
 using ParTboT.DbModels.SocialPlatforms;
+using ParTboT.DbModels.SocialPlatforms.CustomMessages;
+using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +22,6 @@ using Tweetinvi.Models;
 using TwitchLib.Api.Helix.Models.Search;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils.Builders;
-using ParTboT.DbModels.SocialPlatforms.CustomMessages;
-using ParTboT.DbModels.SocialPlatforms.Shared;
-using ParTboT.DbModels.Shared;
 
 namespace ParTboT.Commands.SlashCommands
 {
