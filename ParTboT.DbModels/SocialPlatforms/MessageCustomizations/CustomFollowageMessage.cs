@@ -1,18 +1,20 @@
 ﻿using DSharpPlus.Entities;
-using System;
+using MongoDB.Bson.Serialization.Attributes;
+using ParTboT.DbModels.PartialModels;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ParTboT.DbModels.SocialPlatforms.MessageCustomizations
+namespace ParTboT.DbModels.SocialPlatforms.CustomMessages
 {
-    public interface CustomFollowageMessage
+    public record CustomFollowageMessage
     {
+        public PartialChannel ChannelToSendTo { get; set; }
         public string CustomText { get; set; }
         public int EmbedColor { get; set; }
         public bool ShowProfilePicture { get; set; }
         public bool SetEmbedTitleLinkToTheRelevantThing { get; set; }
         public List<DiscordEmoji> DummyReactions { get; set; }
+
+        [BsonIgnore]
+        public bool IsEditing { get; set; }
     }
 }

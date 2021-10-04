@@ -1,8 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 
 namespace ParTboT.DbModels.ParTboTModels
 {

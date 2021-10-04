@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using YarinGeorge.Databases.MongoDB.Types;
 using YarinGeorge.Databases.MongoDB.Extensions;
 using YarinGeorge.Utilities.Extensions;
+using ParTboT.DbModels.SocialPlatforms.CustomMessages;
 
 namespace ParTboT.Commands
 {
@@ -167,7 +168,7 @@ namespace ParTboT.Commands
             //    Dict = dict.ToBsonDocument()
             //};
             //new BsonDocumentSerializer().
-            var res = await col.UpdateOneAsync(x => x.Id == Key, Builders<TestModel>.Update.Set(x => x.Dict[Key2], (object)new FollowingGuild { GuildNameToSend = ctx.Guild.Name, GuildIDToSend = ctx.Guild.Id, DateTimeStartedFollowing = DateTime.UtcNow }));
+            //var res = await col.UpdateOneAsync(x => x.Id == Key, Builders<TestModel>.Update.Set(x => x.Dict[Key2], (object)new FollowingGuild<TwitchCustomMessage>> { GuildNameToSend = ctx.Guild.Name, GuildIDToSend = ctx.Guild.Id, DateTimeStartedFollowing = DateTime.UtcNow }));
 
             //var res =
             //    await col.AddItemOrUpdateValueAsync
@@ -185,14 +186,15 @@ namespace ParTboT.Commands
             //if (map.TryGetValue(Key2, out TestModel value))
             //    await ctx.Channel.SendMessageAsync(value.).ConfigureAwait(false);
 
-            await ctx.Channel.SendMessageAsync($"{JObject.FromObject(res)}").ConfigureAwait(false);
+            //await ctx.Channel.SendMessageAsync($"{JObject.FromObject(res)}").ConfigureAwait(false);
         }
 
         public record TestModel
         {
             [BsonId]
             public string Id { get; set; }
-            public MongoDictionary<string, FollowingGuild> Dict { get; set; }
+            public MongoDictionary<string, FollowingGuild<TwitchCustomMessage>> Dict { get; set; }
+
         }
 
         public class StreamersModule

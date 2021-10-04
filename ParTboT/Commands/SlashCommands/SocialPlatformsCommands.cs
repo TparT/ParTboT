@@ -8,18 +8,20 @@ using EasyConsole;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using ParTboT.DbModels.ParTboTModels;
+using ParTboT.DbModels.PartialModels;
 using ParTboT.DbModels.SocialPlatforms;
-using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Tweetinvi.Models;
-using TwitchLib.Api;
 using TwitchLib.Api.Helix.Models.Search;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils.Builders;
+using ParTboT.DbModels.SocialPlatforms.CustomMessages;
+using ParTboT.DbModels.SocialPlatforms.Shared;
+using ParTboT.DbModels.Shared;
 
 namespace ParTboT.Commands.SlashCommands
 {
@@ -216,32 +218,35 @@ namespace ParTboT.Commands.SlashCommands
                                         IMongoCollection<TwitchStreamer> col = await Services.MongoDB.GetCollectionAsync<TwitchStreamer>(Services.Config.LocalMongoDB_Streamers);
                                         (bool Exists, TwitchStreamer FoundRecord) StreamerRecord = await Services.MongoDB.DoesExistAsync<TwitchStreamer>(col, "_id", FirstMatch.Id);
 
-                                        ChannelToSendTo CHupdate = new ChannelToSendTo
+                                        PartialChannel CHupdate = new PartialChannel
                                         {
-                                            ChannelIDToSend = Channel_To_Receive_Alerts_On.Id,
-                                            ChannelNameToSend = Channel_To_Receive_Alerts_On.Name,
-                                            CustomMessage = Custom_Message,
-                                            DateTimeSetThisAlertsChannel = DateTime.UtcNow
+                                            Id = Channel_To_Receive_Alerts_On.Id,
+                                            Name = Channel_To_Receive_Alerts_On.Name
                                         };
 
-                                        FollowingGuild GUupdate = new FollowingGuild
+                                        FollowingGuild<TwitchCustomMessage> GUupdate = new FollowingGuild<TwitchCustomMessage>
                                         {
-                                            GuildIDToSend = ctx.Guild.Id,
-                                            GuildNameToSend = ctx.Guild.Name,
-                                            ChannelToSendTo = CHupdate,
+                                            Id = ctx.Guild.Id,
+                                            Name = ctx.Guild.Name,
+                                            CustomMessage = new TwitchCustomMessage
+                                            {
+                                                ChannelToSendTo = CHupdate,
+                                                CustomText = Custom_Message,
+                                            },
+                                            Owner = new Mention(ctx.Guild.Owner.Id, ctx.Guild.Owner.Mention),
+                                            Everyone = new Mention(ctx.Guild.EveryoneRole.Id, ctx.Guild.EveryoneRole.Mention),
                                             DateTimeStartedFollowing = DateTime.UtcNow
                                         };
-
                                         if (StreamerRecord.Exists == true)
                                         {
-                                            if (StreamerRecord.FoundRecord.FollowingGuilds.TryGetValue(GuildIdString, out FollowingGuild followingGuild)) // If guild is following the streamer
+                                            if (StreamerRecord.FoundRecord.FollowingGuilds.TryGetValue(GuildIdString, out FollowingGuild<TwitchCustomMessage> followingGuild)) // If guild is following the streamer
                                             {
                                                 DiscordEmbedBuilder OverWriteEmbed = new DiscordEmbedBuilder()
                                                     .WithTitle($"You are already following {FirstMatch.DisplayName}'s channel.")
                                                     .WithDescription($"__Here are the current followage settings for {FirstMatch.DisplayName}:__\n" +
-                                                                     $"**Alerts channel name:** {followingGuild.ChannelToSendTo.ChannelNameToSend}\n" +
-                                                                     $"**Alerts channel ID:** {followingGuild.ChannelToSendTo.ChannelIDToSend}\n" +
-                                                                     $"**Custom message:** {followingGuild.ChannelToSendTo.CustomMessage}\n\n" +
+                                                                     $"**Alerts channel name:** {followingGuild.CustomMessage.ChannelToSendTo.Name}\n" +
+                                                                     $"**Alerts channel ID:** {followingGuild.CustomMessage.ChannelToSendTo.Id}\n" +
+                                                                     $"**Custom message:** {followingGuild.CustomMessage.CustomText}\n\n" +
                                                                      $"Would you like to over-write these settings?")
                                                     .WithFooter($"These settings were made on {followingGuild.DateTimeStartedFollowing}")
                                                     .WithColor(TwitchColor); // Purple
@@ -314,7 +319,7 @@ namespace ParTboT.Commands.SlashCommands
                                                 // Add the guild to the 'FollowingGuilds' list along with the channel that was requested to add.
                                                 Builders<TwitchStreamer>.Filter.Eq(x => x._id, FirstMatch.Id);
 
-                                                UpdateDefinition<TwitchStreamer> update = Builders<TwitchStreamer>.Update.Push(x => x.FollowingGuilds, new KeyValuePair<string, FollowingGuild>(GuildIdString, GUupdate));
+                                                UpdateDefinition<TwitchStreamer> update = Builders<TwitchStreamer>.Update.Push(x => x.FollowingGuilds, new KeyValuePair<string, FollowingGuild<TwitchCustomMessage>>(GuildIdString, GUupdate));
                                                 TwitchStreamer result = await col.FindOneAndUpdateAsync(SecondFilter, update);
 
                                                 await (await Services.MongoDB.GetCollectionAsync<ParTboTGuildModel>("Guilds").ConfigureAwait(false))
@@ -339,7 +344,7 @@ namespace ParTboT.Commands.SlashCommands
                                                 StreamerName = FirstMatch.DisplayName,
                                                 ChannelURL = $"{TwitchChannelBaseLink}{FirstMatch.DisplayName}",
                                                 ChannelIconURL = FirstMatch.ThumbnailUrl,
-                                                FollowingGuilds = new Dictionary<string, FollowingGuild>() { { GuildIdString, GUupdate } },
+                                                FollowingGuilds = new Dictionary<string, FollowingGuild<TwitchCustomMessage>>() { { GuildIdString, GUupdate } },
                                                 DateTimeAddedToTheDatabase = DateTime.UtcNow
                                             };
 
@@ -442,34 +447,38 @@ namespace ParTboT.Commands.SlashCommands
                                     IMongoCollection<TwitterTweeter> col = await Services.MongoDB.GetCollectionAsync<TwitterTweeter>("Tweeters");
                                     (bool Exists, TwitterTweeter FoundRecord) TweeterRecord = await Services.MongoDB.DoesExistAsync<TwitterTweeter>(col, "_id", FirstMatch.IdStr);
 
-                                    ChannelToSendTo CHupdate = new ChannelToSendTo
+                                    PartialChannel CHupdate = new PartialChannel
                                     {
-                                        ChannelIDToSend = Channel_To_Receive_Alerts_On.Id,
-                                        ChannelNameToSend = Channel_To_Receive_Alerts_On.Name,
-                                        CustomMessage = Custom_Message,
-                                        DateTimeSetThisAlertsChannel = DateTime.UtcNow
+                                        Id = Channel_To_Receive_Alerts_On.Id,
+                                        Name = Channel_To_Receive_Alerts_On.Name
                                     };
 
-                                    FollowingGuild GUupdate = new FollowingGuild
+                                    FollowingGuild<TwitterCustomMessage> GUupdate = new FollowingGuild<TwitterCustomMessage>
                                     {
-                                        GuildIDToSend = ctx.Guild.Id,
-                                        GuildNameToSend = ctx.Guild.Name,
-                                        ChannelToSendTo = CHupdate,
+                                        Id = ctx.Guild.Id,
+                                        Name = ctx.Guild.Name,
+                                        CustomMessage = new TwitterCustomMessage
+                                        {
+                                            ChannelToSendTo = CHupdate,
+                                            CustomText = Custom_Message,
+                                        },
+                                        Owner = new Mention(ctx.Guild.Owner.Id, ctx.Guild.Owner.Mention),
+                                        Everyone = new Mention(ctx.Guild.EveryoneRole.Id, ctx.Guild.EveryoneRole.Mention),
                                         DateTimeStartedFollowing = DateTime.UtcNow
                                     };
 
                                     if (TweeterRecord.Exists == true)
                                     {
-                                        if (TweeterRecord.FoundRecord.FollowingGuilds.TryGetValue(GuildIdString, out FollowingGuild followingGuild)) // If guild is following the streamer
+                                        if (TweeterRecord.FoundRecord.FollowingGuilds.TryGetValue(GuildIdString, out FollowingGuild<TwitterCustomMessage> followingGuild)) // If guild is following the streamer
                                         {
 
                                             DiscordMessage b = await ctx.Channel.GetMessageAsync(ConfirmingMessage.Id).ConfigureAwait(false);
                                             DiscordEmbedBuilder OverWriteEmbed = new DiscordEmbedBuilder()
                                                 .WithTitle($"You are already following {FirstMatch.Name}'s Twitter page.")
                                                 .WithDescription($"__Here are the current followage settings for {FirstMatch.Name}:__\n" +
-                                                                 $"**Alerts channel name:** {followingGuild.ChannelToSendTo.ChannelNameToSend}\n" +
-                                                                 $"**Alerts channel ID:** {followingGuild.ChannelToSendTo.ChannelIDToSend}\n" +
-                                                                 $"**Custom message:** {followingGuild.ChannelToSendTo.CustomMessage}\n" +
+                                                                 $"**Alerts channel name:** {followingGuild.CustomMessage.ChannelToSendTo.Name}\n" +
+                                                                 $"**Alerts channel ID:** {followingGuild.CustomMessage.ChannelToSendTo.Id}\n" +
+                                                                 $"**Custom message:** {followingGuild.CustomMessage.CustomText}\n" +
                                                                  $"\nWould you like to over-write these settings?")
                                                 .WithFooter($"These settings were made on {followingGuild.DateTimeStartedFollowing}")
                                                 .WithColor(TwitterColor); // Twitter blue
@@ -552,7 +561,7 @@ namespace ParTboT.Commands.SlashCommands
                                             // Add the guild to the 'FollowingGuilds' list along with the channel that was requested to add.
                                             Builders<TwitterTweeter>.Filter.Eq(x => x._id, FirstMatch.Id);
 
-                                            UpdateDefinition<TwitterTweeter> update = Builders<TwitterTweeter>.Update.Push(x => x.FollowingGuilds, new KeyValuePair<string, FollowingGuild>(GuildIdString, GUupdate));
+                                            UpdateDefinition<TwitterTweeter> update = Builders<TwitterTweeter>.Update.Push(x => x.FollowingGuilds, new KeyValuePair<string, FollowingGuild<TwitterCustomMessage>>(GuildIdString, GUupdate));
                                             TwitterTweeter result = await col.FindOneAndUpdateAsync(SecondFilter, update);
 
                                             FinalEmbed
@@ -573,7 +582,7 @@ namespace ParTboT.Commands.SlashCommands
                                             TweeterAccountName = FirstMatch.Name,
                                             UserPageURL = $"{TwitterBaseLink}{FirstMatch.ScreenName}",
                                             UserProfileImgURL = FirstMatch.ProfileImageUrlFullSize,
-                                            FollowingGuilds = new Dictionary<string, FollowingGuild>() { { GuildIdString, GUupdate } },
+                                            FollowingGuilds = new Dictionary<string, FollowingGuild<TwitterCustomMessage>>() { { GuildIdString, GUupdate } },
                                             DateTimeAddedToTheDatabase = DateTime.UtcNow
                                         };
 
@@ -731,16 +740,16 @@ namespace ParTboT.Commands.SlashCommands
                 await Services.MongoDB.LoadOneRecByFieldAndValueAsync<TwitchStreamer>
                 (Services.Config.LocalMongoDB_Streamers, "_id", Selection);
 
-            FollowingGuild FollowageConfig = StreamerRecord.FollowingGuilds[GuildIdStr];
+            FollowingGuild<TwitchCustomMessage> FollowageConfig = StreamerRecord.FollowingGuilds[GuildIdStr];
 
             TwitchStreamer SelectedStreamer = FollowedStreamers.FirstOrDefault(x => x._id == Selection);
 
             DiscordEmbedBuilder SettingsInfoEmbed = new DiscordEmbedBuilder()
                     .WithTitle($"__Here are the current followage settings for {Formatter.Sanitize(SelectedStreamer.StreamerName)}:__")
                     .WithThumbnail(SelectedStreamer.ChannelIconURL)
-                    .WithDescription($"**Alerts channel name:** {FollowageConfig.ChannelToSendTo.ChannelNameToSend}\n" +
-                                     $"**Alerts channel ID:** {FollowageConfig.ChannelToSendTo.ChannelIDToSend}\n" +
-                                     $"**Custom message:** {FollowageConfig.ChannelToSendTo.CustomMessage}\n\n" +
+                    .WithDescription($"**Alerts channel name:** {FollowageConfig.CustomMessage.ChannelToSendTo.Name}\n" +
+                                     $"**Alerts channel ID:** {FollowageConfig.CustomMessage.ChannelToSendTo.Id}\n" +
+                                     $"**Custom message:** {FollowageConfig.CustomMessage.CustomText}\n\n" +
                                      $"Which one of these options would you like to edit?")
                     .WithFooter($"These settings were made on {FollowageConfig.DateTimeStartedFollowing}")
                     .WithColor(new DiscordColor(0x6d28f1)); // Purple

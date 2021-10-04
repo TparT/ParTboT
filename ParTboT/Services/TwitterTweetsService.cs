@@ -3,6 +3,7 @@ using DSharpPlus.Entities;
 using EasyConsole;
 using NetMQ;
 using ParTboT.DbModels.SocialPlatforms;
+using ParTboT.DbModels.SocialPlatforms.CustomMessages;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using Serilog;
 using System;
@@ -79,10 +80,10 @@ namespace ParTboT.Services
                 if (e.Tweet.Media!.Any())
                     TweetEmbed.WithImageUrl(e.Tweet.Media!.FirstOrDefault().MediaURLHttps);
 
-                foreach (FollowingGuild Guild in tweeter.FollowingGuilds.Values)
+                foreach (FollowingGuild<TwitterCustomMessage> Guild in tweeter.FollowingGuilds.Values)
                 {
-                    await (await client.GetChannelAsync(Guild.ChannelToSendTo.ChannelIDToSend).ConfigureAwait(false))
-                        .SendMessageAsync(Guild.ChannelToSendTo.CustomMessage, TweetEmbed).ConfigureAwait(false);
+                    await (await client.GetChannelAsync(Guild.CustomMessage.ChannelToSendTo.Id).ConfigureAwait(false))
+                        .SendMessageAsync(Guild.CustomMessage.CustomText, TweetEmbed).ConfigureAwait(false);
                 }
             }
             else

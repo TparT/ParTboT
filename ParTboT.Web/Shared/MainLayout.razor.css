@@ -2,6 +2,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    background-color: var(--background);
 }
 
 main {
@@ -12,26 +13,8 @@ main {
     background-color: #4F5488;
 }
 
-.light {
-    background-color: white;
-}
-
-.dark {
-    background-color: #272934;
-    color: #f1e9e9;
-}
-
-.text {
-    outline: 2px dotted red;
-}
-
-.dark .text {
-    outline: 3px dashed rgb(209, 125, 91);
-    font-size: 2rem;
-}
-
 .top-row {
-    background-color: #43465A;
+    background-color: var(--highlight);
     border-bottom: 1px solid #d6d5d5;
     justify-content: flex-end;
     height: 3.5rem;

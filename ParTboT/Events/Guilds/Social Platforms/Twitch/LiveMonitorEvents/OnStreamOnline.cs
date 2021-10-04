@@ -6,6 +6,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using ParTboT;
 using ParTboT.DbModels.SocialPlatforms;
+using ParTboT.DbModels.SocialPlatforms.CustomMessages;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
 using System.Collections.Concurrent;
@@ -72,22 +73,22 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
                 embed.ImageUrl = $"{preview}?time={DateTimeOffset.Now.ToUnixTimeMilliseconds()}";
 
 
-                foreach (FollowingGuild FollowingGuild in StreamerRecord.FollowingGuilds.Select(x => x.Value))
+                foreach (FollowingGuild<TwitchCustomMessage> FollowingGuild in StreamerRecord.FollowingGuilds.Select(x => x.Value))
                 {
                     try
                     {
                         DiscordChannel GuildAlertChannel =
-                            await Discord.GetChannelAsync(FollowingGuild.ChannelToSendTo.ChannelIDToSend).ConfigureAwait(false);
+                            await Discord.GetChannelAsync(FollowingGuild.CustomMessage.ChannelToSendTo.Id).ConfigureAwait(false);
 
                         //if (FollowingGuild.EmbedColor != 0)
                         //    embed.Color = new DiscordColor(FollowingGuild.EmbedColor);
 
-                        await GuildAlertChannel.SendMessageAsync($"{FollowingGuild.ChannelToSendTo.CustomMessage}\n", embed: embed).ConfigureAwait(false);
+                        await GuildAlertChannel.SendMessageAsync($"{FollowingGuild.CustomMessage.CustomText}\n", embed: embed).ConfigureAwait(false);
                     }
                     catch (Exception exc)
                     {
                         Console.WriteLine($"\nIn streamer {stream.UserName}");
-                        Console.WriteLine($"In Guild: {FollowingGuild.GuildNameToSend} For channel: {FollowingGuild.ChannelToSendTo.ChannelNameToSend}\n");
+                        Console.WriteLine($"In Guild: {FollowingGuild.Name} For channel: {FollowingGuild.CustomMessage.ChannelToSendTo.Name}\n");
                         Console.WriteLine(exc.ToString());
                     }
 

@@ -22,7 +22,7 @@ else
         <tbody>
             @foreach (var forecast in forecasts)
             {
-                FollowingGuild instance = forecast.FollowingGuilds["745008583178977370"];
+                FollowingGuild<TwitchCustomMessage> instance = forecast.FollowingGuilds["745008583178977370"];
 
                 @if (instance.IsEditing)
                 {
@@ -30,7 +30,7 @@ else
                         <td>@forecast.StreamerName</td>
                         <td><a href="@forecast.ChannelURL">Channel</a></td>
                         <td>
-                            <input type="text" class="form-control" placeholder="Custom message to be sent along the alert" @bind="@instance.ChannelToSendTo.CustomMessage" />
+                            <input type="text" class="form-control" placeholder="Custom message to be sent along the alert" @bind="@instance.CustomMessage.CustomText" />
                         </td>
                         <td>
                             <button type="button" class="btn btn-link" @onclick="() => EnableEditing(false, instance)">
@@ -51,7 +51,7 @@ else
                     <tr>
                         <td>@forecast.StreamerName</td>
                         <td><a href="@forecast.ChannelURL">Channel</a></td>
-                        <td>@instance.ChannelToSendTo.CustomMessage</td>
+                        <td>@instance.CustomMessage.CustomText</td>
                         <td>
                             <button type="button" class="btn btn-link" @onclick="() => EnableEditing(true, instance)">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
@@ -73,15 +73,15 @@ else
     protected override async Task OnInitializedAsync()
     {
         forecasts = (await db.LoadAllRecordsAsync<TwitchStreamer>("Twitch Streamers")).Where(s => s.FollowingGuilds.Keys.Contains("745008583178977370"));
-        tm.ThemeChanged += (() => StateHasChanged());
+        tm.ThemeChanged += (async () => await InvokeAsync(() => StateHasChanged()));
     }
 
-    private void EnableEditing(bool flag, FollowingGuild instanceData)
+    private void EnableEditing(bool flag, FollowingGuild<TwitchCustomMessage> instanceData)
     {
         instanceData.IsEditing = flag;
     }
 
-    private async void UpdateInstance(string StreamerID, FollowingGuild instanceData)
+    private async void UpdateInstance(string StreamerID, FollowingGuild<TwitchCustomMessage> instanceData)
     {
         EnableEditing(false, instanceData);
         IMongoCollection<TwitchStreamer> col = await db.GetCollectionAsync<TwitchStreamer>("Twitch Streamers");
@@ -89,7 +89,7 @@ else
         UpdateResult result =
             await col.UpdateOneAsync
                 (Builders<TwitchStreamer>.Filter.Where
-                (u => u._id == StreamerID & u.FollowingGuilds.Any(a => a.Key == instanceData.GuildIDToSend.ToString())),
+                (u => u._id == StreamerID & u.FollowingGuilds.Any(a => a.Key == instanceData.Id.ToString())),
                 Builders<TwitchStreamer>.Update.Set("FollowingGuilds.$.v", instanceData));
 
     }

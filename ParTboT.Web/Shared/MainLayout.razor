@@ -10,7 +10,7 @@
 
     <main>
         <div class="@tm.GetCurrentTheme() top-row px-4">
-            <ThemeToggle OnDarkModeToggled="(() => tm.SwitchTheme())" />
+            <ThemeToggle />
         </div>
 
         <article class="content px-4">
@@ -18,3 +18,10 @@
         </article>
     </main>
 </div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+}

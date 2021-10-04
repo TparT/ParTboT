@@ -1,17 +1,18 @@
-﻿<button class="btn btn-primary" @onclick="Toggle">@_buttonTxt</button>
+﻿@inject ThemeManager tm
+
+<button class="btn btn-primary" @onclick="Toggle">@_buttonTxt</button>
 
 @code {
 
-    private bool _darkMode = false;
     private string _buttonTxt = "Dark mode";
 
     [Parameter]
-    public EventCallback<bool> OnDarkModeToggled { get; set; }
+    public EventCallback? OnDarkModeToggled { get; set; }
 
-    private void Toggle()
+    private async void Toggle()
     {
-        _darkMode = !_darkMode;
-        _buttonTxt = _darkMode ? "Light mode" : "Dark mode";
-        OnDarkModeToggled.InvokeAsync(_darkMode);
+        _buttonTxt = tm.SwitchTheme() == "dark" ? "Light mode" : "Dark mode";
+        await OnDarkModeToggled?.InvokeAsync();
+        //StateHasChanged();
     }
 }

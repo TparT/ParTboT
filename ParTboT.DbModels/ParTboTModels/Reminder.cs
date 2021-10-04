@@ -2,10 +2,6 @@
 using MongoDB.Bson.Serialization.Attributes;
 using ParTboT.DbModels.DSharpPlus;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParTboT.DbModels.ParTboTModels
 {

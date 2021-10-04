@@ -1,9 +1,8 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
+﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Options;
+using ParTboT.DbModels.SocialPlatforms.CustomMessages;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace ParTboT.DbModels.SocialPlatforms
@@ -29,7 +28,7 @@ namespace ParTboT.DbModels.SocialPlatforms
     /// <see cref="DateTime"/> DateTimeAddedToTheDatabase
     /// </br>
     /// </summary>
-    public class TwitchStreamer
+    public record TwitchStreamer
     {
         [BsonId]
         public string _id { get; set; }
@@ -37,7 +36,10 @@ namespace ParTboT.DbModels.SocialPlatforms
         public string ChannelURL { get; set; }
         public string ChannelIconURL { get; set; }
         [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]
-        public Dictionary<string, FollowingGuild> FollowingGuilds { get; set; }
+        public Dictionary<string, FollowingGuild<TwitchCustomMessage>> FollowingGuilds { get; set; }
         public DateTime DateTimeAddedToTheDatabase { get; set; }
+
+        [BsonIgnore]
+        public bool IsEditing { get; set; }
     }
 }

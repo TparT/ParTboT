@@ -6,7 +6,10 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using MongoDB.Driver;
+using ParTboT.DbModels.PartialModels;
+using ParTboT.DbModels.Shared;
 using ParTboT.DbModels.SocialPlatforms;
+using ParTboT.DbModels.SocialPlatforms.CustomMessages;
 using ParTboT.DbModels.SocialPlatforms.Shared;
 using System;
 using System.Collections.Generic;
@@ -98,19 +101,23 @@ namespace ParTboT.Commands
                     IMongoCollection<TwitchStreamer> col = await Services.MongoDB.GetCollectionAsync<TwitchStreamer>("Streamers");
                     (bool Exists, TwitchStreamer FoundRecord) StreamerRecord = await Services.MongoDB.DoesExistAsync<TwitchStreamer>(col, "_id", FirstMatch.Id);
 
-                    ChannelToSendTo CHupdate = new ChannelToSendTo
+                    PartialChannel CHupdate = new PartialChannel
                     {
-                        ChannelIDToSend = ChannelToReceiveAlertsOn.Id,
-                        ChannelNameToSend = ChannelToReceiveAlertsOn.Name,
-                        CustomMessage = Custom_Message,
-                        DateTimeSetThisAlertsChannel = DateTime.UtcNow
+                        Id = ChannelToReceiveAlertsOn.Id,
+                        Name = ChannelToReceiveAlertsOn.Name
                     };
 
-                    FollowingGuild GUupdate = new FollowingGuild
+                    FollowingGuild<TwitchCustomMessage> GUupdate = new FollowingGuild<TwitchCustomMessage>
                     {
-                        GuildIDToSend = ctx.Guild.Id,
-                        GuildNameToSend = ctx.Guild.Name,
-                        ChannelToSendTo = CHupdate,
+                        Id = ctx.Guild.Id,
+                        Name = ctx.Guild.Name,
+                        CustomMessage = new TwitchCustomMessage
+                        {
+                            ChannelToSendTo = CHupdate,
+                            CustomText = Custom_Message,
+                        },
+                        Owner = new Mention(ctx.Guild.Owner.Id, ctx.Guild.Owner.Mention),
+                        Everyone = new Mention(ctx.Guild.EveryoneRole.Id, ctx.Guild.EveryoneRole.Mention),
                         DateTimeStartedFollowing = DateTime.UtcNow
                     };
 

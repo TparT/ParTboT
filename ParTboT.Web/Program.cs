@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddThemeSwitcher(new List<string>() { "light", "dark" });
+builder.Services.AddThemeSwitcher(new List<string>() { string.Empty, "dark" });
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton(new MongoCRUD(new MongoCRUDConnectionOptions()
 {

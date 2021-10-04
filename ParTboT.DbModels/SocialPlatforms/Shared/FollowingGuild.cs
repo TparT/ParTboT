@@ -1,21 +1,12 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using ParTboT.DbModels.SocialPlatforms.MessageCustomizations;
+﻿using ParTboT.DbModels.PartialModels;
+using ParTboT.DbModels.SocialPlatforms.CustomMessages;
 using System;
-using System.Collections.Generic;
 
 namespace ParTboT.DbModels.SocialPlatforms.Shared
 {
-    public class FollowingGuild
+    public record FollowingGuild<T> : PartialGuild where T : CustomFollowageMessage
     {
-        [BsonId]
-        public ulong GuildIDToSend { get; set; }
-        public string GuildNameToSend { get; set; }
-        public ChannelToSendTo ChannelToSendTo { get; set; } // with the new update?
+        public T CustomMessage { get; set; }
         public DateTime DateTimeStartedFollowing { get; set; }
-        public CustomFollowageMessage MessageCustomizationsSettings { get; set; }
-
-        [BsonIgnore]
-        public bool IsEditing { get; set; }
-        //public int EmbedColor { get; set; } = 0;
     }
 }
