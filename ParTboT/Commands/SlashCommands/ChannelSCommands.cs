@@ -14,7 +14,7 @@ namespace ParTboT.Commands.SlashCommands
     public class ChannelSCommands : ApplicationCommandModule
     {
         [SlashCommandGroup("clear", "Clears messages")]
-        public class ClearCommands : ApplicationCommandModule
+        public class ClearCommands : ChannelSCommands
         {
             ClearCommandExecuter Clear = new();
 
@@ -129,7 +129,7 @@ namespace ParTboT.Commands.SlashCommands
         #endregion Slowmode enum
 
         [SlashCommandGroup("edit", "Edit channel settings, such as: Slowmode, name")]
-        public class EditChannel : ApplicationCommandModule
+        public class EditChannel : ChannelSCommands
         {
             [SlashCommand("slowmode", "Puts the channel in slow-mode with the given interval")]
             public async Task SlowModeChannel
@@ -161,7 +161,7 @@ namespace ParTboT.Commands.SlashCommands
         }
 
         [SlashCommandGroup("misc", "Misc settings")]
-        public class Misc : ApplicationCommandModule
+        public class Misc : ChannelSCommands
         {
             [SlashCommand("lock", "Locks the channel the command is being executed at")]
             public async Task LockChannel(InteractionContext ctx, [Option("reason", "Reason for audit logs")] string Reason = null, [Option("hideChannel", "Hide the channel that is being locked? (Defaults to false)")] bool HideChannel = false)

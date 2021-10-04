@@ -66,8 +66,8 @@ namespace ParTboT.Commands.SlashCommands
 
                     //    GamesHub.PutInSearchingQueue(GameType.TicTacToe, player);
 
-                        await ctx.EditResponseAsync(new() { Content = $"You are in queue!" }).ConfigureAwait(false);
-                    }
+                    await ctx.EditResponseAsync(new() { Content = $"You are in queue!" }).ConfigureAwait(false);
+                }
                 //}
                 //else
                 //{
@@ -96,12 +96,12 @@ namespace ParTboT.Commands.SlashCommands
                 //                     "please click on the buttons to verify and choose your side."
                 //                    )
 
-                        //.AddComponents
-                        //(new DiscordComponent[]
-                        //{
-                        //        new DiscordButtonComponent(ButtonStyle.Danger, "Player1", "", false, new DiscordComponentEmoji(CheckBox)),
-                        //        new DiscordButtonComponent(ButtonStyle.Danger, "Player2", "", false, new DiscordComponentEmoji(CheckBox))
-                        //});
+                //.AddComponents
+                //(new DiscordComponent[]
+                //{
+                //        new DiscordButtonComponent(ButtonStyle.Danger, "Player1", "", false, new DiscordComponentEmoji(CheckBox)),
+                //        new DiscordButtonComponent(ButtonStyle.Danger, "Player2", "", false, new DiscordComponentEmoji(CheckBox))
+                //});
 
                 //DiscordMessage StartMessage = await first.EditOriginalResponseAsync(MsgBuilder.ToWebhookBuilder()).ConfigureAwait(false);
 
@@ -415,8 +415,10 @@ namespace ParTboT.Commands.SlashCommands
         }
 
         [SlashCommandGroup("Toss", "Flip a coin, toss a cube or even question your future using 8-ball")]
-        public class Luck : ApplicationCommandModule
+        public class Luck : GamesSCommands
         {
+            public Random rnd { private get; set; }
+
             [SlashCommand("Cube", "Toss a cube and get a random result.")]
             public async Task Cube(InteractionContext ctx)
             {
@@ -426,10 +428,8 @@ namespace ParTboT.Commands.SlashCommands
             [SlashCommand("Coin", "Flip a coin and get a random result.")]
             public async Task Coin(InteractionContext ctx)
             {
-                Random rnd = new();
-                int flip = rnd.Next(1, 3);
                 var embed = new DiscordEmbedBuilder().WithColor(DiscordColor.Goldenrod);
-                embed = flip switch
+                embed = rnd.Next(1, 3) switch
                 {
                     1 => embed.WithDescription($"**__{ctx.User.Mention} flipped a coin:__**\nCoin landed on **Heads**")
                               .WithThumbnail("https://cdn.discordapp.com/attachments/784445037244186734/861344186061815879/heads.png"),

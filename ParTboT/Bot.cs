@@ -255,24 +255,11 @@ namespace ParTboT
             {
                 var slash = Client.UseSlashCommands(new SlashCommandsConfiguration() { Services = services });
                 slash.SlashCommandErrored += Slash_SlashCommandErrored;
+                slash.RegisterCommands<Reminders>(745008583178977370);
+                slash.RegisterCommands<Reminders>(778975635514982421);
 
-                slash.RegisterCommands<FunSCommands>(745008583178977370);
-
-                slash.RegisterCommands<GamesSCommands>(745008583178977370);
-                slash.RegisterCommands<GamesSCommands>(778975635514982421);
-
-                slash.RegisterCommands<UtilsSCommands>(745008583178977370);
-                slash.RegisterCommands<MusicSCommands>(745008583178977370);
-                //slash.RegisterCommands<Reminders>(745008583178977370);
-
-                slash.RegisterCommands<SocialPlatformsCommands>(745008583178977370);
-                slash.RegisterCommands<SocialPlatformsCommands>(778975635514982421);
-
-                slash.RegisterCommands<ChannelSCommands>(745008583178977370);
-                slash.RegisterCommands<TestCommands>(745008583178977370);
-
-                //slash.RegisterCommands<EditChannel>(745008583178977370);
-                slash.RegisterCommands<MainSlashCommandsContainer>(745008583178977370);
+                foreach (Type item in typeof(Bot).Assembly.GetTypes().Where(x => x.IsClass && x.BaseType == typeof(ApplicationCommandModule)))
+                    slash.RegisterCommands(item);
             }
 
             #endregion
@@ -302,7 +289,7 @@ namespace ParTboT
             LoggingChannel = await Client.GetChannelAsync(864128561728454666).ConfigureAwait(false);
 
             await Task.Run(async () => StatsTrack());
-            await Services.StartServicesAsync(Client, false, true, true);
+            await Services.StartServicesAsync(Client, true, true, true);
 
             BotReady = true;
             //await Task.Delay(-1);
