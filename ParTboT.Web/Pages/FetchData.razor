@@ -44,6 +44,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
-        tm.ThemeChanged += (() => StateHasChanged());
+        //tm.ThemeChanged += (() => StateHasChanged());
     }
 }

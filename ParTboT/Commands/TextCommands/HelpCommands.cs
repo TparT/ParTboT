@@ -4,16 +4,13 @@ using System.Threading.Tasks;
 
 namespace ParTboT.Commands.TextCommands
 {
-    class HelpCommands : BaseCommandModule
+    public class HelpCommands : BaseCommandModule
     {
         [Command("how")]
-        [Description("Shows the user how to use a commands")]
-
-        public async Task How(CommandContext ctx,
-            [Description("gfgf")] double NumberOne)
+        [Description("Shows you how to use a command")]
+        public async Task How(CommandContext ctx, [Description("A number")] string commandName)
         {
-            string MemberName = (ctx.Member.Mention).ToString();
-            await ctx.RespondAsync($"Hello there {MemberName} !").ConfigureAwait(false);
+            await ctx.RespondAsync($"Hello there, {ctx.Member.Nickname}! The {commandName} is used like so: ..... ").ConfigureAwait(false);
         }
     }
 }

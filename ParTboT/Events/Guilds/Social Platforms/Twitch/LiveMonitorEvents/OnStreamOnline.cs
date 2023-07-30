@@ -21,7 +21,7 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
     public class OnStreamOnline
     {
         private ServicesContainer _services { get; set; }
-        private DiscordClient Discord;
+        private readonly DiscordClient Discord;
 
         public OnStreamOnline(ServicesContainer services, DiscordClient client)
         {
@@ -44,19 +44,16 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
 
                 User channel = (await _services.TwitchAPI.Helix.Users.GetUsersAsync(ids: new List<string> { e.Stream.UserId }).ConfigureAwait(false)).Users.First();
 
-                Stream stream = e.Stream;
-                string name = stream.UserName;
-                string game = stream.GameName;
+                string name = e.Stream.UserName;
+                string game = e.Stream.GameName;
                 string avatar = channel.ProfileImageUrl;
-                string viewers = stream.ViewerCount.ToString();
+                string viewers = e.Stream.ViewerCount.ToString();
                 string preview = $"https://static-cdn.jtvnw.net/previews-ttv/live_user_{name.ToLower()}-1920x1080.png";
                 #endregion
 
                 #region Send to Guild channel
 
                 #region Database information section
-
-
 
                 DiscordEmbedBuilder embed = new DiscordEmbedBuilder
                 {
@@ -87,7 +84,7 @@ namespace ParTboT.Events.GuildEvents.SocialPlatforms.Twitch.LiveMonitorEvents
                     }
                     catch (Exception exc)
                     {
-                        Console.WriteLine($"\nIn streamer {stream.UserName}");
+                        Console.WriteLine($"\nIn streamer {e.Stream.UserName}");
                         Console.WriteLine($"In Guild: {FollowingGuild.Name} For channel: {FollowingGuild.CustomMessage.ChannelToSendTo.Name}\n");
                         Console.WriteLine(exc.ToString());
                     }

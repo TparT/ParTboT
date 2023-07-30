@@ -28,7 +28,7 @@ namespace ParTboT.Events.GuildEvents.GuildMembers
             MemoryStream AudioFile = AudioFactory.GenerateAudio(CaptchaCode);
             AudioFile.Position = 0;
 
-            await CaptchaImageMessage.ModifyAsync(new DiscordMessageBuilder().WithFile("AudioChallenge.wav", AudioFile));
+            await CaptchaImageMessage.ModifyAsync(new DiscordMessageBuilder().AddFile("AudioChallenge.wav", AudioFile));
         }
 
         private async Task<(bool WasVerified, DiscordMessage CaptchaMessage)> SendCAPTCHAAsync(DiscordClient client, DiscordMember member, DiscordChannel channel)
@@ -41,7 +41,7 @@ namespace ParTboT.Events.GuildEvents.GuildMembers
 
             DiscordEmoji AudioSpeakerEmoji = DiscordEmoji.FromName(client, ":speaker:");
             DiscordMessageBuilder CaptchaMessage = new DiscordMessageBuilder()
-                .WithFile($"CaptchaFor{member.Username}.jpeg", ImageStream)
+                .AddFile($"CaptchaFor{member.Username}.jpeg", ImageStream)
                 .AddComponents
                 (new DiscordButtonComponent
                 (ButtonStyle.Secondary, $"AudioChallenge~{CaptchaCode}", "Switch to Audio Challenge", false, new DiscordComponentEmoji(AudioSpeakerEmoji)
@@ -67,10 +67,10 @@ namespace ParTboT.Events.GuildEvents.GuildMembers
 
             //            DiscordMessageBuilder messageBuilder = new DiscordMessageBuilder()
             //            .WithContent("Henlo");
-            //            //.WithFile("AudioChallenge.wav", AudioFile);
+            //            //.AddFile("AudioChallenge.wav", AudioFile);
 
             //            await CaptchaMessage.ModifyAsync(messageBuilder).ConfigureAwait(false);
-            //            await CaptchaMessage.Channel.SendMessageAsync(new DiscordMessageBuilder().WithFile("AudioChallenge.wav", AudioFile)).ConfigureAwait(false);
+            //            await CaptchaMessage.Channel.SendMessageAsync(new DiscordMessageBuilder().AddFile("AudioChallenge.wav", AudioFile)).ConfigureAwait(false);
 
             //        });
             //    }

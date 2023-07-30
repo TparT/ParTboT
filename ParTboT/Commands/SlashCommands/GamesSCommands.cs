@@ -294,10 +294,9 @@ namespace ParTboT.Commands.SlashCommands
             };
 
             TicTacToe<ulong> TicTacToe = new TicTacToe<ulong>(Player1, Player2);
-            DiscordUser UserWithTurn = null;
             Random rnd = new();
 
-            UserWithTurn = rnd.Next(1, 3) switch
+            DiscordUser UserWithTurn = rnd.Next(1, 3) switch
             {
                 1 => FirstSideDecision.Result.User,
                 2 => SecondSideDecision.Result.User,

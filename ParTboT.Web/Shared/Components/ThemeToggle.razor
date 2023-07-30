@@ -7,12 +7,13 @@
     private string _buttonTxt = "Dark mode";
 
     [Parameter]
-    public EventCallback? OnDarkModeToggled { get; set; }
+    public EventCallback<bool> OnDarkModeToggled { get; set; }
 
     private async void Toggle()
     {
-        _buttonTxt = tm.SwitchTheme() == "dark" ? "Light mode" : "Dark mode";
-        await OnDarkModeToggled?.InvokeAsync();
+        _buttonTxt = tm.GetCurrentTheme() == "" ? "Dark mode" : "Light mode";
+        //await InvokeAsync(() => StateHasChanged());
+        await OnDarkModeToggled.InvokeAsync();
         //StateHasChanged();
     }
 }

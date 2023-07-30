@@ -13,7 +13,7 @@ namespace ParTboT.Events.BotEvents
 {
     public static class ClientReady
     {
-        public async static Task Client_ReadyEvent(DiscordClient client, ReadyEventArgs e)
+        public async static Task Client_ReadyEvent(DiscordClient client, SessionReadyEventArgs e)
         {
             DiscordActivity Ready = new DiscordActivity("with my new code", ActivityType.Playing);
             await client.UpdateStatusAsync(Ready, UserStatus.Online, DateTimeOffset.Now.Subtract(TimeSpan.FromDays(1)));

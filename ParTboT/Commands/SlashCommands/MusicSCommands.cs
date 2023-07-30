@@ -40,8 +40,7 @@ namespace ParTboT.Commands.SlashCommands
                         && UserActivity is not null
                         && UserActivity.ActivityType == ActivityType.ListeningTo
                         && UserActivity.Name.ToLower() == "spotify"
-                        )
-                        SongName = UserActivity.RichPresence.Details + " " + UserActivity.RichPresence.State;
+                        ) { SongName = UserActivity.RichPresence.Details + " " + UserActivity.RichPresence.State; }
 
                     SearchResponse Search = await Services.GeniusAPI.SearchClient.Search(SongName).ConfigureAwait(false);
                     Song hit = Search.Response.Hits[0].Result;

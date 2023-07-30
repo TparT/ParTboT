@@ -67,6 +67,7 @@ namespace ParTboT
         public CodeTextGenerator RandomTextGenerator { get; private set; }
         public BarcodeService BarcodeService { get; private set; }
         public UserVerifications UserVerifications { get; private set; }
+        //public StreamElementsTTS TTS { get; private set; }
         #endregion Utilities
 
         #region Services
@@ -98,7 +99,7 @@ namespace ParTboT
 
             #region Databases and data storage
 
-            LiteDB = new(@$"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net5.0\ParTboT.db");
+            LiteDB = new(@$"D:\מסמכים\DiscordBots\ParTboT\ParTboT\bin\Debug\net5.0\ParTboT.db");
 
             MongoDB = new MongoCRUD(
                 new MongoCRUDConnectionOptions()
@@ -140,7 +141,7 @@ namespace ParTboT
             TwitterClient.Config.RateLimitTrackerMode = RateLimitTrackerMode.TrackAndAwait;
             TwitterClient.Config.HttpRequestTimeout = TimeSpan.FromMilliseconds(60 * 1000);
 
-            TwitterClient.Events.OnTwitterException += (s, e) => { Console.WriteLine(e.TwitterDescription); };
+            TwitterClient.Events.OnTwitterException += (s, e) => { Logger.LogError(e.WebException, e.Content); };
 
             OpenTDBClient = new TriviaService();
             //KitsuClient = new KitsuClient();
@@ -152,6 +153,7 @@ namespace ParTboT
             RandomTextGenerator = new CodeTextGenerator();
             BarcodeService = new BarcodeService();
             UserVerifications = new UserVerifications().InitImageCAPTCHAGeneratorService();
+            //TTS = new StreamElementsTTS();
 
             // ========== Social media notifs ========= \\
             TweetsService = new(this); // Twitter

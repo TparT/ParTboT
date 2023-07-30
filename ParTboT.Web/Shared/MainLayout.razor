@@ -1,16 +1,27 @@
 ﻿@inherits LayoutComponentBase
 @inject ThemeManager tm
+@inject NavigationManager nav
 
 <PageTitle>ParTboT.Web</PageTitle>
 
-<div class="page @tm.GetCurrentTheme()">
+<div class="page @Theme">
     <div class="sidebar">
         <NavMenu />
     </div>
 
     <main>
-        <div class="@tm.GetCurrentTheme() top-row px-4">
-            <ThemeToggle />
+        <div class="@Theme top-row px-4">
+            <AuthorizeView>
+                <Authorized>
+                    <a href="#">Hello, @context.User.Identity.Name!</a>
+                    <button class="btn btn-primary" @onclick="LogOut">Logout</button>
+                </Authorized>
+                <NotAuthorized>
+                    <button class="btn btn-primary" @onclick="LogIn">Login</button>
+                    <button class="btn btn-primary" @onclick="LogIn">QR Login</button>
+                </NotAuthorized>
+            </AuthorizeView>
+            <ThemeToggle OnDarkModeToggled="(() => Theme = tm.SwitchTheme())" />
         </div>
 
         <article class="content px-4">
@@ -20,8 +31,14 @@
 </div>
 
 @code {
-    protected override async Task OnInitializedAsync()
-    {
+    private string Theme { get; set; } = "light";
 
-    }
+    private void LogIn()
+        => nav.NavigateTo("Login", true);
+
+    private void QRLogin()
+        => nav.NavigateTo("QRLogin", true);
+
+    private void LogOut()
+        => nav.NavigateTo("Logout", true);
 }

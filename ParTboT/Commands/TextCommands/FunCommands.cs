@@ -227,7 +227,7 @@ namespace ParTboT.Commands.TextCommands
                     // Test and work with the stream here.
 
                     var message = new DiscordMessageBuilder()
-                        .WithFile($"{StreamerName}'s twitch chat | [Total users: {Count}] [{DateTimeOffset.Now.ToUnixTimeMilliseconds()}].txt", ms);
+                        .AddFile($"{StreamerName}'s twitch chat | [Total users: {Count}] [{DateTimeOffset.Now.ToUnixTimeMilliseconds()}].txt", ms);
                     await ctx.RespondAsync(message);
 
                     // If you need to start back at the beginning, be sure to Seek again.

@@ -22,7 +22,7 @@ namespace ParTboT.Commands.TextCommands
 
             MemoryStream ms = Services.BarcodeService.GenerateBarcodeImage(contents);
             ms.Position = 0;
-            await ctx.RespondAsync(new DiscordMessageBuilder().WithFile("Barcode.png", ms)).ConfigureAwait(false);
+            await ctx.RespondAsync(new DiscordMessageBuilder().AddFile("Barcode.png", ms)).ConfigureAwait(false);
 
             ms.SetLength(0);
             ms.Dispose();
@@ -52,7 +52,7 @@ namespace ParTboT.Commands.TextCommands
             barcodeWriter.Write(contents).Save(OutputFile, ImageFormat.Png);
 
             // Respond with the QR code
-            await ctx.RespondWithFileAsync(OutputFile).ConfigureAwait(false);
+            await ctx.RespondAddFileAsync(OutputFile).ConfigureAwait(false);
 
             // wait 3.5 seconds before deleting the generated files
             System.Threading.Thread.Sleep(3500);

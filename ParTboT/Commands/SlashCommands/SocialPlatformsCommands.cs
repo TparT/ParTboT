@@ -639,7 +639,7 @@ namespace ParTboT.Commands.SlashCommands
                     {
                         ChannelType.Category => InvalidChannelType = "category",
                         ChannelType.Group => InvalidChannelType = "group",
-                        ChannelType.Store => InvalidChannelType = "store channel",
+                        //ChannelType.Store => InvalidChannelType = "store channel",
                         ChannelType.Voice => InvalidChannelType = "voice channel",
                         ChannelType.Unknown => InvalidChannelType = "an unknown channel type",
                         ChannelType.Text => throw new NotImplementedException(),

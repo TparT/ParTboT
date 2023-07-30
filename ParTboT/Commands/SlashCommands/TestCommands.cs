@@ -4,22 +4,70 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.VoiceNext;
+using EasyConsole;
+using NAudio.Wave;
+using ParTboT.Events.BotEvents;
+using ParTboT.Services;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using YarinGeorge.Utilities.Audio.Streams;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
+using YoutubeExplode;
 
 namespace ParTboT.Commands.SlashCommands
 {
     public class TestCommands : ApplicationCommandModule
     {
+        public StreamElementsTTS Speaker { private get; set; }
+        public ClientReceivedVoice VoiceRecievedEvent { get; set; } = new ClientReceivedVoice();
+
+        [SlashCommand("say", "Lets you say something in the voice chat using TTS")]
+        public async Task SayCommand(
+            InteractionContext ctx,
+            [Option("Text", "The text to say.")] string text,
+            [Option("Voice", "The voice to use for saying the text with. (Default is 'Brian')")] StreamElementsTTS.Voice voice = StreamElementsTTS.Voice.Brian)
+        {
+            await ctx.TriggerThinkingAsync().ConfigureAwait(false);
+            //await ctx.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
+            
+
+            var vnext = ctx.Client.GetVoiceNext();
+
+            var vnc = vnext.GetConnection(ctx.Guild);
+            if (vnc == null)
+            {
+                var chn = ctx.Member?.VoiceState?.Channel;
+                if (chn == null)
+                {
+                    await ctx.CreateResponseAsync("You need to be in a voice channel!");
+                    throw new InvalidOperationException("You need to be in a voice channel!");
+                }
+
+                vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
+            }
+
+            
+
+            var e = vnc.GetTransmitSink();
+
+            Stream reader = Speaker.TTS(text, voice);
+            await reader.CopyToAsync(e);
+
+            await reader.DisposeAsync();
+            reader.Close();
+        }
+
+
         [SlashCommand("image", "Testing image inside an embed!")]
         public async Task ListCommand(InteractionContext ctx)
         {
             FileStream file = File.OpenRead(@"C:\Users\yarin\Pictures\steve.jpg");
             DiscordMessageBuilder msg = new DiscordMessageBuilder()
-                .WithFile("Board.jpg", file)
+                .AddFile("Board.jpg", file)
                     .WithEmbed(new DiscordEmbedBuilder()
                     .WithImageUrl("attachment://Board.jpg"));
 
@@ -46,6 +94,47 @@ namespace ParTboT.Commands.SlashCommands
 
                 await msg.DeleteReactionAsync(inte.Result.Emoji, inte.Result.User).ConfigureAwait(false);
             }
+        }
+
+
+        [SlashCommand("join", "joins a voice channel you are in")]
+        public async Task New(InteractionContext ctx)
+        {
+            var vnext = ctx.Client.GetVoiceNext();
+            //var lava = ctx.Client.GetLavalink();
+
+            //if (!lava.ConnectedNodes.Any())
+            //{
+            //    await ctx.RespondAsync("The Lavalink connection is not established");
+            //    return;
+            //}
+
+            //var node = lava.ConnectedNodes.Values.First();
+            var vnc = vnext.GetConnection(ctx.Guild);
+            if (vnc != null)
+                throw new InvalidOperationException("Already connected in this guild.");
+
+            var chn = ctx.Member?.VoiceState?.Channel;
+            if (chn == null)
+                throw new InvalidOperationException("You need to be in a voice channel.");
+
+            vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
+
+            //if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out GuildMusicPlayer player))
+            //{
+            //    player.Mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
+            //}
+            //else
+            //{
+            MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(waveFormat: WaveFormat.CreateIeeeFloatWaveFormat(48000, 2));
+            GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer(mixer) { WaveFormat = mixer.WaveFormat, Mixer = mixer, Connection = vnc });
+            //}
+
+            VoiceRecievedEvent.Voices = new ConcurrentDictionary<ulong, UserRecognitionData>();
+            vnc.VoiceReceived += VoiceRecievedEvent.VoiceReceiveHandler;
+
+            //await node.ConnectAsync(chn).ConfigureAwait(false);
+            await ctx.CreateResponseAsync("👌").ConfigureAwait(false);
         }
 
         //[SlashCommand("rolemenu", "Testing a new way of doing role menus!")]

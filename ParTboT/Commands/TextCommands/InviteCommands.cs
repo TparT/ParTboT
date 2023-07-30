@@ -33,7 +33,7 @@ namespace ParTboT.Commands.TextCommands
 
             await ctx.RespondAsync
                 (new DiscordMessageBuilder()
-                    .WithFile($"Invite_{invite.Code}.png", ms)
+                    .AddFile($"Invite_{invite.Code}.png", ms)
                     .AddEmbed(new DiscordEmbedBuilder().WithThumbnail(Formatter.AttachedImageUrl($"Invite_{invite.Code}.png"))))
                 .ConfigureAwait(false);
 

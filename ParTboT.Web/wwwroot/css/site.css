@@ -1,6 +1,6 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
-:root {
+.light {
     /*light theme*/
     --background: white;
     --font-color: black;
@@ -20,26 +20,65 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: var(--font-color);
+    width: 100%;
 }
 
-h1:focus {
+h1 {
     outline: none;
+    color: var(--font-color);
+}
+
+h2 {
+    outline: none;
+    color: var(--font-color);
+}
+
+h3 {
+    outline: none;
+    color: var(--font-color);
+}
+
+h4 {
+    outline: none;
+    color: var(--font-color);
+}
+
+h5 {
+    outline: none;
+    color: var(--font-color);
+}
+
+h6 {
+    outline: none;
+    color: var(--font-color);
+}
+
+
+p {
+    color: var(--font-color);
+}
+
+text {
+    color: white;
 }
 
 a, .btn-link {
     color: var(--link);
 }
 
-.alert-secondary{
+.alert-secondary {
     background-color: var(--highlight-2);
     color: var(--font-color);
 }
 
-.table{
+.table {
     color: var(--font-color);
+    /*table-layout: fixed;*/
+
 }
 
-div.main{
+div.main {
     background-color: var(--background);
     color: var(--font-color);
 }
@@ -48,6 +87,7 @@ div.main{
     color: #fff;
     background-color: #1b6ec2;
     border-color: #1861ac;
+    margin-left: 15px;
 }
 
 .content {

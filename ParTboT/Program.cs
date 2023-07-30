@@ -10,6 +10,7 @@ using Serilog;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 
@@ -17,6 +18,7 @@ namespace ParTboT
 {
     public class Program
     {
+        [HandleProcessCorruptedStateExceptions]
         public static async Task Main(string[] args)
         {
             try
@@ -28,7 +30,7 @@ namespace ParTboT
                     UseShellExecute = false,
                     RedirectStandardInput = false,
                     RedirectStandardOutput = false,
-                    WorkingDirectory = @"C:\Users\yarin\Documents\DiscordBots\ParTboT\ParTboT\bin\Debug\net6.0\Lavalink",
+                    WorkingDirectory = @"D:\מסמכים\DiscordBots\ParTboT\ParTboT\bin\Debug\net6.0\Lavalink",
                     CreateNoWindow = true
                 }, default).RunAsync();
 

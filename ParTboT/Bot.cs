@@ -19,6 +19,7 @@ using ParTboT.Commands.TextCommands;
 using ParTboT.Events.Bot;
 using ParTboT.Events.BotEvents;
 using ParTboT.Events.GuildEvents.GuildMembers;
+using ParTboT.Services;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
@@ -105,6 +106,7 @@ namespace ParTboT
                         FFmpegPath = "Binaries\\ffmpeg.exe"
                     })
                     .AddSingleton<Random>()
+                    .AddSingleton<StreamElementsTTS>()
 
                 .BuildServiceProvider();
 
@@ -216,7 +218,7 @@ namespace ParTboT
             Commands.RegisterCommands<DevCommands>();
             Commands.RegisterCommands<EvalCommand>();
             Commands.RegisterCommands<InviteCommands>();
-            Commands.RegisterCommands<FollowSocialCommands>();
+            //Commands.RegisterCommands<FollowSocialCommands>();
             //Commands.RegisterCommands<UNFollowSocialCommands>();
             Commands.RegisterCommands<WikiCommands>();
             Commands.RegisterCommands<AdminCommands>();
@@ -238,7 +240,7 @@ namespace ParTboT
             Client.GuildAvailable += cga.Client_GuildAvailable;
             OnMemberJoined onMemberJoined = new OnMemberJoined(Services);
             Client.GuildMemberAdded += (s, e) => { _ = Task.Run(async () => { await onMemberJoined.On_MemberJoined(s, e); }); return Task.CompletedTask; };
-            Client.Ready += ClientReady.Client_ReadyEvent;
+            Client.SessionCreated += ClientReady.Client_ReadyEvent;
             Client.GuildCreated += ClientNewGuildJoin.Client_NewGuildJoin;
             Client.GuildDeleted += ClientGuildLeft.Client_GuildLeft;
             Client.VoiceStateUpdated += Client_VoiceStateUpdated;
@@ -289,7 +291,7 @@ namespace ParTboT
             LoggingChannel = await Client.GetChannelAsync(864128561728454666).ConfigureAwait(false);
 
             await Task.Run(async () => StatsTrack());
-            await Services.StartServicesAsync(Client, true, true, true);
+            //await Services.StartServicesAsync(Client, true, true, true);
 
             BotReady = true;
             //await Task.Delay(-1);

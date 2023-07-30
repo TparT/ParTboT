@@ -12,6 +12,7 @@ using MongoDB.Bson.Serialization.Attributes;
 //using MoreLinq;
 using NAudio.Wave;
 using ParTboT.Events.BotEvents;
+using ParTboT.Handlers.Inputs;
 using ParTboT.Services;
 using System;
 using System.Collections.Concurrent;
@@ -41,7 +42,7 @@ namespace ParTboT.Commands.TextCommands
         public IReadOnlyList<DiscordChannel> Channels { get; set; }
     }
 
-    public class NewCommand : BaseCommandModule
+    public partial class NewCommand : BaseCommandModule
     {
         public ServicesContainer Services { private get; set; }
         public YoutubeClient YouTube { private get; set; }
@@ -50,8 +51,23 @@ namespace ParTboT.Commands.TextCommands
         public static string OldName { get; set; }
         public static SpeechSynthesizer Speaker = new SpeechSynthesizer();
 
+        public StreamElementsTTS _speaker { private get; set; }
+
         public ClientReceivedVoice VoiceRecievedEvent { get; set; } = new ClientReceivedVoice();
 
+
+        [Command("dialog")]
+        [Aliases("dia")]
+        [Description("A new command")]
+        public async Task Dialog(CommandContext ctx)
+        {
+            var select = new SingleSelectionInput("Select something", ("thing 1", "1", "number 1"), ("thing 2", "2", "number 2"));
+            (string selectedValue, DiscordInteraction interaction) result =
+                await select.SendAndWaitForInputAsync<string>(ctx);
+
+            await result.interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
+                .WithContent($"Result is: {result.selectedValue}"));
+        }
 
         [Command("uploads")]
         //[Aliases("n")]
@@ -131,7 +147,7 @@ namespace ParTboT.Commands.TextCommands
             MemoryStream ImageFile = new(ImageBytes);
             ImageFile.Position = 0;
 
-            await ctx.RespondAsync(new DiscordMessageBuilder().WithFile("captcha.jpeg", ImageFile)).ConfigureAwait(false);
+            await ctx.RespondAsync(new DiscordMessageBuilder().AddFile("captcha.jpeg", ImageFile)).ConfigureAwait(false);
 
             ImageFile.SetLength(0);
             await ImageFile.DisposeAsync();
@@ -243,7 +259,10 @@ namespace ParTboT.Commands.TextCommands
 
             var chn = ctx.Member?.VoiceState?.Channel;
             if (chn == null)
-                throw new InvalidOperationException("You need to be in a voice channel.");
+            {
+                await ctx.RespondAsync("You need to be in a voice channel!");
+                throw new InvalidOperationException("You need to be in a voice channel!");
+            }
 
             vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
 
@@ -255,10 +274,13 @@ namespace ParTboT.Commands.TextCommands
             //{
             MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(waveFormat: WaveFormat.CreateIeeeFloatWaveFormat(48000, 2));
             GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer(mixer) { WaveFormat = mixer.WaveFormat, Mixer = mixer, Connection = vnc });
+
             //}
 
-            VoiceRecievedEvent.Voices = new ConcurrentDictionary<ulong, UserRecognitionData>();
-            vnc.VoiceReceived += VoiceRecievedEvent.VoiceReceiveHandler;
+            //VoiceRecievedEvent.Voices = new ConcurrentDictionary<ulong, UserRecognitionData>();
+            //vnc.VoiceReceived += VoiceRecievedEvent.VoiceReceiveHandler;
+
+            vnc.VoiceReceived += VoiceReceivedHandler;
 
             //await node.ConnectAsync(chn).ConfigureAwait(false);
             await ctx.RespondAsync("👌").ConfigureAwait(false);
@@ -274,14 +296,19 @@ namespace ParTboT.Commands.TextCommands
             var vnext = ctx.Client.GetVoiceNext();
 
             var vnc = vnext.GetConnection(ctx.Guild);
-            if (vnc != null)
-                throw new InvalidOperationException("Already connected in this guild.");
+            if (vnc == null)
+            {
+                var chn = ctx.Member?.VoiceState?.Channel;
+                if (chn == null)
+                {
+                    await ctx.RespondAsync("You need to be in a voice channel!");
+                    throw new InvalidOperationException("You need to be in a voice channel!");
+                }
 
-            var chn = ctx.Member?.VoiceState?.Channel;
-            if (chn == null)
-                throw new InvalidOperationException("You need to be in a voice channel.");
+                vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
+            }
 
-            vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
+            //vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
 
             //MemoryStream SpeakerWAVstream = new MemoryStream();
             //////////////////////////Speaker.StateChanged += (s, e) => { /*SpeakerWAVstream.SetLength(0); SpeakerWAVstream.DisposeAsync(); SpeakerWAVstream.Close(); SpeakerWAVstream.Flush();*/ Console.WriteLine(e.State); };
@@ -345,49 +372,52 @@ namespace ParTboT.Commands.TextCommands
             var vnc = vnext.GetConnection(ctx.Guild);
             if (vnc == null)
                 throw new InvalidOperationException("Not connected in this guild.");
+            
+            vnc.VoiceReceived -= VoiceReceivedHandler;
 
-            vnc.VoiceReceived -= VoiceRecievedEvent.VoiceReceiveHandler;
-            foreach (var User in vnc.TargetChannel.Users)
-            {
-                #region stuff
-                //kvp.Value.OutputAudioData.Position = 0;
-                ////kvp.Value.OutputAudioData.Seek(0, SeekOrigin.Begin);
-                //var reader = new NAudio.Wave.WaveFileReader(kvp.Value.OutputAudioData);
-                //reader.Position = 0;
-                //var echo = new SoundTouchWaveProvider(reader.ToSampleProvider().ToWaveProvider(), new SoundTouchProcessor { Pitch = 1, Channels = 2 });
+            //vnc.VoiceReceived -= VoiceRecievedEvent.VoiceReceiveHandler;
+            //foreach (var User in vnc.TargetChannel.Users)
+            //{
+            #region stuff
+            //    //kvp.Value.OutputAudioData.Position = 0;
+            //    ////kvp.Value.OutputAudioData.Seek(0, SeekOrigin.Begin);
+            //    //var reader = new NAudio.Wave.WaveFileReader(kvp.Value.OutputAudioData);
+            //    //reader.Position = 0;
+            //    //var echo = new SoundTouchWaveProvider(reader.ToSampleProvider().ToWaveProvider(), new SoundTouchProcessor { Pitch = 1, Channels = 2 });
 
-                //var Device = new WaveOutEvent();
+            //    //var Device = new WaveOutEvent();
 
-                ////Device.PlaybackStopped += Device_PlaybackStopped;
-                //Device.Init(echo);
-                //Device.Play();
+            //    ////Device.PlaybackStopped += Device_PlaybackStopped;
+            //    //Device.Init(echo);
+            //    //Device.Play();
 
-                ////foreach (var BYTE in kvp.Value.OutputAudioData.ToArray())
-                ////{
-                ////    Console.WriteLine(BYTE.ToString());
-                ////}
-                #endregion
+            //    ////foreach (var BYTE in kvp.Value.OutputAudioData.ToArray())
+            //    ////{
+            //    ////    Console.WriteLine(BYTE.ToString());
+            //    ////}
+            #endregion
 
-                if (VoiceRecievedEvent.Voices.TryGetValue(User.Id, out var TheUsersThings))
-                {
-                    TheUsersThings.StartEngineTimeoutTimer.Stop();
-                    TheUsersThings.InputAudioData.Dispose();
-                    TheUsersThings.InputAudioData.Close();
-                }
+            //    if (VoiceRecievedEvent.Voices.TryGetValue(User.Id, out var TheUsersThings))
+            //    {
+            //        TheUsersThings.StartEngineTimeoutTimer.Stop();
+            //        TheUsersThings.InputAudioData.Dispose();
+            //        TheUsersThings.InputAudioData.Close();
+            //    }
 
-                //kvp.Value.TimeoutTimer.Enabled = false;
-                //kvp.Value.TimeoutTimer.Stop();
-                //kvp.Value.TimeoutTimer.Close();
+            //    //kvp.Value.TimeoutTimer.Enabled = false;
+            //    //kvp.Value.TimeoutTimer.Stop();
+            //    //kvp.Value.TimeoutTimer.Close();
 
-                //await kvp.Value.FFmpegProcess.StandardInput.BaseStream.FlushAsync();
-                //kvp.Value.FFmpegProcess.StandardInput.BaseStream.Dispose();
-                //kvp.Value.FFmpegProcess.WaitForExit();
+            //    //await kvp.Value.FFmpegProcess.StandardInput.BaseStream.FlushAsync();
+            //    //kvp.Value.FFmpegProcess.StandardInput.BaseStream.Dispose();
+            //    //kvp.Value.FFmpegProcess.WaitForExit();
 
-            }
+            //}
 
             //VoiceRecievedEvent.ffmpegs = null;
 
             //await vnc.TargetChannel.ModifyAsync(x => x.Name = OldName);
+
             vnc.Disconnect();
             await conn.DisconnectAsync();
 
@@ -489,7 +519,7 @@ namespace ParTboT.Commands.TextCommands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            await ctx.RespondAsync(new DiscordMessageBuilder().WithContent(Contents).HasTTS(true)).ConfigureAwait(false);
+            await ctx.RespondAsync(new DiscordMessageBuilder().WithContent(Contents).WithTTS(true)).ConfigureAwait(false);
 
         }
 

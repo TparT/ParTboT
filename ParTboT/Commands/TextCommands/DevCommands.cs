@@ -343,7 +343,7 @@ namespace ParTboT.Commands.TextCommands
                         await writer.WriteAsync(CommandResult).ConfigureAwait(false);
                         await writer.FlushAsync().ConfigureAwait(false);
                         ms.Seek(0, SeekOrigin.Begin);
-                        messageBuilder.WithFile("CommandResult.txt", ms);
+                        messageBuilder.AddFile("CommandResult.txt", ms);
                         await ctx.RespondAsync(messageBuilder).ConfigureAwait(false);
                         await writer.DisposeAsync();
                     }

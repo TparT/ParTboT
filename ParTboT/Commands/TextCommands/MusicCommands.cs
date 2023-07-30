@@ -51,7 +51,10 @@ namespace ParTboT.Commands.TextCommands
             {
                 var chn = ctx.Member?.VoiceState?.Channel;
                 if (chn == null)
-                    throw new InvalidOperationException("You need to be in a voice channel.");
+                {
+                    await ctx.RespondAsync("You need to be in a voice channel!");
+                    throw new InvalidOperationException("You need to be in a voice channel!");
+                }
 
                 vnc = await vnext.ConnectAsync(chn).ConfigureAwait(false);
             }
@@ -107,7 +110,7 @@ namespace ParTboT.Commands.TextCommands
                 //ffmpeg.Close();
                 //vnc.Disconnect();
 
-                //await ctx.RespondAsync(x => x.WithFile($"{res.Data.Title}.wav", audioStream).WithContent($"{res.Data.Title}:")).ConfigureAwait(false);
+                //await ctx.RespondAsync(x => x.AddFile($"{res.Data.Title}.wav", audioStream).WithContent($"{res.Data.Title}:")).ConfigureAwait(false);
             }
 
             //Stream pcm = ffmpeg.StandardOutput.BaseStream;
@@ -136,8 +139,13 @@ namespace ParTboT.Commands.TextCommands
         [Command]
         public async Task Pause(CommandContext ctx)
         {
-            var vnext = ctx.Client.GetVoiceNext();
-            var vnc = vnext.GetConnection(ctx.Guild);
+            var chn = ctx.Member?.VoiceState?.Channel;
+            if (chn == null)
+            {
+                await ctx.RespondAsync("You need to be in a voice channel!");
+                throw new InvalidOperationException("You need to be in a voice channel!");
+            }
+
             //vnc.GetTransmitSink().Pause();
 
             GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer].Mute();
@@ -148,8 +156,12 @@ namespace ParTboT.Commands.TextCommands
         [Command]
         public async Task Resume(CommandContext ctx)
         {
-            var vnext = ctx.Client.GetVoiceNext();
-            var vnc = vnext.GetConnection(ctx.Guild);
+            var chn = ctx.Member?.VoiceState?.Channel;
+            if (chn == null)
+            {
+                await ctx.RespondAsync("You need to be in a voice channel!");
+                throw new InvalidOperationException("You need to be in a voice channel!");
+            }
 
             GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer].UnMute();
 
@@ -157,13 +169,17 @@ namespace ParTboT.Commands.TextCommands
         }
 
         [Command]
-        public async Task Volume(CommandContext ctx, double Volume)
+        [Aliases("mvol")]
+        public async Task MasterVol(CommandContext ctx, double Volume)
         {
             var vnext = ctx.Client.GetVoiceNext();
 
             var chn = ctx.Member?.VoiceState?.Channel;
             if (chn == null)
-                throw new InvalidOperationException("You need to be in a voice channel.");
+            {
+                await ctx.RespondAsync("You need to be in a voice channel!");
+                throw new InvalidOperationException("You need to be in a voice channel!");
+            }
 
             VoiceTransmitSink sink = vnext.GetConnection(ctx.Guild).GetTransmitSink();
             sink.VolumeModifier = Volume / 100.00;
@@ -176,7 +192,10 @@ namespace ParTboT.Commands.TextCommands
         {
             var chn = ctx.Member?.VoiceState?.Channel;
             if (chn == null)
-                throw new InvalidOperationException("You need to be in a voice channel.");
+            {
+                await ctx.RespondAsync("You need to be in a voice channel!");
+                throw new InvalidOperationException("You need to be in a voice channel!");
+            }
 
             //VoiceTransmitSink sink = vnext.GetConnection(ctx.Guild).GetTransmitSink();
 
@@ -189,14 +208,21 @@ namespace ParTboT.Commands.TextCommands
         [Description("A new command")]
         public async Task Bass(CommandContext ctx, float Gain = 0)
         {
+            var chn = ctx.Member?.VoiceState?.Channel;
+            if (chn == null)
+            {
+                await ctx.RespondAsync("You need to be in a voice channel!");
+                throw new InvalidOperationException("You need to be in a voice channel!");
+            }
+
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
             MixerChannel channel = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer];
 
-            channel.Effects.Bass = Gain;
+            channel.Effects.Bass = Gain / 100;
             channel.ApplyEqEffects();
 
-            await ctx.RespondAsync($"Bass is now {channel.Effects.Bass} gain.").ConfigureAwait(false);
+            await ctx.RespondAsync($"Bass is now {channel.Effects.Bass}% gain.").ConfigureAwait(false);
         }
 
         [Command("lava")]
@@ -206,10 +232,11 @@ namespace ParTboT.Commands.TextCommands
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
 
-            if (ctx.Member.VoiceState == null || ctx.Member.VoiceState.Channel == null)
+            var chn = ctx.Member?.VoiceState?.Channel;
+            if (chn == null)
             {
-                await ctx.RespondAsync("You are not in a voice channel.");
-                return;
+                await ctx.RespondAsync("You need to be in a voice channel!");
+                throw new InvalidOperationException("You need to be in a voice channel!");
             }
 
             var lava = ctx.Client.GetLavalink();
@@ -261,7 +288,7 @@ namespace ParTboT.Commands.TextCommands
                 WaveFileWriter.WriteWavFileToStream(audioStream, mediaReader);
                 audioStream.Seek(0, SeekOrigin.Begin);
 
-                await ctx.RespondAsync(x => x.WithFile($"{track.Title}.wav", audioStream).WithContent($"{track.Title}:")).ConfigureAwait(false);
+                await ctx.RespondAsync(x => x.AddFile($"{track.Title}.wav", audioStream).WithContent($"{track.Title}:")).ConfigureAwait(false);
             }
         }
 
@@ -348,7 +375,6 @@ namespace ParTboT.Commands.TextCommands
             {
                 await ctx.RespondAsync($"Song was not supplied! See `{ctx.Prefix}help {ctx.Command.Name}` for more help with this command.").ConfigureAwait(false);
             }
-
         }
 
         private async Task<DiscordEmbedBuilder> GenerateLyricsEmbed(Song hit, List<string> Parts)
@@ -374,7 +400,7 @@ namespace ParTboT.Commands.TextCommands
 
                 foreach (string Part in Parts)
                 {
-                    string FirstLine = Part.SplitLines()[0].TrimStart().TrimEnd();
+                    string FirstLine = Part.SplitLines()[0].Trim();
                     try
                     {
                         if (FirstLine.StartsWith("[") && FirstLine.EndsWith("]"))
@@ -406,7 +432,5 @@ namespace ParTboT.Commands.TextCommands
 
             return embed;
         }
-
-
     }
 }

@@ -1,17 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.Discord" Version="5.0.15" />
     <PackageReference Include="BlazorThemeSwitcher" Version="2.0.0" />
+    <PackageReference Include="DSharpPlus.Rest" Version="4.2.0-nightly-01091" />
     <PackageReference Include="EasyConsole" Version="1.1.0" />
     <PackageReference Include="Figgle" Version="0.4.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.13.1" />
+    <PackageReference Include="PuppeteerSharp" Version="7.1.0" />
     <PackageReference Include="Serilog" Version="2.11.0-dev-01371" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1-dev-00876" />
   </ItemGroup>
@@ -26,6 +29,9 @@
     </Reference>
     <Reference Include="YarinGeorge.Utilities.Debugging">
       <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Debugging\obj\Debug\netstandard2.1\YarinGeorge.Utilities.Debugging.dll</HintPath>
+    </Reference>
+    <Reference Include="YarinGeorge.Utilities.Extensions">
+      <HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Extensions\bin\Debug\netcoreapp3.1\YarinGeorge.Utilities.Extensions.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -1,5 +1,6 @@
 ﻿using EasyConsole;
 using System;
+using TwitchLib.Api.Services;
 using TwitchLib.Api.Services.Events;
 using YarinGeorge.Utilities.Debugging;
 

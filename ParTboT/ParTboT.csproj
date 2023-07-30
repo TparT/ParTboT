@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web;Microsoft.NET.Sdk.Publish">
 	<PropertyGroup>
-		<TargetFramework>net6.0-windows</TargetFramework>
+		<TargetFramework>net7.0</TargetFramework>
 		<RootNamespace>ParTboT</RootNamespace>
 		<UserSecretsId>c865fc3a-0922-4215-9316-80b875381ded</UserSecretsId>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -8,6 +8,7 @@
 		<StartupObject></StartupObject>
 		<AssemblyName>ParTboT</AssemblyName>
 		<Configurations>Debug;Release;MultiBuild</Configurations>
+		<PlatformTarget>x64</PlatformTarget>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
@@ -36,93 +37,94 @@
 		<None Include="bin\Debug\netcoreapp3.1\config.json" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Aspose.HTML" Version="21.9.0" />
+		<PackageReference Include="Aspose.HTML" Version="23.7.0" />
 		<PackageReference Include="AsyncProcess.Net" Version="1.0.2" />
-		<PackageReference Include="ByteSize" Version="2.1.0" />
+		<PackageReference Include="ByteSize" Version="2.1.1" />
 		<PackageReference Include="CaptchaGen" Version="1.0.0" />
-		<PackageReference Include="CaptchaN" Version="0.1.0" />
-		<PackageReference Include="CliWrap" Version="3.3.3" />
+		<PackageReference Include="CaptchaN" Version="2.0.0" />
+		<PackageReference Include="CliWrap" Version="3.6.4" />
 		<PackageReference Include="ColorZXing.Net" Version="0.1.2" />
 		<PackageReference Include="ConsoleTables" Version="2.4.2" />
 		<PackageReference Include="CSCore" Version="1.2.1.2" />
 		<PackageReference Include="discord-web-hook-logger" Version="1.0.4" />
 		<PackageReference Include="DotImaging.BitmapSourceInterop" Version="4.8.3" />
-		<PackageReference Include="DSharpPlus" Version="4.2.0-nightly-01011" />
-		<PackageReference Include="DSharpPlus.CommandsNext" Version="4.2.0-nightly-01011" />
-		<PackageReference Include="DSharpPlus.Interactivity" Version="4.2.0-nightly-01011" />
-		<PackageReference Include="DSharpPlus.Lavalink" Version="4.2.0-nightly-01011" />
-		<PackageReference Include="DSharpPlus.SlashCommands" Version="4.2.0-nightly-01011" />
-		<PackageReference Include="DSharpPlus.VoiceNext" Version="4.2.0-nightly-01011" />
+		<PackageReference Include="DSharpPlus" Version="5.0.0-nightly-01663" />
+		<PackageReference Include="DSharpPlus.CommandsNext" Version="5.0.0-nightly-01663" />
+		<PackageReference Include="DSharpPlus.Interactivity" Version="5.0.0-nightly-01663" />
+		<PackageReference Include="DSharpPlus.Lavalink" Version="5.0.0-nightly-01663" />
+		<PackageReference Include="DSharpPlus.SlashCommands" Version="5.0.0-nightly-01663" />
+		<PackageReference Include="DSharpPlus.VoiceNext" Version="5.0.0-nightly-01663" />
 		<PackageReference Include="EasyConsole" Version="1.1.0" />
-		<PackageReference Include="Emzi0767.Common" Version="2.6.2" />
-		<PackageReference Include="Figgle" Version="0.4.0" />
+		<PackageReference Include="Emzi0767.Common" Version="2.6.6" />
+		<PackageReference Include="Figgle" Version="0.5.1" />
 		<PackageReference Include="Genius.NET" Version="4.0.1" />
-		<PackageReference Include="Hangfire" Version="1.8.0-beta3" />
-		<PackageReference Include="Hangfire.Core" Version="1.8.0-beta3" />
-		<PackageReference Include="Hangfire.LiteDB" Version="0.4.0" />
-		<PackageReference Include="Hangfire.Mongo" Version="0.7.25" />
-		<PackageReference Include="HtmlAgilityPack" Version="1.11.36" />
+		<PackageReference Include="Hangfire" Version="1.8.3" />
+		<PackageReference Include="Hangfire.Core" Version="1.8.3" />
+		<PackageReference Include="Hangfire.LiteDB" Version="0.4.1" />
+		<PackageReference Include="Hangfire.Mongo" Version="1.9.7" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.50" />
 		<PackageReference Include="Ical.Net" Version="4.2.0" />
 		<PackageReference Include="ImgFlip4NET" Version="1.0.0" />
-		<PackageReference Include="IronPython" Version="3.4.0-alpha1" />
-		<PackageReference Include="Jurassic" Version="3.2.4" />
+		<PackageReference Include="IronPython" Version="3.4.1" />
+		<PackageReference Include="Jurassic" Version="3.2.6" />
 		<PackageReference Include="Kitsu.NET" Version="1.1.0" />
 		<PackageReference Include="logger-discord-provider" Version="2.3.0" />
-		<PackageReference Include="MathParser.org-mXparser" Version="4.4.2" />
-		<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.18.0" />
+		<PackageReference Include="MathParser.org-mXparser" Version="5.2.1" />
+		<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0-beta3" />
 		<PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.0.0-4.final" />
-		<PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.18.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-rc.1.21451.13" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0-rc.1.21451.13" />
-		<PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="4.2.0" />
-		<PackageReference Include="Microsoft.Owin.Hosting" Version="4.2.0" />
-		<PackageReference Include="MongoDB.Driver" Version="2.13.1" />
-		<PackageReference Include="morelinq" Version="3.3.2" />
-		<PackageReference Include="NAudio.Extras" Version="1.0.0" />
-		<PackageReference Include="NAudio.Wasapi" Version="2.0.0" />
-		<PackageReference Include="Nefarius.DSharpPlus.Extensions.Hosting" Version="1.0.46-beta" />
-		<PackageReference Include="NetMQ" Version="4.0.1.7-pre" />
-		<PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.2" />
-		<PackageReference Include="NodaTime" Version="3.0.5" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.7.0-2.final" />
+		<PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.30.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0-preview.6.23329.7" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0-preview.6.23329.7" />
+		<PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="4.2.2" />
+		<PackageReference Include="Microsoft.Owin.Hosting" Version="4.2.2" />
+		<PackageReference Include="MongoDB.Driver" Version="2.20.0" />
+		<PackageReference Include="morelinq" Version="3.4.2" />
+		<PackageReference Include="NAudio.Extras" Version="2.1.0" />
+		<PackageReference Include="NAudio.Wasapi" Version="2.1.0" />
+		<PackageReference Include="Nefarius.DSharpPlus.Extensions.Hosting" Version="4.4.718" />
+		<PackageReference Include="NetMQ" Version="4.0.1.12" />
+		<PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3-beta1" />
+		<PackageReference Include="NodaTime" Version="3.1.9" />
 		<PackageReference Include="NTextCat" Version="0.3.65" />
-		<PackageReference Include="Quartz" Version="3.3.3" />
+		<PackageReference Include="Quartz" Version="3.6.3" />
 		<PackageReference Include="Ramzes.ImageColorDefiner" Version="1.0.1" />
 		<PackageReference Include="Renci.SshNet.Async" Version="1.4.0" />
-		<PackageReference Include="RestSharp" Version="106.12.0" />
+		<PackageReference Include="RestSharp" Version="110.2.1-alpha.0.10" />
 		<PackageReference Include="Seq.App.Discord" Version="0.5.0" />
-		<PackageReference Include="Seq.Extensions.Logging" Version="6.1.0-dev-00091" />
-		<PackageReference Include="Serilog" Version="2.11.0-dev-01371" />
+		<PackageReference Include="Seq.Extensions.Logging" Version="6.1.0" />
+		<PackageReference Include="Serilog" Version="3.0.2-dev-02044" />
 		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
-		<PackageReference Include="Serilog.Sinks.Console" Version="4.0.1-dev-00876" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="4.2.0-dev-00918" />
 		<PackageReference Include="Serilog.Sinks.EventLog" Version="3.1.0" />
-		<PackageReference Include="Serilog.Sinks.Seq" Version="5.0.1" />
-		<PackageReference Include="Sodium.Core" Version="1.2.3" />
-		<PackageReference Include="SSH.NET" Version="2020.0.1" />
+		<PackageReference Include="Serilog.Sinks.Seq" Version="5.2.3-dev-00262" />
+		<PackageReference Include="Sodium.Core" Version="1.3.3" />
+		<PackageReference Include="SSH.NET" Version="2020.0.2" />
 		<PackageReference Include="SoundTouch.Net.NAudioSupport.Core" Version="2.3.2" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.1" />
-		<PackageReference Include="System.Drawing.Common" Version="6.0.0-preview.5.21301.5" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+		<PackageReference Include="System.Drawing.Common" Version="8.0.0-preview.5.23280.5" />
 		<PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
-		<PackageReference Include="Serilog.Extensions.Hosting" Version="4.1.2" />
-		<PackageReference Include="Serilog.Extensions.Logging" Version="3.0.2-dev-10289" />
-		<PackageReference Include="System.IO.Ports" Version="6.0.0-rc.1.21451.13" />
-		<PackageReference Include="System.Speech" Version="6.0.0-rc.1.21451.13" />
+		<PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
+		<PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
+		<PackageReference Include="System.IO.Ports" Version="8.0.0-preview.6.23329.7" />
+		<PackageReference Include="System.Speech" Version="8.0.0-preview.6.23329.7" />
 		<PackageReference Include="Trivia4NET" Version="1.0.1" />
 		<PackageReference Include="TweetinviAPI" Version="5.0.4" />
 		<PackageReference Include="TweetinviAPI.AspNetPlugin" Version="5.0.4" />
-		<PackageReference Include="TwitchLib" Version="3.2.0" />
-		<PackageReference Include="TwitchLib.Api" Version="3.2.5-preview-9a3c9a73b72f479e1c27fec4e1c7ec77dd69f125" />
-		<PackageReference Include="TwitchLib.Api.Core" Version="3.2.5-preview-9a3c9a73b72f479e1c27fec4e1c7ec77dd69f125" />
-		<PackageReference Include="TwitchLib.Api.Helix" Version="3.2.5-preview-9a3c9a73b72f479e1c27fec4e1c7ec77dd69f125" />
-		<PackageReference Include="TwitchLib.Api.V5" Version="3.2.5-preview-9a3c9a73b72f479e1c27fec4e1c7ec77dd69f125" />
-		<PackageReference Include="TwitchLib.Client" Version="3.2.3" />
-		<PackageReference Include="TwitchLib.PubSub" Version="3.2.3" />
-		<PackageReference Include="TwitchTokenGeneratorNET" Version="1.0.0" />
+		<PackageReference Include="TwitchLib" Version="3.5.3" />
+		<PackageReference Include="TwitchLib.Api" Version="3.10.0-preview-e47ba7f" />
+		<PackageReference Include="TwitchLib.Api.Core" Version="3.10.0-preview-e47ba7f" />
+		<PackageReference Include="TwitchLib.Api.Helix" Version="3.10.0-preview-e47ba7f" />
+		<PackageReference Include="TwitchLib.Api.V5" Version="3.4.2-preview-46d23962d3c0ed2b3181f25815ba1af0727cb353" />
+		<PackageReference Include="TwitchLib.Client" Version="4.0.0-preview-fd131763416cb9f1a31705ca609566d7e7e7fac8" />
+		<PackageReference Include="TwitchLib.PubSub" Version="4.0.0-preview-338562750e3acbfd53424c32ae9de8f44ae4ef15" />
+		<PackageReference Include="TwitchTokenGeneratorNET" Version="1.0.1" />
 		<PackageReference Include="Universe.CpuUsage" Version="2.2.497.598" />
-		<PackageReference Include="YoutubeDLSharp" Version="0.3.1" />
-		<PackageReference Include="YoutubeExplode" Version="6.0.5" />
-		<PackageReference Include="Zio" Version="0.13.0" />
+		<PackageReference Include="Vosk" Version="0.3.38" />
+		<PackageReference Include="YoutubeDLSharp" Version="1.0.0" />
+		<PackageReference Include="YoutubeExplode" Version="6.3.0" />
+		<PackageReference Include="Zio" Version="0.16.2" />
 		<PackageReference Include="ZXing.Net" Version="0.16.6" />
 	</ItemGroup>
 	<ItemGroup>
@@ -137,11 +139,14 @@
 		<Folder Include="TempFiles\" />
 	</ItemGroup>
 	<ItemGroup>
+		<Reference Include="AprilAsr">
+		  <HintPath>C:\Users\yarin\source\repos\april-asr\bindings\csharp\nuget\lib\netstandard2.0\AprilAsr.dll</HintPath>
+		</Reference>
 		<Reference Include="BinaryConvert">
 			<HintPath>D:\הורדות\C-BinaryConverter-dll-master\C-BinaryConverter-dll-master\BinaryConvert.dll</HintPath>
 		</Reference>
 		<Reference Include="ParTboT.DbModels">
-			<HintPath>..\ParTboT.DbModels\bin\Debug\net5.0\ParTboT.DbModels.dll</HintPath>
+			<HintPath>..\ParTboT.DbModels\bin\Debug\net7.0\ParTboT.DbModels.dll</HintPath>
 		</Reference>
 		<Reference Include="YarinGeorge.ApiClients.CurrencyConverter">
 			<HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.ApiClients.CurrencyConverter\bin\Debug\netstandard2.1\YarinGeorge.ApiClients.CurrencyConverter.dll</HintPath>
@@ -168,10 +173,10 @@
 			<HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Debugging\bin\Debug\netstandard2.1\YarinGeorge.Utilities.Debugging.dll</HintPath>
 		</Reference>
 		<Reference Include="YarinGeorge.Utilities.Extensions">
-			<HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Extensions\bin\Debug\netstandard2.1\YarinGeorge.Utilities.Extensions.dll</HintPath>
+			<HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Extensions\obj\Debug\netstandard2.1\YarinGeorge.Utilities.Extensions.dll</HintPath>
 		</Reference>
 		<Reference Include="YarinGeorge.Utilities.Extensions.DSharpPlusUtils">
-			<HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Extensions.DSharpPlusUtils\bin\Debug\netstandard2.1\YarinGeorge.Utilities.Extensions.DSharpPlusUtils.dll</HintPath>
+			<HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Extensions.DSharpPlusUtils\bin\Debug\net7.0\YarinGeorge.Utilities.Extensions.DSharpPlusUtils.dll</HintPath>
 		</Reference>
 		<Reference Include="YarinGeorge.Utilities.Extensions.GeniusAPI">
 			<HintPath>..\..\..\YarinGeorge-Libraries\YarinGeorge.Utilities.Extensions.GeniusAPI\bin\Debug\netstandard2.1\YarinGeorge.Utilities.Extensions.GeniusAPI.dll</HintPath>

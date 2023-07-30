@@ -215,7 +215,7 @@ namespace ParTboT.Commands.TextCommands
                         // Test and work with the stream here.
 
                         var message = new DiscordMessageBuilder()
-                            .WithFile($"Backup-for-{ctx.Guild.Name} [{DateTimeOffset.Now.ToUnixTimeMilliseconds()}].bson", ms);
+                            .AddFile($"Backup-for-{ctx.Guild.Name} [{DateTimeOffset.Now.ToUnixTimeMilliseconds()}].bson", ms);
                         await ctx.RespondAsync(message).ConfigureAwait(false);
 
                         // If you need to start back at the beginning, be sure to Seek again.
@@ -376,16 +376,16 @@ namespace ParTboT.Commands.TextCommands
 
             FzzEmotesInfo FzzEmotesInfo = await BttvFzzEmotes.GetFzzChannelEmotesListAsync(ChannelID, Services.HttpClient).ConfigureAwait(false);
 
-            var emotes =
+            IEnumerable<Emoticon> emotes =
                 from es in FzzEmotesInfo.Sets.Values
                 from ei in es.Emoticons
                 select ei;
 
-            var Emotes = emotes.OrderBy(x => x.Name);
+            IOrderedEnumerable<Emoticon> Emotes = emotes.OrderBy(x => x.Name);
             List<Page> pages = new();
             int page = 1;
 
-            foreach (var Emote in Emotes)
+            foreach (Emoticon Emote in Emotes)
             {
                 DiscordEmbedBuilder eb = new DiscordEmbedBuilder()
                     .WithTitle($"Showing {page}/{Emotes.Count()} FZZ emotes on {FzzEmotesInfo.Room.DisplayName}'s Twitch channel")
@@ -418,9 +418,7 @@ namespace ParTboT.Commands.TextCommands
         public async Task AvgColor(CommandContext ctx, string url)
         {
             await ctx.TriggerTypingAsync().ConfigureAwait(false);
-
-
-            var color = await ColorMath.GetAverageColorHexByImageUrlAsync(url);
+            string color = await ColorMath.GetAverageColorHexByImageUrlAsync(url);
             await ctx.RespondAsync($"{color}").ConfigureAwait(false);
         }
     }
