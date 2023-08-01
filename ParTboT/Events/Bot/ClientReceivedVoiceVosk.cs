@@ -1,6 +1,4 @@
-﻿using ConcurrentCollections;
-using CSCore.Codecs.WAV;
-using DSharpPlus.VoiceNext;
+﻿using DSharpPlus.VoiceNext;
 using DSharpPlus.VoiceNext.EventArgs;
 using Microsoft.Extensions.Logging;
 using NAudio.Wave;
@@ -8,30 +6,35 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using AprilAsr;
-using YarinGeorge.Utilities.Extensions;
-using Vosk;
-using System.Timers;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
+using System.Timers;
+using Syn.Speech;
+using Syn.Speech.Api;
+using System.IO;
+using Emzi0767.Types;
+using Syn.Speech.Logging;
+using System.Diagnostics;
+using Whisper.net;
 
 namespace ParTboT.Commands.TextCommands
 {
     public partial class NewCommand
     {
-        private AprilModel _model;
+        private readonly WhisperFactory _whisper;
+        private const string modelsDirectory = "D:\\SpeechRecognitionModels\\Sphinx\\en-us\\en-us";
+        private Configuration _speechConfiguration;
+
         private WaveFormat _waveFormat = new WaveFormat(16000, 16, 1);
         private ConcurrentDictionary<ulong, ParTboTAprilRecognizer> _recognizers = new ConcurrentDictionary<ulong, ParTboTAprilRecognizer>();
 
         public NewCommand()
         {
-            _model = new AprilModel(@"D:\SpeechRecognitionModels\aprilv0_en-us.april");
-            Console.WriteLine("Name: " + _model.Name);
-            Console.WriteLine("Description: " + _model.Description);
-            Console.WriteLine("Language: " + _model.Language);
+            // This section creates the whisperFactory object which is used to create the processor object.
+            _whisper = WhisperFactory.FromPath("ggml-base.bin");
+
+            Logger.LogReceived += (s, args) => { Console.WriteLine(args.Message); };
         }
 
         public static byte[] ConvertStereo48kHzToMono16kHz(byte[] stereoData)
@@ -99,15 +102,25 @@ namespace ParTboT.Commands.TextCommands
                     {
                         if (_recognizers.TryGetValue(id, out ParTboTAprilRecognizer rec))
                         {
-                            rec._timeoutTimer.Stop();
+                            rec.TimeoutTimer.Stop();
                             rec.AcceptPcm(bytes);
-                            rec._timeoutTimer.Start();
+                            rec.TimeoutTimer.Start();
                         }
                     }
                 }
                 else
                 {
-                    var voskRecognizer = new ParTboTAprilRecognizer(_model);
+                    var config = new Configuration
+                    {
+                        AcousticModelPath = modelsDirectory,
+                        DictionaryPath = Path.Combine(modelsDirectory, "cmudict-en-us.dict"),
+                        LanguageModelPath = Path.Combine(modelsDirectory, "en-us.lm.dmp"),
+                        //UseGrammar = true,
+                        //GrammarName = "hello",
+                        //GrammarPath = modelsDirectory
+                    };
+
+                    var voskRecognizer = new ParTboTAprilRecognizer(config);
                     voskRecognizer.RecognitionDone += RecogDoneHandler;
                     _recognizers.TryAdd(id, voskRecognizer);
                 }
@@ -138,11 +151,11 @@ namespace ParTboT.Commands.TextCommands
 
         public class ParTboTAprilRecognizer
         {
-            private readonly AprilSession _april;
+            //private readonly AprilSession _april;
+            private readonly StreamSpeechRecognizer _speechRecognizer;
             private readonly int _maxAlternatives;
-            public readonly Timer _timeoutTimer;
             private readonly object _lockObject = new object();
-            private readonly List<byte> _voicePackets;
+            private MemoryBuffer<byte> _voicePackets;
 
             //private readonly MemoryStream _underlyingRawStream;
             //private readonly RawSourceWaveStream _rawStream;
@@ -151,51 +164,28 @@ namespace ParTboT.Commands.TextCommands
             private bool isDataAvailable;
             private bool textReady;
 
+            public readonly Timer TimeoutTimer;
             public bool WaitingForCommand { get; set; } = false;
             public bool IsBusy { get; private set; } = false;
 
             public event EventHandler<string> RecognitionDone;
 
-            public ParTboTAprilRecognizer(AprilModel model)
+            public ParTboTAprilRecognizer(Configuration config)
             {
-                _april = new AprilSession(model, (result, tokens) =>
-                {
+                _speechRecognizer = new StreamSpeechRecognizer(config);
 
-                    string s = "";
-                    if (result == AprilResultKind.PartialRecognition)
-                    {
-                        s = "- ";
-                    }
-                    else if (result == AprilResultKind.FinalRecognition)
-                    {
-                        s = "@ ";
-                    }
-                    else
-                    {
-                        s = " ";
-                    }
+                TimeoutTimer = new Timer(5000);
+                TimeoutTimer.Elapsed += DataTimerCallback;
 
-                    foreach (AprilToken token in tokens)
-                    {
-                        s += token.Token;
-                    }
-
-                    if (result == AprilResultKind.FinalRecognition)
-                        RecognitionDone.Invoke(this, s);
-
-                    Console.WriteLine(s);
-                }, false, false);
-
-                _timeoutTimer = new Timer(1000);
-                _timeoutTimer.Elapsed += DataTimerCallback;
-
-                _voicePackets = new List<byte>();
+                _voicePackets = new MemoryBuffer<byte>();
             }
 
-            internal byte[] PcmConvert(byte[] rawPcmData)
+            internal byte[] PcmConvert(MemoryBuffer<byte> rawPcmData)
             {
+                byte[] tempArray = rawPcmData.ToArray();
+
                 byte[] pcmData;
-                using (RawSourceWaveStream original = new RawSourceWaveStream(rawPcmData, 0, rawPcmData.Length, new WaveFormat()))
+                using (RawSourceWaveStream original = new RawSourceWaveStream(tempArray, 0, tempArray.Length, new WaveFormat(48000, 16, 2)))
                 {
                     using (WaveFormatConversionStream wavResampler = new WaveFormatConversionStream(_waveFormat, original))
                     {
@@ -204,29 +194,35 @@ namespace ParTboT.Commands.TextCommands
                     }
                 }
 
+                Array.Clear(tempArray);
+
                 return pcmData;
             }
 
             private async void DataTimerCallback(object s, ElapsedEventArgs e)
             {
-
                 //while (IsBusy)
                 //{
                 //    await Console.Out.WriteLineAsync("Waiting until recognizer finishes processing...");
                 //    await Task.Delay(100);
                 //}
                 Console.WriteLine("Timed out!");
-                if (_voicePackets.Any())
+                if (_voicePackets.Length > 0)
                 {
                     Console.WriteLine("Some data is available! Converting and processing voice samples now...");
-                    byte[] convBytes = PcmConvert(_voicePackets.ToArray());
+                    byte[] convBytes = PcmConvert(_voicePackets);
+
+                    await foreach (var result in processor.ProcessAsync(wavStream))
+                    {
+                        Console.WriteLine($"{result.Start}->{result.End}: {result.Text}");
+                    }
 
                     await HandleSpeechToTextAsync(convBytes);
                 }
 
                 //lock (_lockObject)
                 //{
-                    _voicePackets.Clear();
+                //_voicePackets.SetLength(0);
                 //}
             }
 
@@ -234,7 +230,7 @@ namespace ParTboT.Commands.TextCommands
             {
                 //lock (_lockObject)
                 //{
-                    _voicePackets.AddRange(pcm);
+                _voicePackets.Write(pcm);
                 //}
             }
 
@@ -252,27 +248,31 @@ namespace ParTboT.Commands.TextCommands
                 => await Task.Run(() => HandleSpeechToText(pcm));
 
             private WaveFormat _waveFormat = new WaveFormat(16000, 16, 1);
+            private bool used = false;
 
-            [HandleProcessCorruptedStateExceptions]
             private void HandleSpeechToText(byte[] pcm)
             {
+                MemoryStream pcmData = new MemoryStream(pcm);
 
-                WaveBuffer buffer = new WaveBuffer(pcm);
-
-                IsBusy = true;
-
-                lock (_lockObject)
+                if (!used)
                 {
-                    try
-                    {
-                        _april.FeedPCM16(buffer.ShortBuffer, buffer.ShortBuffer.Length);
-                        _april.Flush();
+                    _speechRecognizer.StartRecognition(pcmData);
+                    var result = _speechRecognizer.GetResult();
+                    _speechRecognizer.StopRecognition();
 
-                        _voicePackets.Clear();
-                    }
-                    catch (AccessViolationException e)
+                    pcmData.Dispose();
+                    pcmData.Close();
+
+                    Array.Clear(pcm);
+                    _voicePackets.Clear();
+
+                    if (result != null)
                     {
-                        Console.WriteLine("DUMB FUCK TRIED TO USE MEMORY HERE!!!!");
+                        Console.WriteLine("Result: " + result.GetHypothesis());
+                    }
+                    else
+                    {
+                        Console.WriteLine("Result: Sorry! Coudn't Transcribe");
                     }
 
                 }

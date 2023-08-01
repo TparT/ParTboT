@@ -123,6 +123,7 @@
 		<PackageReference Include="TwitchTokenGeneratorNET" Version="1.0.1" />
 		<PackageReference Include="Universe.CpuUsage" Version="2.2.497.598" />
 		<PackageReference Include="Vosk" Version="0.3.38" />
+		<PackageReference Include="Whisper.net" Version="1.4.6" />
 		<PackageReference Include="YoutubeDLSharp" Version="1.0.0" />
 		<PackageReference Include="YoutubeExplode" Version="6.3.0" />
 		<PackageReference Include="Zio" Version="0.16.2" />
