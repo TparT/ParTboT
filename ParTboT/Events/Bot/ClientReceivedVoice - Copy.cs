@@ -20,6 +20,7 @@ using System.Speech.AudioFormat;
 using System.Speech.Recognition;
 using System.Threading.Tasks;
 using System.Timers;
+using YarinGeorge.Utilities.Audio.SampleProviders;
 using YarinGeorge.Utilities.Audio.Streams;
 using Zio;
 using Zio.FileSystems;
@@ -490,27 +491,27 @@ namespace ParTboT.Events.BotEvents
 
             RawSourceWaveStream rawStream = new RawSourceWaveStream(ms, new WaveFormat(48000, 16, 2));
             rawStream.Seek(0, SeekOrigin.Begin);
-            Wave16ToFloatProvider reader = new Wave16ToFloatProvider(rawStream);
+            var reader = new Wave16ToFloatProvider(rawStream).ToSampleProvider();
 
-            if (GuildMusicPlayerService.PlayedStreams.TryGetValue(connection.TargetChannel.GuildId.Value, out GuildMusicPlayer player))
+            if (GuildAudioPlayerService.AudioPlayers.TryGetValue(connection.TargetChannel.GuildId.Value, out GuildAudioPlayer player))
             {
-                player.Mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
+                player.Mixer.AddOrUpdateMixerInput(MixerChannelInput.TextToSpeech, reader);
             }
             else
             {
                 MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(reader.WaveFormat);
-                mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
+                mixer.AddOrUpdateMixerInput(MixerChannelInput.TextToSpeech, reader);
 
-                GuildMusicPlayerService.PlayedStreams.TryAdd(connection.TargetChannel.GuildId.Value, new GuildMusicPlayer(mixer) { WaveFormat = reader.WaveFormat, Mixer = mixer, Connection = connection });
+                GuildAudioPlayerService.AudioPlayers.TryAdd(connection.TargetChannel.GuildId.Value, new GuildAudioPlayer(mixer, connection));
             }
 
-            bool AutoGain = GuildMusicPlayerService.PlayedStreams[connection.TargetChannel.GuildId.Value].Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer);
+            bool autoGain = GuildAudioPlayerService.AudioPlayers[connection.TargetChannel.GuildId.Value].Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer);
 
-            if (AutoGain)
+            if (autoGain)
             {
-                GuildMusicPlayerService.PlayedStreams[connection.TargetChannel.GuildId.Value].Mixer.AdjustChannelVolume(MixerChannelInput.MusicPlayer, 25F / 100F);
+                GuildAudioPlayerService.AudioPlayers[connection.TargetChannel.GuildId.Value].Mixer.SetChannelVolume(MixerChannelInput.MusicPlayer, 25F / 100F);
                 await Task.Delay(rawStream.TotalTime.Add(TimeSpan.FromSeconds(0.5)));
-                GuildMusicPlayerService.PlayedStreams[connection.TargetChannel.GuildId.Value].Mixer.ResetChannelVolume(MixerChannelInput.MusicPlayer);
+                GuildAudioPlayerService.AudioPlayers[connection.TargetChannel.GuildId.Value].Mixer.ResetChannelVolume(MixerChannelInput.MusicPlayer);
             }
 
             await rawStream.DisposeAsync();

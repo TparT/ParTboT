@@ -14,6 +14,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using YarinGeorge.Utilities.Audio.SampleProviders;
 using YarinGeorge.Utilities.Audio.Streams;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils;
 using YoutubeExplode;
@@ -54,11 +55,8 @@ namespace ParTboT.Commands.SlashCommands
 
             var e = vnc.GetTransmitSink();
 
-            Stream reader = Speaker.TTS(text, voice);
-            await reader.CopyToAsync(e);
-
-            await reader.DisposeAsync();
-            reader.Close();
+            await Speaker.SpeakToVCAsync(vnc, text, voice);
+            vnc.PlayInVC();
         }
 
 
@@ -126,8 +124,8 @@ namespace ParTboT.Commands.SlashCommands
             //}
             //else
             //{
-            MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(waveFormat: WaveFormat.CreateIeeeFloatWaveFormat(48000, 2));
-            GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer(mixer) { WaveFormat = mixer.WaveFormat, Mixer = mixer, Connection = vnc });
+            MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(waveFormat: WaveFormat.CreateIeeeFloatWaveFormat(48000, 2), false);
+            GuildAudioPlayerService.AudioPlayers.TryAdd(ctx.Guild.Id, new GuildAudioPlayer(mixer, vnc));
             //}
 
             VoiceRecievedEvent.Voices = new ConcurrentDictionary<ulong, UserRecognitionData>();

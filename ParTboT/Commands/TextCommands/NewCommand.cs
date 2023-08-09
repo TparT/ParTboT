@@ -24,6 +24,7 @@ using System.Linq;
 using System.Speech.AudioFormat;
 using System.Speech.Synthesis;
 using System.Threading.Tasks;
+using YarinGeorge.Utilities.Audio.SampleProviders;
 using YarinGeorge.Utilities.Audio.Streams;
 using YarinGeorge.Utilities.Extensions;
 using YarinGeorge.Utilities.Extensions.DSharpPlusUtils.Builders;
@@ -272,9 +273,13 @@ namespace ParTboT.Commands.TextCommands
             //}
             //else
             //{
-            MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(waveFormat: WaveFormat.CreateIeeeFloatWaveFormat(48000, 2));
-            GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer(mixer) { WaveFormat = mixer.WaveFormat, Mixer = mixer, Connection = vnc });
+            MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(waveFormat: WaveFormat.CreateIeeeFloatWaveFormat(48000, 2), false);
+            mixer.AddOrUpdateMixerInput(MixerChannelInput.MusicPlayer, new SilenceProvider(mixer.WaveFormat).ToSampleProvider());
 
+            GuildAudioPlayerService.AudioPlayers.TryAdd(ctx.Guild.Id, new GuildAudioPlayer(mixer, vnc));
+            //vnc.PlayInVC();
+
+            //await _speaker.SpeakToVCAsync(vnc, "I'm here!");
             //}
 
             //VoiceRecievedEvent.Voices = new ConcurrentDictionary<ulong, UserRecognitionData>();
@@ -468,31 +473,31 @@ namespace ParTboT.Commands.TextCommands
             ms.Seek(0, SeekOrigin.Begin);
 
             RawSourceWaveStream rawStream = new RawSourceWaveStream(ms, new WaveFormat(48000, 16, 2));
-            var reader = new Wave16ToFloatProvider(rawStream);
+            var reader = new Wave16ToFloatProvider(rawStream).ToSampleProvider();
 
-            if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out GuildMusicPlayer player))
+            if (GuildAudioPlayerService.AudioPlayers.TryGetValue(ctx.Guild.Id, out GuildAudioPlayer player))
             {
-                player.Mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
+                player.Mixer.AddOrUpdateMixerInput(MixerChannelInput.TextToSpeech, reader);
             }
             else
             {
-                MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(reader.WaveFormat, false);
-                mixer.AddMixerInput(MixerChannelInput.TextToSpeech, new MixerChannel(reader));
+                MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(reader.WaveFormat);
+                mixer.AddOrUpdateMixerInput(MixerChannelInput.TextToSpeech, reader);
 
-                GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer(mixer) { WaveFormat = reader.WaveFormat, Mixer = mixer, Connection = vnc });
+                GuildAudioPlayerService.AudioPlayers.TryAdd(ctx.Guild.Id, new GuildAudioPlayer(mixer, vnc));
             }
 
-            bool AutoGain = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer);
+            bool autoGain = GuildAudioPlayerService.AudioPlayers[ctx.Guild.Id].Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer);
 
-            if (AutoGain)
-                GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.AdjustChannelVolume(MixerChannelInput.MusicPlayer, 25F / 100F);
+            if (autoGain)
+                GuildAudioPlayerService.AudioPlayers[ctx.Guild.Id].Mixer.SetChannelVolume(MixerChannelInput.MusicPlayer, 25F / 100F);
 
             await ctx.RespondAsync("Successfully added to the mix! :)");
 
-            if (AutoGain)
+            if (autoGain)
             {
                 await Task.Delay(rawStream.TotalTime.Add(TimeSpan.FromSeconds(0.5)));
-                GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.ResetChannelVolume(MixerChannelInput.MusicPlayer);
+                GuildAudioPlayerService.AudioPlayers[ctx.Guild.Id].Mixer.ResetChannelVolume(MixerChannelInput.MusicPlayer);
             }
 
             await rawStream.DisposeAsync();

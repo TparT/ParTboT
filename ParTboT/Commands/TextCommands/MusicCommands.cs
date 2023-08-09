@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using YarinGeorge.Utilities;
+using YarinGeorge.Utilities.Audio.SampleProviders;
 using YarinGeorge.Utilities.Audio.Streams;
 using YarinGeorge.Utilities.Extensions;
 using YarinGeorge.Utilities.Extensions.GeniusAPI;
@@ -64,16 +65,16 @@ namespace ParTboT.Commands.TextCommands
             //var res = await ytdl.RunVideoDataFetch(track.Identifier);
             //FormatData path = res.Data.Formats.OrderByDescending(x => x.AudioBitrate).FirstOrDefault();
 
-            if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out var Gplayer))
+            if (GuildAudioPlayerService.AudioPlayers.TryGetValue(ctx.Guild.Id, out var Gplayer))
             {
-                if (Gplayer.Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer))
+                if (Gplayer.Mixer.MixerInputs.ContainsKey(MixerChannelInput.MusicPlayer) && Gplayer.IsPlaying)
                 {
                     Gplayer.QueuedSongs.Enqueue(new QueuedSong { Url = res.Url, Name = track.Title, Position = Gplayer.QueuedSongs.Count + 1 });
                     return;
                 }
             }
 
-            WaveStream mediaReader = new MediaFoundationReader(res.Url);
+            WaveStream mediaReader = new MediaFoundationReader(res.Url, new MediaFoundationReader.MediaFoundationReaderSettings { RequestFloatOutput = true });
 
             if (mediaReader.CanRead)
             {
@@ -82,29 +83,30 @@ namespace ParTboT.Commands.TextCommands
                 Console.WriteLine(mediaReader.WaveFormat.Channels);
 
                 mediaReader.Seek(0, SeekOrigin.Begin);
-                var e = vnc.GetTransmitSink();
+                //var e = vnc.GetTransmitSink();
 
                 mediaReader.Seek(0, SeekOrigin.Begin);
 
-                if (mediaReader.WaveFormat.SampleRate != 48000)
-                    mediaReader = new WaveFormatConversionStream(new WaveFormat(48000, 2), mediaReader);
+                ISampleProvider sample = mediaReader.ToSampleProvider();
 
-                Wave16ToFloatProvider wave32 = new Wave16ToFloatProvider(mediaReader);
-                wave32.Dump();
+                //if (mediaReader.WaveFormat.SampleRate != 48000)
+                //    mediaReader = new WaveFormatConversionStream(new WaveFormat(48000, 2), mediaReader);
 
-                if (GuildMusicPlayerService.PlayedStreams.TryGetValue(ctx.Guild.Id, out GuildMusicPlayer player))
+                //mediaReader.WaveFormat.Dump();
+
+                if (GuildAudioPlayerService.AudioPlayers.TryGetValue(ctx.Guild.Id, out GuildAudioPlayer player))
                 {
-                    player.Mixer.AddMixerInput(MixerChannelInput.MusicPlayer, new MixerChannel(wave32));
+                    player.Mixer.AddOrUpdateMixerInput(MixerChannelInput.MusicPlayer, sample);
                 }
                 else
                 {
-                    MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(wave32.WaveFormat, false);
-                    mixer.AddMixerInput(MixerChannelInput.MusicPlayer, new MixerChannel(wave32));
+                    MixingSampleProvider<MixerChannelInput> mixer = new MixingSampleProvider<MixerChannelInput>(sample.WaveFormat);
+                    mixer.AddOrUpdateMixerInput(MixerChannelInput.MusicPlayer, sample);
 
-                    GuildMusicPlayerService.PlayedStreams.TryAdd(ctx.Guild.Id, new GuildMusicPlayer(mixer) { WaveFormat = wave32.WaveFormat, Mixer = mixer, Connection = vnc });
+                    GuildAudioPlayerService.AudioPlayers.TryAdd(ctx.Guild.Id, new GuildAudioPlayer(mixer, vnc));
                 }
 
-                vnc.PlayInVC();
+                await Task.Factory.StartNew(async () => await vnc.PlayInVC());
 
                 //ffmpeg.Dispose();
                 //ffmpeg.Close();
@@ -148,7 +150,7 @@ namespace ParTboT.Commands.TextCommands
 
             //vnc.GetTransmitSink().Pause();
 
-            GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer].Mute();
+            GuildAudioPlayerService.AudioPlayers[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer].Pause();
 
             await ctx.RespondAsync(":+1:").ConfigureAwait(false);
         }
@@ -163,7 +165,7 @@ namespace ParTboT.Commands.TextCommands
                 throw new InvalidOperationException("You need to be in a voice channel!");
             }
 
-            GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer].UnMute();
+            GuildAudioPlayerService.AudioPlayers[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer].UnPause();
 
             await ctx.RespondAsync(":+1:").ConfigureAwait(false);
         }
@@ -199,15 +201,17 @@ namespace ParTboT.Commands.TextCommands
 
             //VoiceTransmitSink sink = vnext.GetConnection(ctx.Guild).GetTransmitSink();
 
-            var VolumeChange = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer.AdjustChannelVolume(Enum.Parse<MixerChannelInput>(channel), Volume / 100);
+            var volumeChange = GuildAudioPlayerService.AudioPlayers[ctx.Guild.Id].Mixer.SetChannelVolume(Enum.Parse<MixerChannelInput>(channel), Volume / 100);
 
-            await ctx.RespondAsync($"Volume is now: {VolumeChange.Volume * 100}%").ConfigureAwait(false);
+            await ctx.RespondAsync($"Volume is now: {volumeChange.Volume * 100}%").ConfigureAwait(false);
         }
 
         [Command("bass")]
         [Description("A new command")]
         public async Task Bass(CommandContext ctx, float Gain = 0)
         {
+            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+
             var chn = ctx.Member?.VoiceState?.Channel;
             if (chn == null)
             {
@@ -215,14 +219,9 @@ namespace ParTboT.Commands.TextCommands
                 throw new InvalidOperationException("You need to be in a voice channel!");
             }
 
-            await ctx.TriggerTypingAsync().ConfigureAwait(false);
+            DynamicSampleProvider channel = GuildAudioPlayerService.AudioPlayers[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer].SetBass(Gain / 100).ApplyEqEffects();
 
-            MixerChannel channel = GuildMusicPlayerService.PlayedStreams[ctx.Guild.Id].Mixer[MixerChannelInput.MusicPlayer];
-
-            channel.Effects.Bass = Gain / 100;
-            channel.ApplyEqEffects();
-
-            await ctx.RespondAsync($"Bass is now {channel.Effects.Bass}% gain.").ConfigureAwait(false);
+            await ctx.RespondAsync($"Bass is now {channel.Effects.Bass * 100}% gain.").ConfigureAwait(false);
         }
 
         [Command("lava")]

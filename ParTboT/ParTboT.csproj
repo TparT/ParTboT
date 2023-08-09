@@ -9,15 +9,25 @@
 		<AssemblyName>ParTboT</AssemblyName>
 		<Configurations>Debug;Release;MultiBuild</Configurations>
 		<PlatformTarget>x64</PlatformTarget>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 		<WarningsAsErrors>;NU1605</WarningsAsErrors>
 		<NoWarn>1701;1702;1003</NoWarn>
 	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+	  <WarningsAsErrors>;NU1605</WarningsAsErrors>
+	  <NoWarn>1701;1702;1003</NoWarn>
+	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MultiBuild|AnyCPU'">
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 		<WarningsAsErrors>;NU1605</WarningsAsErrors>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MultiBuild|x64'">
+	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+	  <WarningsAsErrors>;NU1605</WarningsAsErrors>
 	</PropertyGroup>
 	<ItemGroup>
 		<Compile Remove="TempFiles\ProfilePictures\**" />
@@ -88,10 +98,12 @@
 		<PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3-beta1" />
 		<PackageReference Include="NodaTime" Version="3.1.9" />
 		<PackageReference Include="NTextCat" Version="0.3.65" />
+		<PackageReference Include="Porcupine" Version="2.2.1" />
 		<PackageReference Include="Quartz" Version="3.6.3" />
 		<PackageReference Include="Ramzes.ImageColorDefiner" Version="1.0.1" />
 		<PackageReference Include="Renci.SshNet.Async" Version="1.4.0" />
 		<PackageReference Include="RestSharp" Version="110.2.1-alpha.0.10" />
+		<PackageReference Include="Rhino" Version="2.2.1" />
 		<PackageReference Include="Seq.App.Discord" Version="0.5.0" />
 		<PackageReference Include="Seq.Extensions.Logging" Version="6.1.0" />
 		<PackageReference Include="Serilog" Version="3.0.2-dev-02044" />
@@ -124,6 +136,7 @@
 		<PackageReference Include="Universe.CpuUsage" Version="2.2.497.598" />
 		<PackageReference Include="Vosk" Version="0.3.38" />
 		<PackageReference Include="Whisper.net" Version="1.4.6" />
+		<PackageReference Include="Whisper.net.Runtime" Version="1.4.6" />
 		<PackageReference Include="YoutubeDLSharp" Version="1.0.0" />
 		<PackageReference Include="YoutubeExplode" Version="6.3.0" />
 		<PackageReference Include="Zio" Version="0.16.2" />

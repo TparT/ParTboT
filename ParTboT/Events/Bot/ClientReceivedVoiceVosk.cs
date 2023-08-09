@@ -1,40 +1,54 @@
-﻿using DSharpPlus.VoiceNext;
+﻿using AprilAsr;
+using CSCore.Codecs.RAW;
+using DSharpPlus.VoiceNext;
 using DSharpPlus.VoiceNext.EventArgs;
+using Emzi0767.Types;
 using Microsoft.Extensions.Logging;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using Newtonsoft.Json;
+using Pv;
+using SixLabors.ImageSharp.Formats.Gif;
+using Syn.Speech.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using Syn.Speech;
-using Syn.Speech.Api;
-using System.IO;
-using Emzi0767.Types;
-using Syn.Speech.Logging;
-using System.Diagnostics;
+using TwitchLib.PubSub.Models.Responses;
+using Vosk;
 using Whisper.net;
+using YarinGeorge.Utilities.Audio.Streams;
+using YarinGeorge.Utilities.Debugging;
 
 namespace ParTboT.Commands.TextCommands
 {
     public partial class NewCommand
     {
-        private readonly WhisperFactory _whisper;
-        private const string modelsDirectory = "D:\\SpeechRecognitionModels\\Sphinx\\en-us\\en-us";
-        private Configuration _speechConfiguration;
+        private readonly AprilModel aprilModel;
 
-        private WaveFormat _waveFormat = new WaveFormat(16000, 16, 1);
-        private ConcurrentDictionary<ulong, ParTboTAprilRecognizer> _recognizers = new ConcurrentDictionary<ulong, ParTboTAprilRecognizer>();
+        //private readonly WhisperFactory _whisper;
+
+        //private readonly IReadOnlyList<short> _defaultList;
+
+        //private const string modelsDirectory = "D:\\SpeechRecognitionModels\\Sphinx\\en-us\\en-us";
+        //private Configuration _speechConfiguration;
+
+        private ConcurrentDictionary<ulong, ParTboTPicoVoiceRecognizer> _recognizers = new ConcurrentDictionary<ulong, ParTboTPicoVoiceRecognizer>();
 
         public NewCommand()
         {
-            // This section creates the whisperFactory object which is used to create the processor object.
-            _whisper = WhisperFactory.FromPath("ggml-base.bin");
+            //aprilModel = new AprilModel(@"D:\SpeechRecognitionModels\AprilAsr\april-english-dev-01110_en.april");
 
-            Logger.LogReceived += (s, args) => { Console.WriteLine(args.Message); };
+            //_defaultList = new List<short>(Enumerable.Repeat<short>(0, 512));
+
+            // This section creates the whisperFactory object which is used to create the processor object.
+            //_whisper = WhisperFactory.FromPath(@"D:\SpeechRecognitionModels\Whisper\ggml-base.bin"); // https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-[MODEL_NAME].bin
+
+            //Logger.LogReceived += (s, args) => { Console.WriteLine(args.Message); };
         }
 
         public static byte[] ConvertStereo48kHzToMono16kHz(byte[] stereoData)
@@ -76,14 +90,14 @@ namespace ParTboT.Commands.TextCommands
             return monoData;
         }
 
-        private async void RecogDoneHandler(object sender, string text)
+        private async void RecogDoneHandler(VoiceNextConnection connection, string text)
         {
             await Console.Out.WriteLineAsync("FINAL Recognized text: " + text);
 
-            string response = GetResponse(text.ToLower());
+            string response = GetResponse(text);
             await Console.Out.WriteLineAsync("Response: " + response);
 
-            //await _speaker.SpeakToVCAsync(connection, response);
+            await _speaker.SpeakToVCAsync(connection, response);
         }
 
         public async Task VoiceReceivedHandler(VoiceNextConnection connection, VoiceReceiveEventArgs e)
@@ -95,35 +109,24 @@ namespace ParTboT.Commands.TextCommands
 
                 ulong id = e!.User!.Id!;
 
-                if (_recognizers!.ContainsKey(id))
+                byte[] bytes = e.PcmData.ToArray();
+                if (bytes.Length > 0)
                 {
-                    byte[] bytes = e.PcmData.ToArray();
-                    if (bytes.Length > 0)
+                    bool wokeUp = _recognizers!.GetOrAdd(id, (x) => new ParTboTPicoVoiceRecognizer()).ProcessAudio(bytes);
+                    if (wokeUp)
                     {
-                        if (_recognizers.TryGetValue(id, out ParTboTAprilRecognizer rec))
-                        {
-                            rec.TimeoutTimer.Stop();
-                            rec.AcceptPcm(bytes);
-                            rec.TimeoutTimer.Start();
-                        }
+                        await _speaker.SpeakToVCAsync(connection, "I'm listening");
                     }
                 }
-                else
-                {
-                    var config = new Configuration
-                    {
-                        AcousticModelPath = modelsDirectory,
-                        DictionaryPath = Path.Combine(modelsDirectory, "cmudict-en-us.dict"),
-                        LanguageModelPath = Path.Combine(modelsDirectory, "en-us.lm.dmp"),
-                        //UseGrammar = true,
-                        //GrammarName = "hello",
-                        //GrammarPath = modelsDirectory
-                    };
 
-                    var voskRecognizer = new ParTboTAprilRecognizer(config);
-                    voskRecognizer.RecognitionDone += RecogDoneHandler;
-                    _recognizers.TryAdd(id, voskRecognizer);
-                }
+                //_recognizers!.GetOrAdd(id, (x) =>
+                //{
+                //    var rec = new ParTboTAprilRecognizer(aprilModel);
+                //    rec.RecognitionDone += (_, text) => RecogDoneHandler(connection, text);
+                //    return rec;
+                //}).AcceptPcm(bytes);
+                else
+                    return;
             }
             catch (Exception ex)
             {
@@ -131,10 +134,11 @@ namespace ParTboT.Commands.TextCommands
             }
         }
 
+
         private string GetResponse(string text)
         {
             Console.WriteLine(text);
-            if (text.Contains("hello"))
+            if (text.Contains("hello", StringComparison.InvariantCultureIgnoreCase))
             {
                 return "Hi there!";
             }
@@ -149,57 +153,274 @@ namespace ParTboT.Commands.TextCommands
 
         //}
 
+
+        public class ParTboTPicoVoiceRecognizer
+        {
+            private WaveFormat _inFormat = new WaveFormat(22050, 16, 2);
+            private WaveFormat _outFormat = new WaveFormat(16000, 16, 1);
+
+            private readonly Porcupine _porcupine;
+            private const string ACCESS_KEY = "0uVff7zxf4rhPFTYy8ebDAEfKN3DKBawVtyQSAaHSh9Olqi7LUnVSQ==";
+
+            private BufferedWaveProvider _voicePackets;
+
+            private const int AUDIO_FRAME = 512;
+            private short[] _pcm;
+            private int _index = 0;
+
+            public ParTboTPicoVoiceRecognizer()
+            {
+                _porcupine = Porcupine.FromBuiltInKeywords(
+                             $"{ACCESS_KEY}",
+                             new List<BuiltInKeyword> { BuiltInKeyword.ALEXA, BuiltInKeyword.PORCUPINE, BuiltInKeyword.BUMBLEBEE });
+
+                _voicePackets = new BufferedWaveProvider(_inFormat);
+                _voicePackets.DiscardOnBufferOverflow = true;
+                _voicePackets.BufferDuration = TimeSpan.FromSeconds(1);
+            }
+
+            /*private byte[] ToMono(byte[] data)
+            {
+                byte[] newData = new byte[data.Length / 2];
+
+                for (int i = 0; i < data.Length / 4; ++i)
+                {
+                    int HI = 1; int LO = 0;
+                    short left = (short)((data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff));
+                    short right = (short)((data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff));
+                    int avg = (left + right) / 2;
+
+                    newData[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
+                    newData[i * 2 + LO] = (byte)((avg & 0xff));
+                }
+
+                return newData;
+            }*/
+
+            public void ConvertAudio(byte[] raw)
+            {
+                // Down-samples audio to 16 KHz and combines bytes into shorts
+                _pcm = new short[raw.Length / 12 + (AUDIO_FRAME - raw.Length / 12 % AUDIO_FRAME)];
+
+                for (int i = 0, j = 0; i < raw.Length; i += 12, j++)
+                    _pcm[j] = (short)((raw[i] << 8) | (raw[i + 1] & 0xFF));
+            }
+
+            public bool HasNext()
+            {
+                return _index < _pcm.Length;
+            }
+
+            public short[] Take()
+            {
+                short[] frame = new short[AUDIO_FRAME];
+                Array.Copy(_pcm, _index, frame, 0, _index + AUDIO_FRAME - _index);
+                _index += AUDIO_FRAME;
+                return frame;
+            }
+
+            //public void Listen()
+            //{
+            //    WaveOutEvent player = new WaveOutEvent();
+
+
+            //    RawSourceWaveStream stream = new RawSourceWaveStream(temp.ByteBuffer, 0, temp.ByteBufferCount, new WaveFormat(16000, 16, 1));
+            //    stream.Seek(0, SeekOrigin.Begin);
+            //    player.Init(stream);
+
+            //    player.Play();
+            //}
+
+
+            /// <summary>
+            /// Processes the raw PCM audio received from Discord.
+            /// </summary>
+            /// <param name="pcm">The raw PCM audio</param>
+            /// <returns>true if a hotword was detected; otherwise, false.</returns>
+            public bool ProcessAudio(byte[] pcm)
+            {
+                if (_voicePackets.BufferedDuration.TotalSeconds >= 1)
+                {
+                    IWaveProvider resampler = new WdlResamplingSampleProvider
+                                                  (_voicePackets.ToSampleProvider().ToMono(), 16000)
+                                                  .ToWaveProvider16();
+
+                    byte[] total = new byte[_voicePackets.BufferLength];
+                    //byte[] total = new byte[resampler.WaveFormat.SampleRate];
+
+                    resampler.Read(total, 0, total.Length);
+
+                    //ConvertAudio(total);
+
+                    short[] shortified = new short[total.Length / 2];
+                    Buffer.BlockCopy(total, 0, shortified, 0, total.Length);
+
+                    //_pcm = shortified;
+
+                    foreach (var frame in shortified.ChunkWithZeroFill(512))
+                    {
+                        try
+                        {
+                            int keywordIndex = _porcupine.Process(frame);
+                            Console.WriteLine(keywordIndex);
+
+                            if (keywordIndex != -1)
+                                return true;
+                        }
+                        catch (PorcupineException pe)
+                        {
+                            pe.OutputBigExceptionError();
+                        }
+                    }
+
+                    //_voicePackets.ClearBuffer();
+                }
+                else
+                {
+                    _voicePackets.AddSamples(pcm, 0, pcm.Length);
+                }
+                return false;
+            }
+
+            /// <summary>
+            /// Processes the raw PCM audio received from Discord.
+            /// </summary>
+            /// <param name="pcm">The raw PCM audio</param>
+            /// <returns>true if a hotword was detected; otherwise, false.</returns>
+            //public bool Process(byte[] pcm)
+            //{
+            //    //ConvertAudio(pcm);
+
+            //    //Console.WriteLine($"Frame length = {_porcupine.FrameLength} | Sample rate = {_porcupine.SampleRate}");
+            //    //BufferedWaveProvider buff = new BufferedWaveProvider(new WaveFormat());
+
+            //    while (HasNext())
+            //    {
+            //        try
+            //        {
+            //            int keywordIndex = _porcupine.Process(Take());
+            //            Console.WriteLine(keywordIndex);
+
+            //            if (keywordIndex != -1)
+            //                return true;
+            //        }
+            //        catch (PorcupineException pe)
+            //        {
+            //            pe.OutputBigExceptionError();
+            //        }
+            //    }
+
+            //    return false;
+            //}
+        }
+
+
         public class ParTboTAprilRecognizer
         {
-            //private readonly AprilSession _april;
-            private readonly StreamSpeechRecognizer _speechRecognizer;
+            private WaveFormat _inFormat = new WaveFormat(22050, 16, 2);
+            private WaveFormat _outFormat = new WaveFormat(16000, 16, 1);
+
+            private readonly AprilSession _april;
+            private readonly SessionCallback _callback;
+            //private readonly StreamSpeechRecognizer _speechRecognizer;
+
+            // This section creates the processor object which is used to process the audio file, it uses language `auto` to detect the language of the audio file.
+            //private readonly WhisperProcessor _processor;
+
             private readonly int _maxAlternatives;
             private readonly object _lockObject = new object();
-            private MemoryBuffer<byte> _voicePackets;
 
-            //private readonly MemoryStream _underlyingRawStream;
-            //private readonly RawSourceWaveStream _rawStream;
-            //private readonly WaveFormatConversionProvider _conversionStream;
+            private BufferedWaveProvider _voicePackets;
 
-            private bool isDataAvailable;
-            private bool textReady;
-
-            public readonly Timer TimeoutTimer;
+            //public readonly Timer TimeoutTimer;
             public bool WaitingForCommand { get; set; } = false;
             public bool IsBusy { get; private set; } = false;
 
             public event EventHandler<string> RecognitionDone;
 
-            public ParTboTAprilRecognizer(Configuration config)
+            public ParTboTAprilRecognizer(AprilModel model)
             {
-                _speechRecognizer = new StreamSpeechRecognizer(config);
+                //_speechRecognizer = new StreamSpeechRecognizer(config);
+                //_processor = whisperProcessor;
 
-                TimeoutTimer = new Timer(5000);
-                TimeoutTimer.Elapsed += DataTimerCallback;
+                Console.WriteLine($"Name: {model.Name}");
+                Console.WriteLine($"Description: {model.Description}");
+                Console.WriteLine($"Language: {model.Language}");
+                Console.WriteLine($"Sample rate: {model.SampleRate}Hz");
 
-                _voicePackets = new MemoryBuffer<byte>();
+
+                _callback = (result, tokens) =>
+                {
+                    string s = "";
+                    if (result == AprilResultKind.PartialRecognition)
+                    {
+                        s = "- ";
+                    }
+                    else if (result == AprilResultKind.FinalRecognition)
+                    {
+                        s = "@ ";
+                    }
+                    else if (result == AprilResultKind.Silence)
+                    {
+                        s = "SILENCE???";
+                    }
+                    else
+                    {
+                        s = " ";
+                    }
+
+                    foreach (AprilToken token in tokens)
+                    {
+                        s += token.Token;
+                    }
+
+                    if (result == AprilResultKind.FinalRecognition)
+                        RecognitionDone.Invoke(this, s);
+
+                    Console.WriteLine(s);
+
+                };
+
+                _april = new AprilSession(model, _callback, true, false);
+                //GC.SuppressFinalize(_april);
+
+                //TimeoutTimer = new Timer(1000);
+                //TimeoutTimer.Elapsed += DataTimerCallback;
+
+                _voicePackets = new BufferedWaveProvider(_inFormat);
+                _voicePackets.DiscardOnBufferOverflow = true;
+                _voicePackets.BufferDuration = TimeSpan.FromSeconds(2);
             }
 
-            internal byte[] PcmConvert(MemoryBuffer<byte> rawPcmData)
+            internal Stream PcmConvert(byte[] rawPcmData)
             {
                 byte[] tempArray = rawPcmData.ToArray();
 
-                byte[] pcmData;
-                using (RawSourceWaveStream original = new RawSourceWaveStream(tempArray, 0, tempArray.Length, new WaveFormat(48000, 16, 2)))
+                MemoryStream ms = new MemoryStream();
+
+                //using (WaveFileReader reader = new WaveFileReader(@"C:\Users\yarin\Music\kennedy44100.wav"))
+                using (RawSourceWaveStream rawStream = new RawSourceWaveStream(tempArray, 0, tempArray.Length, new WaveFormat(22050, 16, 2)))
                 {
-                    using (WaveFormatConversionStream wavResampler = new WaveFormatConversionStream(_waveFormat, original))
-                    {
-                        pcmData = new byte[wavResampler.Length];
-                        wavResampler.Read(pcmData, 0, pcmData.Length);
-                    }
+                    var resampler = new WdlResamplingSampleProvider(rawStream.ToSampleProvider().ToMono(), 16000);
+                    WaveFileWriter.WriteWavFileToStream(ms, resampler.ToWaveProvider16());
+
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    WaveOutEvent player = new WaveOutEvent();
+
+                    WaveFileReader convertedReader = new WaveFileReader(ms);
+                    player.Init(convertedReader);
+
+                    player.Play();
                 }
 
                 Array.Clear(tempArray);
 
-                return pcmData;
+                ms.Seek(0, SeekOrigin.Begin);
+                return ms;
             }
 
-            private async void DataTimerCallback(object s, ElapsedEventArgs e)
+            /*private async void DataTimerCallback(object s, ElapsedEventArgs e)
             {
                 //while (IsBusy)
                 //{
@@ -210,12 +431,9 @@ namespace ParTboT.Commands.TextCommands
                 if (_voicePackets.Length > 0)
                 {
                     Console.WriteLine("Some data is available! Converting and processing voice samples now...");
-                    byte[] convBytes = PcmConvert(_voicePackets);
+                    Stream convBytes = PcmConvert(_voicePackets);
 
-                    await foreach (var result in processor.ProcessAsync(wavStream))
-                    {
-                        Console.WriteLine($"{result.Start}->{result.End}: {result.Text}");
-                    }
+
 
                     await HandleSpeechToTextAsync(convBytes);
                 }
@@ -224,13 +442,113 @@ namespace ParTboT.Commands.TextCommands
                 //{
                 //_voicePackets.SetLength(0);
                 //}
+            }*/
+
+            private byte[] ToMono(byte[] data)
+            {
+                byte[] newData = new byte[data.Length / 2];
+
+                for (int i = 0; i < data.Length / 4; ++i)
+                {
+                    int HI = 1; int LO = 0;
+                    short left = (short)((data[i * 4 + HI] << 8) | (data[i * 4 + LO] & 0xff));
+                    short right = (short)((data[i * 4 + 2 + HI] << 8) | (data[i * 4 + 2 + LO] & 0xff));
+                    int avg = (left + right) / 2;
+
+                    newData[i * 2 + HI] = (byte)((avg >> 8) & 0xff);
+                    newData[i * 2 + LO] = (byte)((avg & 0xff));
+                }
+
+                return newData;
             }
 
-            public void AcceptPcm(byte[] pcm)
+            private short[] Shortify(byte[] data)
+            {
+                short[] shorts = new short[data.Length / 2];
+
+                for (int i = 0; i < shorts.Length; i++)
+                {
+                    shorts[i] = (short)((data[i * 2] & 0xff) | (data[i * 2 + 1] << 8));
+                }
+
+                return shorts;
+            }
+
+            public async void AcceptPcm(byte[] pcm)
             {
                 //lock (_lockObject)
                 //{
-                _voicePackets.Write(pcm);
+
+                if (_voicePackets.BufferedDuration.TotalSeconds >= 1)
+                {
+                    IWaveProvider resampler = new WdlResamplingSampleProvider
+                                                  (_voicePackets.ToSampleProvider().ToMono(), 16000)
+                                                  .ToWaveProvider16();
+
+
+
+
+                    /*//using (MemoryStream ms = new MemoryStream())
+                    //{
+                    //    WaveFileWriter.WriteWavFileToStream(ms, resampler);
+                    //    ms.Seek(0, SeekOrigin.Begin);
+
+                    //    // Read the file data (assumes wav file is 16-bit PCM wav)
+                    //    var fileData = ms.ToArray();
+                    //    short[] shorts = new short[fileData.Length / 2];
+                    //    Buffer.BlockCopy(fileData, 0, shorts, 0, fileData.Length);
+
+                    //    _april.FeedPCM16(shorts, shorts.Length);
+                    //    _april.Flush();
+                    //}*/
+
+
+                    byte[] total = new byte[_voicePackets.BufferLength];
+                    //byte[] total = new byte[resampler.WaveFormat.SampleRate];
+
+                    resampler.Read(total, 0, total.Length);
+
+                    short[] shortified = new short[total.Length / 2];
+                    Buffer.BlockCopy(total, 0, shortified, 0, total.Length);
+
+                    //short[] shortified = Shortify(total);
+
+                    short[] shorts = new short[16000];
+
+                    //for (int i = 0; i < (total.Length / 2); i += shorts.Length)
+                    //{
+                    //    int size = Math.Min(shorts.Length, (total.Length / 2) - i);
+                    //    Buffer.BlockCopy(total, i * 2, shorts, 0, size * 2);
+
+                    //    _april.FeedPCM16(shorts, size);
+                    //    await Task.Delay(size * 1000 / 16000);
+                    //}
+
+                    short[] current = new short[3600];
+                    for (int i = 0; i < shortified.Length / 3600; i++)
+                    {
+                        for (int j = 0; j < 3600; j++) current[j] = shortified[i * 3600 + j];
+
+                        _april.FeedPCM16(current, current.Length);
+                        await Task.Delay(current.Length * 1000 / 16000);
+                    }
+
+                    //WaveOutEvent player = new WaveOutEvent();
+
+                    //player.Init(resampler);
+                    //player.Play();
+
+                    //_voicePackets.ClearBuffer();
+
+                    //_april.FeedPCM16(shortified, shortified.Length);
+                    _april.Flush();
+                    //await Task.Delay(1000);
+                }
+                else
+                {
+                    _voicePackets.AddSamples(pcm, 0, pcm.Length);
+                }
+
                 //}
             }
 
@@ -244,36 +562,49 @@ namespace ParTboT.Commands.TextCommands
             //    }
             //}
 
-            public async Task HandleSpeechToTextAsync(byte[] pcm)
-                => await Task.Run(() => HandleSpeechToText(pcm));
+            //public async Task HandleSpeechToTextAsync(Stream ms)
+            //    => await Task.Run(() => HandleSpeechToText(ms));
 
-            private WaveFormat _waveFormat = new WaveFormat(16000, 16, 1);
             private bool used = false;
 
-            private void HandleSpeechToText(byte[] pcm)
+            /*private async void HandleSpeechToText(Stream ms)
             {
-                MemoryStream pcmData = new MemoryStream(pcm);
+                //ms.Seek(0, SeekOrigin.Begin);
+
+                //_voicePackets.Clear();
+                //var thing = _processor.ProcessAsync(ms);
+
+                //if (used is false)
+                //{
+                //    used = true;
+                //    await foreach (var result in thing)
+                //    {
+                //        Console.WriteLine($"{result.Start}->{result.End}: {result.Text}");
+                //    }
+                //    used = false;
+                //}
+
 
                 if (!used)
                 {
-                    _speechRecognizer.StartRecognition(pcmData);
-                    var result = _speechRecognizer.GetResult();
-                    _speechRecognizer.StopRecognition();
+                    //_speechRecognizer.StartRecognition(pcmData);
+                    //var result = _speechRecognizer.GetResult();
+                    //_speechRecognizer.StopRecognition();
 
-                    pcmData.Dispose();
-                    pcmData.Close();
+                    //pcmData.Dispose();
+                    //pcmData.Close();
 
-                    Array.Clear(pcm);
-                    _voicePackets.Clear();
+                    //Array.Clear(pcm);
 
-                    if (result != null)
-                    {
-                        Console.WriteLine("Result: " + result.GetHypothesis());
-                    }
-                    else
-                    {
-                        Console.WriteLine("Result: Sorry! Coudn't Transcribe");
-                    }
+
+                    //if (result != null)
+                    //{
+                    //    Console.WriteLine("Result: " + result.GetHypothesis());
+                    //}
+                    //else
+                    //{
+                    //    Console.WriteLine("Result: Sorry! Coudn't Transcribe");
+                    //}
 
                 }
 
@@ -318,7 +649,7 @@ namespace ParTboT.Commands.TextCommands
 
                 //IsBusy = false;
                 //return "not finished...";
-            }
+            }*/
 
             private VoskResult[] ParseResult(string resultJson)
             {
@@ -340,7 +671,6 @@ namespace ParTboT.Commands.TextCommands
             public override string ToString() => JsonConvert.SerializeObject(this);
         }
 
-
         public class VoskResult
         {
             public class VoskWordResult
@@ -358,6 +688,37 @@ namespace ParTboT.Commands.TextCommands
 
             public static VoskResult FromJson(string json)
                 => JsonConvert.DeserializeObject<VoskResult>(json);
+        }
+    }
+
+    public static class Chunky
+    {
+        public static IEnumerable<T[]> ChunkWithZeroFill<T>(this IEnumerable<T> enumerable, int chunkSize)
+        {
+            var enumerator = enumerable.GetEnumerator();
+            var chunk = new T[chunkSize];
+            int currentIndex = 0;
+
+            while (enumerator.MoveNext())
+            {
+                chunk[currentIndex] = enumerator.Current;
+                currentIndex++;
+
+                if (currentIndex == chunkSize)
+                {
+                    yield return chunk;
+                    chunk = new T[chunkSize];
+                    currentIndex = 0;
+                }
+            }
+
+            // Fill the remaining elements of the last chunk with default(T) (zeros for numerical types)
+            for (int i = currentIndex; i < chunkSize; i++)
+            {
+                chunk[i] = default(T);
+            }
+
+            yield return chunk;
         }
     }
 }
